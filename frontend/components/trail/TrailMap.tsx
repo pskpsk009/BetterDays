@@ -10,11 +10,17 @@ export function TrailMap({
   tracking: _tracking,
   userLocation: _userLocation,
   locateRequest: _locateRequest,
+  onUserPointChange: _onUserPointChange,
+  userLocationColor: _userLocationColor,
+  pathBreakAt: _pathBreakAt,
 }: {
   coordinates: TrailCoordinate[];
   tracking: boolean;
   userLocation: TrailCoordinate | null;
   locateRequest: number;
+  onUserPointChange?: (point: { x: number; y: number }) => void;
+  userLocationColor?: string;
+  pathBreakAt?: number;
 }) {
   return <View />;
 }

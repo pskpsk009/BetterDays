@@ -3,7 +3,13 @@ import { Marker, Polyline } from "react-native-maps";
 
 import type { TrailCoordinate } from "./TrailMap";
 
-export function TrailPath({ coordinates }: { coordinates: TrailCoordinate[] }) {
+export function TrailPath({
+  coordinates,
+  breakAt,
+}: {
+  coordinates: TrailCoordinate[];
+  breakAt?: number;
+}) {
   const [renderedCoordinates, setRenderedCoordinates] =
     useState<TrailCoordinate[]>(coordinates);
   const renderedRef = useRef<TrailCoordinate[]>(coordinates);
@@ -56,12 +62,25 @@ export function TrailPath({ coordinates }: { coordinates: TrailCoordinate[] }) {
   }, [coordinates]);
 
   const current = renderedCoordinates[renderedCoordinates.length - 1];
+  const firstSegment = breakAt ? renderedCoordinates.slice(0, breakAt) : [];
+  const secondSegment = breakAt
+    ? renderedCoordinates.slice(breakAt)
+    : renderedCoordinates;
 
   return (
     <>
-      {renderedCoordinates.length > 1 && (
+      {firstSegment.length > 1 && (
         <Polyline
-          coordinates={renderedCoordinates}
+          coordinates={firstSegment}
+          strokeColor="#DD8C43"
+          strokeWidth={5}
+          lineCap="round"
+          lineJoin="round"
+        />
+      )}
+      {secondSegment.length > 1 && (
+        <Polyline
+          coordinates={secondSegment}
           strokeColor="#DD8C43"
           strokeWidth={5}
           lineCap="round"

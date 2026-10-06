@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Circle, Polyline, Rect } from "react-native-svg";
+import Svg, { Circle, Polyline } from "react-native-svg";
 import * as Location from "expo-location";
 import {
   Accelerometer,
@@ -61,36 +61,62 @@ function indoorDistance(points: IndoorPoint[]) {
 export default function TrailScreen() {
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [mode, setMode] = useState<TrackingMode>("outdoor");
   const [nativeSteps, setNativeSteps] = useState(0);
   const [motionMoving, setMotionMoving] = useState(false);
   const [indoorPath, setIndoorPath] = useState<IndoorPoint[]>([{ x: 0, y: 0 }]);
+  const [indoorLivePosition, setIndoorLivePosition] = useState<IndoorPoint>({
+    x: 0,
+    y: 0,
+  });
+  const [indoorBreaks, setIndoorBreaks] = useState<number[]>([]);
+  const [gpsBreakAt, setGpsBreakAt] = useState<number | undefined>(undefined);
+  const [indoorOrigin, setIndoorOrigin] = useState({ x: 180, y: 135 });
   const [userLocation, setUserLocation] = useState<TrailCoordinate | null>(
     null,
   );
+  const [navigationLocation, setNavigationLocation] =
+    useState<TrailCoordinate | null>(null);
   const [locateRequest, setLocateRequest] = useState(0);
   const [locating, setLocating] = useState(false);
   const motionMovingRef = useRef(false);
-  const outdoorTracker = useOutdoorGpsTracker(motionMovingRef);
-  const { coordinates } = outdoorTracker;
+  const drawingPausedRef = useRef(false);
+  const gpsDrawingRef = useRef(true);
+  const outdoorTracker = useOutdoorGpsTracker(
+    motionMovingRef,
+    drawingPausedRef,
+    gpsDrawingRef,
+  );
+  const { coordinates, currentLocation } = outdoorTracker;
 
   useEffect(() => {
     motionMovingRef.current = motionMoving;
   }, [motionMoving]);
 
   useEffect(() => {
-    if (!running) return;
+    drawingPausedRef.current = paused;
+  }, [paused]);
+
+  useEffect(() => {
+    if (!running || paused) return;
     const timer = setInterval(() => {
       setSeconds((current) => current + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [running]);
+  }, [running, paused]);
 
   const startTracking = async () => {
-    if (mode === "outdoor" && !(await outdoorTracker.start())) return;
+    gpsDrawingRef.current = mode === "outdoor";
+    if (!(await outdoorTracker.start())) return;
     setIndoorPath([{ x: 0, y: 0 }]);
+    setIndoorLivePosition({ x: 0, y: 0 });
+    setIndoorBreaks([]);
+    setGpsBreakAt(undefined);
     setNativeSteps(0);
-    setUserLocation(null);
+    setTimeout(() => setUserLocation(null), 800);
+    setPaused(false);
+    drawingPausedRef.current = false;
 
     setRunning(true);
   };
@@ -103,10 +129,12 @@ export default function TrailScreen() {
       const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
-      setUserLocation({
+      const nextLocation = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
-      });
+      };
+      setNavigationLocation(nextLocation);
+      setUserLocation(nextLocation);
       setLocateRequest((current) => current + 1);
     } finally {
       setLocating(false);
@@ -115,15 +143,46 @@ export default function TrailScreen() {
 
   const stopTracking = () => {
     outdoorTracker.stop();
+    gpsDrawingRef.current = false;
+    drawingPausedRef.current = false;
     setRunning(false);
+    setPaused(false);
     setUserLocation(null);
   };
+
+  const togglePause = async () => {
+    if (!running) return;
+    if (!paused) {
+      drawingPausedRef.current = true;
+      setPaused(true);
+      return;
+    }
+    if (mode === "outdoor") {
+      setGpsBreakAt(coordinates.length);
+    } else {
+      setIndoorBreaks((current) => [...current, indoorPath.length]);
+      setIndoorPath((current) => [...current, indoorLivePosition]);
+    }
+    drawingPausedRef.current = false;
+    setPaused(false);
+  };
+
+  const pauseLocation = paused
+    ? mode === "outdoor"
+      ? currentLocation
+      : navigationLocation
+    : null;
+  const visibleLocation =
+    running && mode === "outdoor" ? pauseLocation : userLocation;
 
   const clear = () => {
     stopTracking();
     outdoorTracker.clear();
     setSeconds(0);
     setIndoorPath([{ x: 0, y: 0 }]);
+    setIndoorLivePosition({ x: 0, y: 0 });
+    setIndoorBreaks([]);
+    setGpsBreakAt(undefined);
     setNativeSteps(0);
   };
 
@@ -134,11 +193,20 @@ export default function TrailScreen() {
     });
   };
 
+  const recordIndoorPosition = ({ dx, dy }: { dx: number; dy: number }) => {
+    setIndoorLivePosition((current) => ({
+      x: current.x + dx,
+      y: current.y + dy,
+    }));
+  };
+
   const selectMode = (nextMode: TrackingMode) => {
     if (running) return;
     setMode(nextMode);
     outdoorTracker.clear();
     setIndoorPath([{ x: 0, y: 0 }]);
+    setIndoorBreaks([]);
+    setGpsBreakAt(undefined);
     setSeconds(0);
     setNativeSteps(0);
   };
@@ -198,9 +266,11 @@ export default function TrailScreen() {
           </Text>
           <Text style={styles.simulated}>
             {running
-              ? mode === "outdoor"
-                ? "LIVE GPS"
-                : "LIVE MOTION"
+              ? paused
+                ? "PAUSED"
+                : mode === "outdoor"
+                  ? "LIVE GPS"
+                  : "LIVE MOTION"
               : "READY"}
           </Text>
         </View>
@@ -209,18 +279,29 @@ export default function TrailScreen() {
             <TrailMap
               coordinates={coordinates}
               tracking={running}
-              userLocation={running ? null : userLocation}
+              userLocation={visibleLocation}
               locateRequest={locateRequest}
+              onUserPointChange={running ? undefined : setIndoorOrigin}
+              userLocationColor="#DD8C43"
+              pathBreakAt={gpsBreakAt}
             />
           ) : (
             <>
               <TrailMap
                 coordinates={[]}
                 tracking={running}
-                userLocation={running ? null : userLocation}
+                userLocation={visibleLocation}
                 locateRequest={locateRequest}
+                onUserPointChange={running ? undefined : setIndoorOrigin}
+                userLocationColor="#DD8C43"
+                pathBreakAt={gpsBreakAt}
               />
-              <IndoorCanvas points={indoorPath} />
+              <IndoorCanvas
+                points={indoorPath}
+                breaks={indoorBreaks}
+                origin={indoorOrigin}
+                livePosition={indoorLivePosition}
+              />
             </>
           )}
           {!running && (
@@ -259,12 +340,22 @@ export default function TrailScreen() {
           </Text>
         </Pressable>
         {running && (
+          <Pressable
+            onPress={() => void togglePause()}
+            style={styles.secondaryAction}
+          >
+            <Text style={styles.secondaryText}>
+              {paused ? "Resume" : "Pause"}
+            </Text>
+          </Pressable>
+        )}
+        {running && (
           <Pressable onPress={stopTracking} style={styles.secondaryAction}>
             <Text style={styles.secondaryText}>Stop</Text>
           </Pressable>
         )}
         <Pressable
-          disabled={!coordinates.length}
+          disabled={!coordinates.length && indoorPath.length <= 1}
           onPress={clear}
           style={styles.clearAction}
         >
@@ -277,38 +368,52 @@ export default function TrailScreen() {
       <IndoorMotionTracker
         mode={mode}
         tracking={running}
+        drawingPaused={paused}
         onStepsChange={setNativeSteps}
         onMovementChange={setMotionMoving}
         onIndoorStep={recordIndoorStep}
+        onIndoorPosition={recordIndoorPosition}
         indoorPosition={indoorPosition}
       />
     </MobileScreen>
   );
 }
 
-function IndoorCanvas({ points }: { points: IndoorPoint[] }) {
-  const padding = 24;
+function IndoorCanvas({
+  points,
+  breaks,
+  origin,
+  livePosition,
+}: {
+  points: IndoorPoint[];
+  breaks: number[];
+  origin: { x: number; y: number };
+  livePosition: IndoorPoint;
+}) {
   const width = 360;
   const height = 270;
-  const xValues = points.map((point) => point.x);
-  const yValues = points.map((point) => point.y);
-  const minX = Math.min(...xValues, 0);
-  const maxX = Math.max(...xValues, 0);
-  const minY = Math.min(...yValues, 0);
-  const maxY = Math.max(...yValues, 0);
-  const scale = Math.min(
-    (width - padding * 2) / Math.max(maxX - minX, 1),
-    (height - padding * 2) / Math.max(maxY - minY, 1),
+  const maxExtent = Math.max(
+    ...points.map((point) => Math.max(Math.abs(point.x), Math.abs(point.y))),
+    1,
   );
-  const screenPoints = points
-    .map(
-      (point) =>
-        `${padding + (point.x - minX) * scale},${height - padding - (point.y - minY) * scale}`,
-    )
-    .join(" ");
-  const current = points[points.length - 1];
-  const currentX = padding + (current.x - minX) * scale;
-  const currentY = height - padding - (current.y - minY) * scale;
+  const availablePixels = Math.max(
+    12,
+    Math.min(
+      origin.x - 20,
+      width - origin.x - 20,
+      origin.y - 20,
+      height - origin.y - 20,
+    ),
+  );
+  const pixelsPerMeter = Math.min(16, availablePixels / maxExtent);
+  const toScreenPoint = (point: IndoorPoint) =>
+    `${origin.x + point.x * pixelsPerMeter},${origin.y - point.y * pixelsPerMeter}`;
+  const segmentStarts = [0, ...breaks];
+  const segments = segmentStarts.map((start, index) =>
+    points.slice(start, segmentStarts[index + 1] ?? points.length),
+  );
+  const currentX = origin.x + livePosition.x * pixelsPerMeter;
+  const currentY = origin.y - livePosition.y * pixelsPerMeter;
 
   return (
     <Svg
@@ -318,16 +423,19 @@ function IndoorCanvas({ points }: { points: IndoorPoint[] }) {
       pointerEvents="none"
       style={[styles.indoorCanvas, styles.indoorOverlay]}
     >
-      <Rect width={width} height={height} fill="#E8F4EF" />
-      {points.length > 1 && (
-        <Polyline
-          points={screenPoints}
-          fill="none"
-          stroke={COLORS.movement}
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      {segments.map(
+        (segment, index) =>
+          segment.length > 1 && (
+            <Polyline
+              key={`indoor-segment-${index}`}
+              points={segment.map(toScreenPoint).join(" ")}
+              fill="none"
+              stroke={COLORS.movement}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ),
       )}
       <Circle cx={currentX} cy={currentY} r="7" fill={COLORS.movement} />
     </Svg>

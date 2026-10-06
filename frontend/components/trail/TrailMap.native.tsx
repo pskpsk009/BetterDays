@@ -21,29 +21,50 @@ export function TrailMap({
   tracking,
   userLocation,
   locateRequest,
+  onUserPointChange,
+  userLocationColor,
+  pathBreakAt,
 }: {
   coordinates: TrailCoordinate[];
   tracking: boolean;
   userLocation: TrailCoordinate | null;
   locateRequest: number;
+  onUserPointChange?: (point: { x: number; y: number }) => void;
+  userLocationColor?: string;
+  pathBreakAt?: number;
 }) {
   const current = coordinates[coordinates.length - 1];
   const mapRef = useRef<MapView>(null);
   const hasCentered = useRef(false);
 
+  const reportUserPoint = async () => {
+    const map = mapRef.current;
+    if (!userLocation || tracking || !onUserPointChange || !map) return;
+    try {
+      const point = await map.pointForCoordinate(userLocation);
+      if (mapRef.current === map) onUserPointChange(point);
+    } catch {
+      // The native map can detach while switching modes or rebuilding tiles.
+    }
+  };
+
   useEffect(() => {
     if (!userLocation || !locateRequest || !mapRef.current) return;
     hasCentered.current = true;
-    mapRef.current.animateToRegion(
-      {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
-        latitudeDelta: 0.004,
-        longitudeDelta: 0.004,
-      },
-      700,
-    );
-  }, [locateRequest, userLocation]);
+    try {
+      mapRef.current.animateToRegion(
+        {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          latitudeDelta: 0.004,
+          longitudeDelta: 0.004,
+        },
+        700,
+      );
+    } catch {
+      // Ignore map teardown races during mode transitions.
+    }
+  }, [locateRequest]);
 
   useEffect(() => {
     if (!current) {
@@ -52,15 +73,19 @@ export function TrailMap({
     }
     if (hasCentered.current || !mapRef.current) return;
     hasCentered.current = true;
-    mapRef.current.animateToRegion(
-      {
-        latitude: current.latitude,
-        longitude: current.longitude,
-        latitudeDelta: 0.004,
-        longitudeDelta: 0.004,
-      },
-      700,
-    );
+    try {
+      mapRef.current.animateToRegion(
+        {
+          latitude: current.latitude,
+          longitude: current.longitude,
+          latitudeDelta: 0.004,
+          longitudeDelta: 0.004,
+        },
+        700,
+      );
+    } catch {
+      // Ignore map teardown races during the first GPS update.
+    }
   }, [current]);
 
   return (
@@ -70,16 +95,24 @@ export function TrailMap({
       initialRegion={DEFAULT_REGION}
       zoomEnabled={!tracking}
       scrollEnabled={!tracking}
+      minZoomLevel={14}
+      maxZoomLevel={20}
       rotateEnabled={false}
       pitchEnabled={false}
-      showsUserLocation={false}
+      showsUserLocation={Boolean(userLocation)}
+      userLocationAnnotationTitle="Current position"
+      onRegionChangeComplete={() => void reportUserPoint()}
     >
-      <TrailPath coordinates={coordinates} />
+      <TrailPath coordinates={coordinates} breakAt={pathBreakAt} />
       {userLocation && (
         <Marker
+          key="user-location-marker"
           coordinate={userLocation}
-          pinColor="#247F7B"
+          pinColor={userLocationColor ?? "#247F7B"}
           title="You are here"
+          identifier="user-location-marker"
+          tracksViewChanges={false}
+          zIndex={1000}
         />
       )}
     </MapView>

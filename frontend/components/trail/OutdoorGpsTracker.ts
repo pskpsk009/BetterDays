@@ -15,8 +15,14 @@ function metersBetween(first: TrailCoordinate, second: TrailCoordinate) {
   return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export function useOutdoorGpsTracker(motionMovingRef: { current: boolean }) {
+export function useOutdoorGpsTracker(
+  motionMovingRef: { current: boolean },
+  drawingPausedRef: { current: boolean },
+  drawingEnabledRef: { current: boolean },
+) {
   const [coordinates, setCoordinates] = useState<TrailCoordinate[]>([]);
+  const [currentLocation, setCurrentLocation] =
+    useState<TrailCoordinate | null>(null);
   const subscription = useRef<Location.LocationSubscription | null>(null);
 
   const start = async () => {
@@ -30,8 +36,10 @@ export function useOutdoorGpsTracker(motionMovingRef: { current: boolean }) {
         timeInterval: 300,
       },
       ({ coords }) => {
-        if (coords.accuracy && coords.accuracy > 15) return;
         const next = { latitude: coords.latitude, longitude: coords.longitude };
+        setCurrentLocation(next);
+        if (drawingPausedRef.current || !drawingEnabledRef.current) return;
+        if (coords.accuracy && coords.accuracy > 15) return;
         setCoordinates((current) => {
           const previous = current[current.length - 1];
           if (!previous) return [next];
@@ -62,7 +70,10 @@ export function useOutdoorGpsTracker(motionMovingRef: { current: boolean }) {
     subscription.current = null;
   };
 
-  const clear = () => setCoordinates([]);
+  const clear = () => {
+    setCoordinates([]);
+    setCurrentLocation(null);
+  };
 
-  return { coordinates, start, stop, clear };
+  return { coordinates, currentLocation, start, stop, clear };
 }

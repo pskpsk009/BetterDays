@@ -14,19 +14,23 @@ type TrackingMode = "outdoor" | "indoor";
 type Props = {
   mode: TrackingMode;
   tracking: boolean;
+  drawingPaused: boolean;
   indoorPosition: { x: number; y: number };
   onStepsChange: (steps: number) => void;
   onMovementChange: (moving: boolean) => void;
   onIndoorStep: (movement: { dx: number; dy: number }) => void;
+  onIndoorPosition: (movement: { dx: number; dy: number }) => void;
 };
 
 export function IndoorMotionTracker({
   mode,
   tracking,
+  drawingPaused,
   indoorPosition,
   onStepsChange,
   onMovementChange,
   onIndoorStep,
+  onIndoorPosition,
 }: Props) {
   const [acceleration, setAcceleration] = useState<{
     x: number;
@@ -41,12 +45,15 @@ export function IndoorMotionTracker({
   const previous = useRef<{ x: number; y: number; z: number } | null>(null);
   const previousMagnitude = useRef<number | null>(null);
   const lastStepAt = useRef(0);
+  const stepArmed = useRef(true);
   const magnetic = useRef<{ x: number; y: number; z: number } | null>(null);
   const trackingRef = useRef(tracking);
   const modeRef = useRef(mode);
+  const drawingPausedRef = useRef(drawingPaused);
   const onIndoorStepRef = useRef(onIndoorStep);
   const onMovementChangeRef = useRef(onMovementChange);
   const onStepsChangeRef = useRef(onStepsChange);
+  const onIndoorPositionRef = useRef(onIndoorPosition);
 
   useEffect(() => {
     trackingRef.current = tracking;
@@ -54,6 +61,9 @@ export function IndoorMotionTracker({
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
+  useEffect(() => {
+    drawingPausedRef.current = drawingPaused;
+  }, [drawingPaused]);
   useEffect(() => {
     onIndoorStepRef.current = onIndoorStep;
   }, [onIndoorStep]);
@@ -63,6 +73,9 @@ export function IndoorMotionTracker({
   useEffect(() => {
     onStepsChangeRef.current = onStepsChange;
   }, [onStepsChange]);
+  useEffect(() => {
+    onIndoorPositionRef.current = onIndoorPosition;
+  }, [onIndoorPosition]);
 
   useEffect(() => {
     let active = true;
@@ -77,10 +90,10 @@ export function IndoorMotionTracker({
 
     const subscribe = async () => {
       if (await Accelerometer.isAvailableAsync()) {
-        Accelerometer.setUpdateInterval(100);
+        Accelerometer.setUpdateInterval(50);
         accelerometerSubscription = Accelerometer.addListener((sample) => {
           const old = previous.current;
-          const smoothing = modeRef.current === "indoor" ? 0.22 : 0.35;
+          const smoothing = modeRef.current === "indoor" ? 0.3 : 0.35;
           const filtered = old
             ? {
                 x: old.x + (sample.x - old.x) * smoothing,
@@ -101,25 +114,30 @@ export function IndoorMotionTracker({
           onMovementChangeRef.current(currentlyMoving);
           const oldMagnitude = previousMagnitude.current;
           const now = Date.now();
+          if (currentMagnitude < 1.0) stepArmed.current = true;
           if (
             modeRef.current === "indoor" &&
             trackingRef.current &&
+            !drawingPausedRef.current &&
+            stepArmed.current &&
             oldMagnitude !== null &&
-            oldMagnitude <= 1.1 &&
-            currentMagnitude > 1.1 &&
-            now - lastStepAt.current > 400
+            currentMagnitude > 1.06 &&
+            now - lastStepAt.current > 300
           ) {
             lastStepAt.current = now;
+            stepArmed.current = false;
             setSteps((current) => current + 1);
             if (magnetic.current) {
               const direction = Math.atan2(
                 magnetic.current.y,
                 magnetic.current.x,
               );
-              onIndoorStepRef.current({
+              const movement = {
                 dx: 0.7 * Math.sin(direction),
                 dy: 0.7 * Math.cos(direction),
-              });
+              };
+              onIndoorPositionRef.current(movement);
+              if (!drawingPausedRef.current) onIndoorStepRef.current(movement);
             }
           }
           previousMagnitude.current = currentMagnitude;
