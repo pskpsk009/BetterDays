@@ -2,7 +2,17 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { TrailCoordinate } from "./TrailMap.native";
 
-export function TrailMap({ coordinates }: { coordinates: TrailCoordinate[] }) {
+export function TrailMap({
+  coordinates,
+  tracking: _tracking,
+  userLocation: _userLocation,
+  locateRequest: _locateRequest,
+}: {
+  coordinates: TrailCoordinate[];
+  tracking: boolean;
+  userLocation: TrailCoordinate | null;
+  locateRequest: number;
+}) {
   return (
     <View style={styles.fallback}>
       <Text style={styles.title}>Live map available on your phone</Text>

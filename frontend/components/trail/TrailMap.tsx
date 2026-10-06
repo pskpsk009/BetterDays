@@ -5,6 +5,16 @@ export type TrailCoordinate = {
   longitude: number;
 };
 
-export function TrailMap({ coordinates: _coordinates }: { coordinates: TrailCoordinate[] }) {
+export function TrailMap({
+  coordinates: _coordinates,
+  tracking: _tracking,
+  userLocation: _userLocation,
+  locateRequest: _locateRequest,
+}: {
+  coordinates: TrailCoordinate[];
+  tracking: boolean;
+  userLocation: TrailCoordinate | null;
+  locateRequest: number;
+}) {
   return <View />;
 }

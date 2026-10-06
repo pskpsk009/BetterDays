@@ -1,0 +1,80 @@
+import { useEffect, useRef, useState } from "react";
+import { Marker, Polyline } from "react-native-maps";
+
+import type { TrailCoordinate } from "./TrailMap";
+
+export function TrailPath({ coordinates }: { coordinates: TrailCoordinate[] }) {
+  const [renderedCoordinates, setRenderedCoordinates] =
+    useState<TrailCoordinate[]>(coordinates);
+  const renderedRef = useRef<TrailCoordinate[]>(coordinates);
+  const frameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    if (!coordinates.length) {
+      renderedRef.current = [];
+      setRenderedCoordinates([]);
+      return;
+    }
+    if (coordinates.length === 1) {
+      renderedRef.current = coordinates;
+      setRenderedCoordinates(coordinates);
+      return;
+    }
+
+    const start =
+      renderedRef.current[renderedRef.current.length - 1] ??
+      coordinates[coordinates.length - 2];
+    const target = coordinates[coordinates.length - 1];
+    const fixed = coordinates.slice(0, -1);
+    const startedAt = Date.now();
+    const animationDuration = 350;
+
+    const animate = () => {
+      const progress = Math.min(
+        1,
+        (Date.now() - startedAt) / animationDuration,
+      );
+      const next = [
+        ...fixed,
+        {
+          latitude:
+            start.latitude + (target.latitude - start.latitude) * progress,
+          longitude:
+            start.longitude + (target.longitude - start.longitude) * progress,
+        },
+      ];
+      renderedRef.current = next;
+      setRenderedCoordinates(next);
+      if (progress < 1) frameRef.current = requestAnimationFrame(animate);
+    };
+
+    frameRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    };
+  }, [coordinates]);
+
+  const current = renderedCoordinates[renderedCoordinates.length - 1];
+
+  return (
+    <>
+      {renderedCoordinates.length > 1 && (
+        <Polyline
+          coordinates={renderedCoordinates}
+          strokeColor="#DD8C43"
+          strokeWidth={5}
+          lineCap="round"
+          lineJoin="round"
+        />
+      )}
+      {current && (
+        <Marker
+          coordinate={current}
+          pinColor="#DD8C43"
+          title="Current position"
+        />
+      )}
+    </>
+  );
+}

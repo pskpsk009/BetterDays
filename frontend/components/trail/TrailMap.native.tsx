@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
-import MapView, { Marker, Polyline, Region } from "react-native-maps";
+import MapView, { Marker, Region } from "react-native-maps";
 import { StyleSheet } from "react-native";
+
+import { TrailPath } from "./TrailPath";
 
 export type TrailCoordinate = {
   latitude: number;
@@ -14,19 +16,50 @@ const DEFAULT_REGION: Region = {
   longitudeDelta: 0.004,
 };
 
-export function TrailMap({ coordinates }: { coordinates: TrailCoordinate[] }) {
+export function TrailMap({
+  coordinates,
+  tracking,
+  userLocation,
+  locateRequest,
+}: {
+  coordinates: TrailCoordinate[];
+  tracking: boolean;
+  userLocation: TrailCoordinate | null;
+  locateRequest: number;
+}) {
   const current = coordinates[coordinates.length - 1];
   const mapRef = useRef<MapView>(null);
-  const lastCameraUpdate = useRef(0);
+  const hasCentered = useRef(false);
 
   useEffect(() => {
-    if (!current || !mapRef.current) return;
-    const now = Date.now();
-    if (now - lastCameraUpdate.current < 1000) return;
-    lastCameraUpdate.current = now;
-    mapRef.current.animateCamera(
-      { center: { latitude: current.latitude, longitude: current.longitude } },
-      { duration: 700 },
+    if (!userLocation || !locateRequest || !mapRef.current) return;
+    hasCentered.current = true;
+    mapRef.current.animateToRegion(
+      {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.004,
+        longitudeDelta: 0.004,
+      },
+      700,
+    );
+  }, [locateRequest, userLocation]);
+
+  useEffect(() => {
+    if (!current) {
+      hasCentered.current = false;
+      return;
+    }
+    if (hasCentered.current || !mapRef.current) return;
+    hasCentered.current = true;
+    mapRef.current.animateToRegion(
+      {
+        latitude: current.latitude,
+        longitude: current.longitude,
+        latitudeDelta: 0.004,
+        longitudeDelta: 0.004,
+      },
+      700,
     );
   }, [current]);
 
@@ -35,25 +68,18 @@ export function TrailMap({ coordinates }: { coordinates: TrailCoordinate[] }) {
       ref={mapRef}
       style={styles.map}
       initialRegion={DEFAULT_REGION}
-      zoomEnabled={true}
+      zoomEnabled={!tracking}
+      scrollEnabled={!tracking}
       rotateEnabled={false}
       pitchEnabled={false}
       showsUserLocation={false}
     >
-      {coordinates.length > 1 && (
-        <Polyline
-          coordinates={coordinates}
-          strokeColor="#DD8C43"
-          strokeWidth={5}
-          lineCap="round"
-          lineJoin="round"
-        />
-      )}
-      {current && (
+      <TrailPath coordinates={coordinates} />
+      {userLocation && (
         <Marker
-          coordinate={current}
-          pinColor="#DD8C43"
-          title="Current position"
+          coordinate={userLocation}
+          pinColor="#247F7B"
+          title="You are here"
         />
       )}
     </MapView>
