@@ -1,4 +1,4 @@
-import { TrailScreen } from "../components/mygrowth-ui";
+import TrailScreen from "./trail/TrailScreen";
 
 export default function TrailRoute() {
   return <TrailScreen />;

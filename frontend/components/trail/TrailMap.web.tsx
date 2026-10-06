@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import type { TrailCoordinate } from "./trail-map.native";
+import type { TrailCoordinate } from "./TrailMap.native";
 
 export function TrailMap({ coordinates }: { coordinates: TrailCoordinate[] }) {
   return (

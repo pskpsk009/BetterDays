@@ -25,12 +25,7 @@ export function TrailMap({ coordinates }: { coordinates: TrailCoordinate[] }) {
     if (now - lastCameraUpdate.current < 1000) return;
     lastCameraUpdate.current = now;
     mapRef.current.animateCamera(
-      {
-        center: {
-          latitude: current.latitude,
-          longitude: current.longitude,
-        },
-      },
+      { center: { latitude: current.latitude, longitude: current.longitude } },
       { duration: 700 },
     );
   }, [current]);

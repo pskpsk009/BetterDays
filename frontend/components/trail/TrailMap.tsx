@@ -5,10 +5,6 @@ export type TrailCoordinate = {
   longitude: number;
 };
 
-export function TrailMap({
-  coordinates: _coordinates,
-}: {
-  coordinates: TrailCoordinate[];
-}) {
+export function TrailMap({ coordinates: _coordinates }: { coordinates: TrailCoordinate[] }) {
   return <View />;
 }
