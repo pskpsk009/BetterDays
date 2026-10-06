@@ -1,1 +1,1 @@
-export { default } from '../../frontend/screens/trail';
+export { default } from "../../frontend/screens/trail";

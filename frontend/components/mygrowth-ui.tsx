@@ -13,6 +13,10 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Location from "expo-location";
+import { Accelerometer, Pedometer } from "expo-sensors";
+import { TrailMap } from "./trail-map";
+import type { TrailCoordinate } from "./trail-map";
 
 export const COLORS = {
   background: "#F5FAF8",
@@ -388,45 +392,98 @@ export function WellnessScreen({ type }: { type: "mental" | "body" }) {
 function point(step: number) {
   return { x: 35 + ((step * 23) % 270), y: 230 - ((step * 17) % 135) };
 }
-function distance(points: { x: number; y: number }[]) {
-  return (
-    points.reduce(
-      (sum, current, index) =>
-        index
-          ? sum +
-            Math.hypot(
-              current.x - points[index - 1].x,
-              current.y - points[index - 1].y,
-            )
-          : 0,
-      0,
-    ) / 10
-  );
+function distance(points: TrailCoordinate[]) {
+  return points.reduce((sum, current, index) => {
+    if (!index) return sum;
+    const previous = points[index - 1];
+    const latitudeDelta =
+      ((current.latitude - previous.latitude) * Math.PI) / 180;
+    const longitudeDelta =
+      ((current.longitude - previous.longitude) * Math.PI) / 180;
+    const latitude = (previous.latitude * Math.PI) / 180;
+    const a =
+      Math.sin(latitudeDelta / 2) ** 2 +
+      Math.cos(latitude) *
+        Math.cos((current.latitude * Math.PI) / 180) *
+        Math.sin(longitudeDelta / 2) ** 2;
+    return sum + 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }, 0);
+}
+function metersBetween(first: TrailCoordinate, second: TrailCoordinate) {
+  const latitudeDelta = ((second.latitude - first.latitude) * Math.PI) / 180;
+  const longitudeDelta = ((second.longitude - first.longitude) * Math.PI) / 180;
+  const latitude = (first.latitude * Math.PI) / 180;
+  const a =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(latitude) *
+      Math.cos((second.latitude * Math.PI) / 180) *
+      Math.sin(longitudeDelta / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 function duration(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 export function TrailScreen() {
-  const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
+  const [coordinates, setCoordinates] = useState<TrailCoordinate[]>([]);
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
-  const step = useRef(0);
+  const locationSubscription = useRef<Location.LocationSubscription | null>(
+    null,
+  );
   useEffect(() => {
     if (!running) return;
     const timer = setInterval(() => {
-      step.current += 1;
-      setPoints((current) => [...current, point(step.current)]);
       setSeconds((current) => current + 1);
     }, 1000);
     return () => clearInterval(timer);
   }, [running]);
-  const marker = points[points.length - 1] ?? point(0);
-  const clear = () => {
+  const startTracking = async () => {
+    const permission = await Location.requestForegroundPermissionsAsync();
+    if (!permission.granted) return;
+
+    locationSubscription.current = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        distanceInterval: 1,
+        timeInterval: 500,
+      },
+      ({ coords }) => {
+        if (coords.accuracy && coords.accuracy > 25) return;
+        const next = { latitude: coords.latitude, longitude: coords.longitude };
+        setCoordinates((current) => {
+          const previous = current[current.length - 1];
+          if (!previous) return [next];
+
+          const movement = metersBetween(previous, next);
+          if (movement < 0.75 || movement > 20) return current;
+
+          const smoothing = 0.55;
+          return [
+            ...current,
+            {
+              latitude:
+                previous.latitude +
+                (next.latitude - previous.latitude) * smoothing,
+              longitude:
+                previous.longitude +
+                (next.longitude - previous.longitude) * smoothing,
+            },
+          ];
+        });
+      },
+    );
+    setRunning(true);
+  };
+  const stopTracking = () => {
+    locationSubscription.current?.remove();
+    locationSubscription.current = null;
     setRunning(false);
-    setPoints([]);
+  };
+  const clear = () => {
+    stopTracking();
+    setCoordinates([]);
     setSeconds(0);
-    step.current = 0;
   };
   return (
     <MobileScreen tone="movement">
@@ -437,54 +494,20 @@ export function TrailScreen() {
       <View style={styles.mapCard}>
         <View style={styles.mapHeader}>
           <Text style={styles.mapTitle}>o Current Position</Text>
-          <Text style={styles.simulated}>SIMULATED</Text>
+          <Text style={styles.simulated}>{running ? "LIVE GPS" : "READY"}</Text>
         </View>
-        <Svg viewBox="0 0 360 270" style={styles.map}>
-          <Defs>
-            <LinearGradient id="mapBg" x1="0" x2="0" y1="0" y2="1">
-              <Stop stopColor="#E8F4EF" />
-              <Stop offset="1" stopColor="#DDEFE9" />
-            </LinearGradient>
-          </Defs>
-          <Rect width="360" height="270" fill="url(#mapBg)" />
-          <Path
-            d="M35 230 C 75 205, 58 150, 112 162 S 147 245, 190 210 S 213 100, 268 118 S 284 199, 330 80"
-            fill="none"
-            stroke="#BED9D0"
-            strokeWidth="3"
-            strokeDasharray="3 7"
-          />
-          {points.length > 0 && (
-            <Polyline
-              points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-              fill="none"
-              stroke={COLORS.movement}
-              strokeWidth="5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
-          <Circle
-            cx={marker.x}
-            cy={marker.y}
-            r="15"
-            fill={COLORS.movementSoft}
-            stroke="#FFF"
-            strokeWidth="5"
-          />
-          <Circle cx={marker.x} cy={marker.y} r="6" fill={COLORS.movement} />
-        </Svg>
+        <TrailMap coordinates={coordinates} />
       </View>
       <View style={styles.stats}>
         <Stat
           label="Distance"
-          value={`${distance(points).toFixed(1)} m`}
+          value={`${distance(coordinates).toFixed(1)} m`}
           icon="-"
         />
         <Stat label="Duration" value={duration(seconds)} icon="o" />
         <Stat
           label="Steps / Movement"
-          value={String(points.length * 4)}
+          value={String(coordinates.length)}
           icon=">"
         />
       </View>
@@ -492,8 +515,7 @@ export function TrailScreen() {
         <Pressable
           disabled={running}
           onPress={() => {
-            if (!points.length) setPoints([point(0)]);
-            setRunning(true);
+            void startTracking();
           }}
           style={[styles.primaryAction, running && styles.disabled]}
         >
@@ -502,15 +524,12 @@ export function TrailScreen() {
           </Text>
         </Pressable>
         {running && (
-          <Pressable
-            onPress={() => setRunning(false)}
-            style={styles.secondaryAction}
-          >
+          <Pressable onPress={stopTracking} style={styles.secondaryAction}>
             <Text style={styles.secondaryText}>Stop</Text>
           </Pressable>
         )}
         <Pressable
-          disabled={!points.length}
+          disabled={!coordinates.length}
           onPress={clear}
           style={styles.clearAction}
         >
@@ -518,10 +537,151 @@ export function TrailScreen() {
         </Pressable>
       </View>
       <Text style={styles.footnote}>
-        Demo mode uses simulated movement. Live GPS and motion sensors can plug
-        into this tracker later.
+        Live GPS draws the path on your phone. Keep the app open while tracking.
       </Text>
+      <AccelerometerTest tracking={running} />
     </MobileScreen>
+  );
+}
+function AccelerometerTest({ tracking }: { tracking: boolean }) {
+  const [acceleration, setAcceleration] = useState<{
+    x: number;
+    y: number;
+    z: number;
+  } | null>(null);
+  const [magnitude, setMagnitude] = useState<number | null>(null);
+  const [moving, setMoving] = useState(false);
+  const [peakCount, setPeakCount] = useState(0);
+  const [pedometerSteps, setPedometerSteps] = useState(0);
+  const [pedometerStatus, setPedometerStatus] = useState("IDLE");
+  const previousFiltered = useRef<{ x: number; y: number; z: number } | null>(
+    null,
+  );
+  const previousMagnitude = useRef<number | null>(null);
+  const lastStepAt = useRef(0);
+
+  useEffect(() => {
+    if (!tracking) {
+      setPedometerSteps(0);
+      return;
+    }
+
+    let active = true;
+    let subscription: ReturnType<typeof Accelerometer.addListener> | null =
+      null;
+
+    Accelerometer.isAvailableAsync().then((available) => {
+      if (!active || !available) return;
+      Accelerometer.setUpdateInterval(200);
+      subscription = Accelerometer.addListener((sample) => {
+        const previous = previousFiltered.current;
+        const smoothing = 0.15;
+        const filtered = previous
+          ? {
+              x: previous.x + (sample.x - previous.x) * smoothing,
+              y: previous.y + (sample.y - previous.y) * smoothing,
+              z: previous.z + (sample.z - previous.z) * smoothing,
+            }
+          : sample;
+        previousFiltered.current = filtered;
+        setAcceleration(filtered);
+
+        const currentMagnitude = Math.sqrt(
+          filtered.x ** 2 + filtered.y ** 2 + filtered.z ** 2,
+        );
+        setMagnitude(currentMagnitude);
+        setMoving(Math.abs(currentMagnitude - 1) > 0.12);
+
+        const previousMagnitudeValue = previousMagnitude.current;
+        const stepThreshold = 1.12;
+        const now = Date.now();
+        if (
+          previousMagnitudeValue !== null &&
+          previousMagnitudeValue <= stepThreshold &&
+          currentMagnitude > stepThreshold &&
+          now - lastStepAt.current > 300
+        ) {
+          lastStepAt.current = now;
+          setPeakCount((current) => current + 1);
+        }
+        previousMagnitude.current = currentMagnitude;
+      });
+    });
+
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!tracking) {
+      setPedometerSteps(0);
+      setPedometerStatus("IDLE");
+      return;
+    }
+
+    let active = true;
+    let subscription: ReturnType<typeof Pedometer.watchStepCount> | null = null;
+
+    const startPedometer = async () => {
+      setPedometerStatus("CHECKING");
+      if (!(await Pedometer.isAvailableAsync())) {
+        setPedometerStatus("UNAVAILABLE");
+        return;
+      }
+      const permission = await Pedometer.requestPermissionsAsync();
+      if (!active || !permission.granted) {
+        setPedometerStatus("DENIED");
+        return;
+      }
+      setPedometerStatus("READY");
+      subscription = Pedometer.watchStepCount(({ steps }) => {
+        if (active) setPedometerSteps(steps);
+      });
+    };
+
+    void startPedometer().catch(() => setPedometerStatus("ERROR"));
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
+  }, [tracking]);
+
+  const status = acceleration
+    ? moving
+      ? "MOVING"
+      : "STILL"
+    : "WAITING FOR SENSOR";
+  return (
+    <View style={styles.sensorCard}>
+      <View style={styles.sensorHeader}>
+        <Text style={styles.sensorTitle}>Accelerometer Test</Text>
+        <Text style={styles.sensorStatus}>{status}</Text>
+      </View>
+      <View style={styles.sensorValues}>
+        <SensorValue label="X" value={acceleration?.x} />
+        <SensorValue label="Y" value={acceleration?.y} />
+        <SensorValue label="Z" value={acceleration?.z} />
+      </View>
+      <Text style={styles.sensorHint}>
+        Magnitude: {magnitude === null ? "--" : magnitude.toFixed(2)}g. Move the
+        phone to test the threshold.
+      </Text>
+      <Text style={styles.sensorHint}>Pedometer: {pedometerStatus}</Text>
+      <Text style={styles.sensorHint}>Native steps: {pedometerSteps}</Text>
+      <Text style={styles.sensorHint}>Acceleration peaks: {peakCount}</Text>
+    </View>
+  );
+}
+function SensorValue({ label, value }: { label: string; value?: number }) {
+  return (
+    <View style={styles.sensorValue}>
+      <Text style={styles.sensorLabel}>{label}</Text>
+      <Text style={styles.sensorNumber}>
+        {value === undefined ? "--" : value.toFixed(2)}
+      </Text>
+    </View>
   );
 }
 function Stat({
@@ -788,4 +948,40 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     textAlign: "center",
   },
+  sensorCard: {
+    marginTop: 14,
+    padding: 16,
+    borderRadius: 15,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  sensorHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sensorTitle: { color: COLORS.ink, fontSize: 13, fontWeight: "800" },
+  sensorStatus: {
+    color: COLORS.teal,
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  sensorValues: { flexDirection: "row", gap: 8, marginTop: 12 },
+  sensorValue: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: COLORS.tealSoft,
+    alignItems: "center",
+  },
+  sensorLabel: { color: COLORS.muted, fontSize: 10, fontWeight: "800" },
+  sensorNumber: {
+    color: COLORS.ink,
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 3,
+  },
+  sensorHint: { color: COLORS.muted, fontSize: 11, marginTop: 11 },
 });

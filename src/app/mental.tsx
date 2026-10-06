@@ -1,1 +1,1 @@
-export { default } from '../../frontend/screens/mental';
+export { default } from "../../frontend/screens/mental";

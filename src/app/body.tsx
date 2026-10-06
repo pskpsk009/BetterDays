@@ -1,1 +1,1 @@
-export { default } from '../../frontend/screens/body';
+export { default } from "../../frontend/screens/body";

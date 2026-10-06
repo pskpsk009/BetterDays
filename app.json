@@ -26,6 +26,18 @@
     "plugins": [
       "expo-router",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MyGrowth uses your location to draw your walking trail."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "MyGrowth uses motion data to understand your movement."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",
