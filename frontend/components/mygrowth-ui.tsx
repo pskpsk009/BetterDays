@@ -4,6 +4,6 @@ export {
   default as HomeScreen,
   HomeHeader,
   HumanFigure,
-} from "../screens/home/HomeScreen";
+} from "../screens/home";
 export { WellnessCardList } from "./wellness/WellnessCardList";
-export { default as TrailScreen } from "../screens/trail/TrailScreen";
+export { default as TrailScreen } from "../screens/trail";

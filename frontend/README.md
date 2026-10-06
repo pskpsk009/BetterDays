@@ -3,10 +3,10 @@
 The mobile app owns all device-facing behavior:
 
 - `screens/` contains route-level screen entries.
-- `screens/home/` contains the home experience and interactive body figure.
-- `screens/trail/` contains movement tracking and sensor session logic.
-- `screens/mental/` owns mental card data and screen copy.
-- `screens/body/` owns body card data and screen copy.
+- `screens/home.tsx` contains the home experience and interactive body figure.
+- `screens/trail.tsx` contains movement tracking and sensor session logic.
+- `screens/mental.tsx` owns mental card data and screen copy.
+- `screens/body.tsx` owns body card data and screen copy.
 - `components/wellness/` contains only the reusable wellness card list.
 - `components/common/` contains shared app-shell primitives and theme values.
 - `components/trail/` contains map and trail rendering components.
