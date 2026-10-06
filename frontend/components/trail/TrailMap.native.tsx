@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useImperativeHandle, useRef } from "react";
+import type { RefObject } from "react";
 import MapView, { Marker, Region } from "react-native-maps";
 import { StyleSheet } from "react-native";
 
@@ -16,6 +17,20 @@ const DEFAULT_REGION: Region = {
   longitudeDelta: 0.004,
 };
 
+export type TrailMapHandle = {
+  takeSnapshot: () => Promise<string | null>;
+};
+
+type TrailMapProps = {
+  coordinates: TrailCoordinate[];
+  tracking: boolean;
+  userLocation: TrailCoordinate | null;
+  locateRequest: number;
+  onUserPointChange?: (point: { x: number; y: number }) => void;
+  userLocationColor?: string;
+  pathBreakAt?: number;
+};
+
 export function TrailMap({
   coordinates,
   tracking,
@@ -24,18 +39,34 @@ export function TrailMap({
   onUserPointChange,
   userLocationColor,
   pathBreakAt,
-}: {
-  coordinates: TrailCoordinate[];
-  tracking: boolean;
-  userLocation: TrailCoordinate | null;
-  locateRequest: number;
-  onUserPointChange?: (point: { x: number; y: number }) => void;
-  userLocationColor?: string;
-  pathBreakAt?: number;
-}) {
+  mapRef: snapshotRef,
+}: TrailMapProps & { mapRef?: RefObject<TrailMapHandle | null> }) {
   const current = coordinates[coordinates.length - 1];
   const mapRef = useRef<MapView>(null);
   const hasCentered = useRef(false);
+  const currentRegion = useRef<Region>(DEFAULT_REGION);
+
+  useImperativeHandle(
+    snapshotRef,
+    () => ({
+      takeSnapshot: async () => {
+        if (!mapRef.current) return null;
+        try {
+          return await mapRef.current.takeSnapshot({
+            width: 360,
+            height: 270,
+            region: currentRegion.current,
+            format: "jpg",
+            quality: 0.9,
+            result: "file",
+          });
+        } catch {
+          return null;
+        }
+      },
+    }),
+    [snapshotRef],
+  );
 
   const reportUserPoint = async () => {
     const map = mapRef.current;
@@ -101,7 +132,10 @@ export function TrailMap({
       pitchEnabled={false}
       showsUserLocation={Boolean(userLocation)}
       userLocationAnnotationTitle="Current position"
-      onRegionChangeComplete={() => void reportUserPoint()}
+      onRegionChangeComplete={(region) => {
+        currentRegion.current = region;
+        void reportUserPoint();
+      }}
     >
       <TrailPath coordinates={coordinates} breakAt={pathBreakAt} />
       {userLocation && (

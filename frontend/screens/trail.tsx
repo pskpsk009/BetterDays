@@ -1,5 +1,13 @@
+import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
 import * as Location from "expo-location";
 import {
@@ -18,6 +26,9 @@ import { TrailMap } from "../components/trail/TrailMap";
 import type { TrailCoordinate } from "../components/trail/TrailMap";
 import { useOutdoorGpsTracker } from "../components/trail/OutdoorGpsTracker";
 import { IndoorMotionTracker } from "../components/trail/IndoorMotionTracker";
+import { uploadTrailImage } from "../components/trail/saveTrailImage";
+import { buildTrailSvg } from "../components/trail/buildTrailSvg";
+import PublicTrailsScreen from "./public-trails";
 
 function distance(points: TrailCoordinate[]) {
   return points.reduce((sum, current, index) => {
@@ -59,6 +70,7 @@ function indoorDistance(points: IndoorPoint[]) {
 }
 
 export default function TrailScreen() {
+  const router = useRouter();
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -80,6 +92,7 @@ export default function TrailScreen() {
     useState<TrailCoordinate | null>(null);
   const [locateRequest, setLocateRequest] = useState(0);
   const [locating, setLocating] = useState(false);
+  const [showPublicTrails, setShowPublicTrails] = useState(false);
   const motionMovingRef = useRef(false);
   const drawingPausedRef = useRef(false);
   const gpsDrawingRef = useRef(true);
@@ -141,13 +154,48 @@ export default function TrailScreen() {
     }
   };
 
-  const stopTracking = () => {
+  const finishStopTracking = () => {
     outdoorTracker.stop();
     gpsDrawingRef.current = false;
     drawingPausedRef.current = false;
     setRunning(false);
     setPaused(false);
     setUserLocation(null);
+  };
+
+  const saveTrailImage = async () => {
+    try {
+      const svg = buildTrailSvg({ mode, coordinates, indoorPath });
+      const uploaded = await uploadTrailImage(svg, {
+        mode,
+        distanceMeters: currentDistance,
+      });
+      finishStopTracking();
+      Alert.alert(
+        "Trail saved",
+        `Your drawing was saved to Supabase Storage.\n${uploaded.path}`,
+      );
+      return svg;
+    } catch {
+      Alert.alert(
+        "Could not save trail",
+        "The map image could not be captured.",
+      );
+      return null;
+    }
+  };
+
+  const requestStopTracking = () => {
+    if (!running) return;
+    Alert.alert(
+      "Save this trail?",
+      "Choose whether to keep an image of your drawing.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Discard", style: "destructive", onPress: finishStopTracking },
+        { text: "Save image", onPress: () => void saveTrailImage() },
+      ],
+    );
   };
 
   const togglePause = async () => {
@@ -176,7 +224,7 @@ export default function TrailScreen() {
     running && mode === "outdoor" ? pauseLocation : userLocation;
 
   const clear = () => {
-    stopTracking();
+    finishStopTracking();
     outdoorTracker.clear();
     setSeconds(0);
     setIndoorPath([{ x: 0, y: 0 }]);
@@ -216,6 +264,10 @@ export default function TrailScreen() {
     mode === "indoor" ? indoorDistance(indoorPath) : distance(coordinates);
   const estimatedSteps = Math.round(currentDistance / 0.7);
   const displayedSteps = nativeSteps > 0 ? nativeSteps : estimatedSteps;
+
+  if (showPublicTrails) {
+    return <PublicTrailsScreen onClose={() => setShowPublicTrails(false)} />;
+  }
 
   return (
     <MobileScreen tone="movement">
@@ -350,7 +402,10 @@ export default function TrailScreen() {
           </Pressable>
         )}
         {running && (
-          <Pressable onPress={stopTracking} style={styles.secondaryAction}>
+          <Pressable
+            onPress={requestStopTracking}
+            style={styles.secondaryAction}
+          >
             <Text style={styles.secondaryText}>Stop</Text>
           </Pressable>
         )}
@@ -362,6 +417,12 @@ export default function TrailScreen() {
           <Text style={styles.clearText}>Clear Trail</Text>
         </Pressable>
       </View>
+      <Pressable
+        onPress={() => setShowPublicTrails(true)}
+        style={styles.viewTrailsButton}
+      >
+        <Text style={styles.viewTrailsText}>View Trails</Text>
+      </Pressable>
       <Text style={styles.footnote}>
         Live GPS draws the path on your phone. Keep the app open while tracking.
       </Text>
@@ -872,4 +933,13 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   sensorHint: { color: COLORS.muted, fontSize: 11, marginTop: 11 },
+  viewTrailsButton: {
+    marginTop: 14,
+    minHeight: 48,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.tealSoft,
+  },
+  viewTrailsText: { color: COLORS.teal, fontSize: 14, fontWeight: "800" },
 });

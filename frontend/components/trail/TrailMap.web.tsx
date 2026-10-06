@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
+import type { RefObject } from "react";
 
-import type { TrailCoordinate } from "./TrailMap.native";
+import type { TrailCoordinate, TrailMapHandle } from "./TrailMap";
 
 export function TrailMap({
   coordinates,
@@ -10,6 +11,7 @@ export function TrailMap({
   onUserPointChange: _onUserPointChange,
   userLocationColor: _userLocationColor,
   pathBreakAt: _pathBreakAt,
+  mapRef: _mapRef,
 }: {
   coordinates: TrailCoordinate[];
   tracking: boolean;
@@ -18,6 +20,7 @@ export function TrailMap({
   onUserPointChange?: (point: { x: number; y: number }) => void;
   userLocationColor?: string;
   pathBreakAt?: number;
+  mapRef?: RefObject<TrailMapHandle | null>;
 }) {
   return (
     <View style={styles.fallback}>

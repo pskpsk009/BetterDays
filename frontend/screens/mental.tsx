@@ -25,18 +25,24 @@ const GROUNDING_STEPS = [
 ];
 
 export default function MentalScreen() {
-  const [activeBranch, setActiveBranch] = useState<"mindfulness" | "awareness" | null>(null);
+  const [activeBranch, setActiveBranch] = useState<
+    "mindfulness" | "awareness" | null
+  >(null);
 
   return (
     <MobileScreen tone="mind">
-      <ScreenHeader
-        title="Mental Development"
-        subtitle="A calmer mind, one small practice at a time."
-      />
-      <View style={styles.intro}>
-        <Text style={styles.eyebrow}>Mind space</Text>
-        <Text style={styles.introTitle}>How are you growing today?</Text>
-      </View>
+      {activeBranch === null && (
+        <ScreenHeader
+          title="Mental Development"
+          subtitle="A calmer mind, one small practice at a time."
+        />
+      )}
+      {activeBranch === null && (
+        <View style={styles.intro}>
+          <Text style={styles.eyebrow}>Mind space</Text>
+          <Text style={styles.introTitle}>How are you growing today?</Text>
+        </View>
+      )}
       {activeBranch === null ? (
         <View style={styles.branchList}>
           <MindfulnessBranch onPress={() => setActiveBranch("mindfulness")} />
@@ -47,9 +53,12 @@ export default function MentalScreen() {
           <Pressable
             accessibilityRole="button"
             onPress={() => setActiveBranch(null)}
-            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed && styles.pressed,
+            ]}
           >
-            <Text style={styles.backButtonText}>‹  All branches</Text>
+            <Text style={styles.backButtonText}>‹ All branches</Text>
           </Pressable>
           {activeBranch === "mindfulness" ? (
             <MindfulnessPractice />
@@ -124,9 +133,21 @@ function MindfulnessPractice() {
   const isComplete = !isRunning && elapsedSeconds > 0 && secondsLeft === 0;
   const formattedTime = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
   const phasePosition = elapsedSeconds % 12;
-  const phase = phasePosition < 4 ? "Breathe in" : phasePosition < 6 ? "Hold" : "Breathe out";
-  const phaseSeconds = phasePosition < 4 ? 4 - phasePosition : phasePosition < 6 ? 6 - phasePosition : 12 - phasePosition;
-  const breathingStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const phase =
+    phasePosition < 4
+      ? "Breathe in"
+      : phasePosition < 6
+        ? "Hold"
+        : "Breathe out";
+  const phaseSeconds =
+    phasePosition < 4
+      ? 4 - phasePosition
+      : phasePosition < 6
+        ? 6 - phasePosition
+        : 12 - phasePosition;
+  const breathingStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   useEffect(() => {
     if (isRunning) {
@@ -134,7 +155,10 @@ function MindfulnessPractice() {
         withSequence(
           withTiming(1, { duration: 4000, easing: Easing.inOut(Easing.ease) }),
           withTiming(1, { duration: 2000 }),
-          withTiming(0.78, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0.78, {
+            duration: 6000,
+            easing: Easing.inOut(Easing.ease),
+          }),
         ),
         -1,
         false,
@@ -155,7 +179,8 @@ function MindfulnessPractice() {
 
   function startPractice() {
     if (secondsLeft === 0) setElapsedSeconds(0);
-    startedAt.current = Date.now() - (secondsLeft === 0 ? 0 : elapsedSeconds) * 1000;
+    startedAt.current =
+      Date.now() - (secondsLeft === 0 ? 0 : elapsedSeconds) * 1000;
     setIsRunning(true);
   }
 
@@ -173,7 +198,9 @@ function MindfulnessPractice() {
   return (
     <View style={styles.practice}>
       <View style={styles.practiceHeading}>
-        <View style={styles.practiceIcon}><Text style={styles.practiceIconText}>01</Text></View>
+        <View style={styles.practiceIcon}>
+          <Text style={styles.practiceIconText}>01</Text>
+        </View>
         <View style={styles.practiceHeadingCopy}>
           <Text style={styles.practiceEyebrow}>MINDFULNESS PRACTICE</Text>
           <Text style={styles.practiceTitle}>Guided breathing</Text>
@@ -181,20 +208,28 @@ function MindfulnessPractice() {
       </View>
       <Text style={styles.goalLabel}>TODAY'S INTENTION</Text>
       <Text style={styles.goalText}>
-        Slow down, notice the present moment, and make space for your thoughts and feelings.
+        Slow down, notice the present moment, and make space for your thoughts
+        and feelings.
       </Text>
       <View style={styles.breathingPanel}>
         <View style={styles.breathingTopline}>
           <Text style={styles.breathingToplineLabel}>TIME LEFT</Text>
-          <Text accessibilityLabel={`Time remaining ${formattedTime}`} style={styles.timerText}>
+          <Text
+            accessibilityLabel={`Time remaining ${formattedTime}`}
+            style={styles.timerText}
+          >
             {formattedTime}
           </Text>
         </View>
         <View style={styles.breathingVisual}>
           <View style={styles.outerRing} />
           <Animated.View style={[styles.breathingCircle, breathingStyle]}>
-            <Text style={styles.breathingPhase}>{isRunning ? phase : "Ready"}</Text>
-            {isRunning && <Text style={styles.breathingCount}>{phaseSeconds} sec</Text>}
+            <Text style={styles.breathingPhase}>
+              {isRunning ? phase : "Ready"}
+            </Text>
+            {isRunning && (
+              <Text style={styles.breathingCount}>{phaseSeconds} sec</Text>
+            )}
           </Animated.View>
         </View>
         <Text style={styles.breathingHint}>
@@ -219,7 +254,13 @@ function MindfulnessPractice() {
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={[styles.durationOptionText, durationMinutes === minutes && styles.durationOptionTextSelected]}>
+                <Text
+                  style={[
+                    styles.durationOptionText,
+                    durationMinutes === minutes &&
+                      styles.durationOptionTextSelected,
+                  ]}
+                >
                   {minutes} min
                 </Text>
               </Pressable>
@@ -229,15 +270,26 @@ function MindfulnessPractice() {
         <Pressable
           accessibilityRole="button"
           onPress={isRunning ? stopPractice : startPractice}
-          style={({ pressed }) => [styles.practiceButton, pressed && styles.practiceButtonPressed]}
+          style={({ pressed }) => [
+            styles.practiceButton,
+            pressed && styles.practiceButtonPressed,
+          ]}
         >
           <Text style={styles.practiceButtonText}>
-            {isRunning ? "Stop practice" : isComplete ? "Begin again" : "Begin breathing"}
+            {isRunning
+              ? "Stop practice"
+              : isComplete
+                ? "Begin again"
+                : "Begin breathing"}
           </Text>
-          <Text style={styles.practiceButtonArrow}>{isRunning ? "×" : ">"}</Text>
+          <Text style={styles.practiceButtonArrow}>
+            {isRunning ? "×" : ">"}
+          </Text>
         </Pressable>
       </View>
-      <Text style={styles.practiceFootnote}>Take this at your own pace. You can stop whenever you like.</Text>
+      <Text style={styles.practiceFootnote}>
+        Take this at your own pace. You can stop whenever you like.
+      </Text>
     </View>
   );
 }
@@ -255,7 +307,9 @@ function GroundingExercise() {
     setAnswers((currentAnswers) =>
       currentAnswers.map((entries, stepIndex) =>
         stepIndex === activeStep
-          ? entries.map((entry, index) => index === entryIndex ? value : entry)
+          ? entries.map((entry, index) =>
+              index === entryIndex ? value : entry,
+            )
           : entries,
       ),
     );
@@ -263,14 +317,20 @@ function GroundingExercise() {
 
   function restartExercise() {
     setActiveStep(0);
-    setAnswers(GROUNDING_STEPS.map(({ count }) => Array.from({ length: count }, () => "")));
+    setAnswers(
+      GROUNDING_STEPS.map(({ count }) =>
+        Array.from({ length: count }, () => ""),
+      ),
+    );
     setReflection("");
   }
 
   return (
     <View style={styles.grounding}>
       <View style={styles.practiceHeading}>
-        <View style={styles.practiceIcon}><Text style={styles.practiceIconText}>02</Text></View>
+        <View style={styles.practiceIcon}>
+          <Text style={styles.practiceIconText}>02</Text>
+        </View>
         <View style={styles.practiceHeadingCopy}>
           <Text style={styles.practiceEyebrow}>SELF-AWARENESS PRACTICE</Text>
           <Text style={styles.practiceTitle}>5-4-3-2-1 grounding</Text>
@@ -280,37 +340,34 @@ function GroundingExercise() {
         Gently bring your attention to what is around you, one sense at a time.
       </Text>
 
-      <View style={styles.groundingGuide}>
-        <Text style={styles.groundingGuideTitle}>THE FIVE SENSES</Text>
-        {GROUNDING_STEPS.map(({ sense, count }) => (
-          <Text key={sense} style={styles.groundingGuideItem}>
-            <Text style={styles.groundingGuideCount}>{count}</Text> things you can {sense}
-          </Text>
-        ))}
-      </View>
-
       {isComplete ? (
         <View style={styles.groundingCard}>
           <Text style={styles.groundingStepEyebrow}>PRACTICE COMPLETE</Text>
           <Text style={styles.groundingStepTitle}>Take a moment to notice</Text>
           <Text style={styles.groundingStepDetail}>
-            What do you notice about how you feel or what is on your mind right now?
+            how do you feel after this exercise? You can write a reflection
+            below or leave it blank.
           </Text>
           <TextInput
             accessibilityLabel="Optional reflection after grounding"
             multiline
             onChangeText={setReflection}
-            placeholder="Write a thought, feeling, or leave this blank"
+            placeholder="does this help you calm down and reduce your anxiety?"
             placeholderTextColor={COLORS.muted}
             style={[styles.groundingInput, styles.reflectionInput]}
             textAlignVertical="top"
             value={reflection}
           />
-          <Text style={styles.groundingFootnote}>Your reflection is not saved.</Text>
+          <Text style={styles.groundingFootnote}>
+            Your reflection is not saved.
+          </Text>
           <Pressable
             accessibilityRole="button"
             onPress={restartExercise}
-            style={({ pressed }) => [styles.practiceButton, pressed && styles.practiceButtonPressed]}
+            style={({ pressed }) => [
+              styles.practiceButton,
+              pressed && styles.practiceButtonPressed,
+            ]}
           >
             <Text style={styles.practiceButtonText}>Start again</Text>
             <Text style={styles.practiceButtonArrow}>{">"}</Text>
@@ -319,34 +376,52 @@ function GroundingExercise() {
       ) : step ? (
         <View style={styles.groundingCard}>
           <View style={styles.groundingProgressRow}>
-            <Text style={styles.groundingStepEyebrow}>STEP {activeStep + 1} OF {GROUNDING_STEPS.length}</Text>
-            <Text style={styles.groundingStepCount}>{step.count} {step.sense}</Text>
+            <Text style={styles.groundingStepEyebrow}>
+              STEP {activeStep + 1} OF {GROUNDING_STEPS.length}
+            </Text>
+            <Text style={styles.groundingStepCount}>
+              {step.count} {step.sense}
+            </Text>
           </View>
           <Text style={styles.groundingStepTitle}>{step.prompt}</Text>
           <View style={styles.groundingEntries}>
             {answers[activeStep].map((entry, entryIndex) => (
-              <View key={`${step.sense}-${entryIndex}`} style={styles.groundingEntryRow}>
-                <Text style={styles.groundingEntryNumber}>{entryIndex + 1}</Text>
+              <View
+                key={`${step.sense}-${entryIndex}`}
+                style={styles.groundingEntryRow}
+              >
+                <Text style={styles.groundingEntryNumber}>
+                  {entryIndex + 1}
+                </Text>
                 <TextInput
                   accessibilityLabel={`${step.sense} observation ${entryIndex + 1}`}
                   onChangeText={(value) => updateAnswer(entryIndex, value)}
                   placeholder={`Something you can ${step.sense}`}
                   placeholderTextColor={COLORS.muted}
-                  returnKeyType={entryIndex === step.count - 1 ? "done" : "next"}
+                  returnKeyType={
+                    entryIndex === step.count - 1 ? "done" : "next"
+                  }
                   style={styles.groundingInput}
                   value={entry}
                 />
               </View>
             ))}
           </View>
-          <Text style={styles.groundingFootnote}>You can leave any entry blank and continue.</Text>
+          <Text style={styles.groundingFootnote}>
+            You can leave any entry blank and continue.
+          </Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => setActiveStep((currentStep) => currentStep + 1)}
-            style={({ pressed }) => [styles.practiceButton, pressed && styles.practiceButtonPressed]}
+            style={({ pressed }) => [
+              styles.practiceButton,
+              pressed && styles.practiceButtonPressed,
+            ]}
           >
             <Text style={styles.practiceButtonText}>
-              {activeStep === GROUNDING_STEPS.length - 1 ? "Finish grounding" : "Continue"}
+              {activeStep === GROUNDING_STEPS.length - 1
+                ? "Finish grounding"
+                : "Continue"}
             </Text>
             <Text style={styles.practiceButtonArrow}>{">"}</Text>
           </Pressable>
@@ -385,7 +460,7 @@ const styles = StyleSheet.create({
   branchTitle: { color: COLORS.ink, fontSize: 15, fontWeight: "800" },
   branchDetail: { color: COLORS.muted, fontSize: 12, lineHeight: 17 },
   branchArrow: { color: COLORS.mind, fontSize: 22, fontWeight: "600" },
-  content: { gap: 14 },
+  content: { gap: 14, paddingTop: 34 },
   backButton: {
     minHeight: 38,
     alignSelf: "flex-start",
@@ -407,9 +482,19 @@ const styles = StyleSheet.create({
   },
   practiceIconText: { color: COLORS.mind, fontSize: 12, fontWeight: "800" },
   practiceHeadingCopy: { gap: 3 },
-  practiceEyebrow: { color: COLORS.mind, fontSize: 10, fontWeight: "800", letterSpacing: 0.8 },
+  practiceEyebrow: {
+    color: COLORS.mind,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
   practiceTitle: { color: COLORS.ink, fontSize: 20, fontWeight: "800" },
-  goalLabel: { color: COLORS.muted, fontSize: 10, fontWeight: "800", letterSpacing: 0.8 },
+  goalLabel: {
+    color: COLORS.muted,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
   goalText: { marginTop: -8, color: COLORS.ink, fontSize: 14, lineHeight: 21 },
   breathingPanel: {
     padding: 18,
@@ -429,9 +514,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  breathingToplineLabel: { color: COLORS.muted, fontSize: 10, fontWeight: "800", letterSpacing: 0.7 },
-  timerText: { color: COLORS.mind, fontSize: 13, fontWeight: "800", fontVariant: ["tabular-nums"] },
-  breathingVisual: { width: 206, height: 206, alignItems: "center", justifyContent: "center", marginVertical: 9 },
+  breathingToplineLabel: {
+    color: COLORS.muted,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.7,
+  },
+  timerText: {
+    color: COLORS.mind,
+    fontSize: 13,
+    fontWeight: "800",
+    fontVariant: ["tabular-nums"],
+  },
+  breathingVisual: {
+    width: 206,
+    height: 206,
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 9,
+  },
   outerRing: {
     position: "absolute",
     width: 190,
@@ -454,10 +555,25 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   breathingPhase: { color: COLORS.white, fontSize: 18, fontWeight: "800" },
-  breathingCount: { marginTop: 5, color: "#E8EDFF", fontSize: 12, fontWeight: "600" },
-  breathingHint: { minHeight: 18, color: COLORS.muted, fontSize: 12, textAlign: "center" },
+  breathingCount: {
+    marginTop: 5,
+    color: "#E8EDFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  breathingHint: {
+    minHeight: 18,
+    color: COLORS.muted,
+    fontSize: 12,
+    textAlign: "center",
+  },
   durationBlock: { width: "100%", marginTop: 17, gap: 9 },
-  durationLabel: { color: COLORS.muted, fontSize: 10, fontWeight: "800", letterSpacing: 0.8 },
+  durationLabel: {
+    color: COLORS.muted,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
   durationOptions: { flexDirection: "row", gap: 7 },
   durationOption: {
     flex: 1,
@@ -469,7 +585,10 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.background,
   },
-  durationOptionSelected: { borderColor: COLORS.mind, backgroundColor: COLORS.mindSoft },
+  durationOptionSelected: {
+    borderColor: COLORS.mind,
+    backgroundColor: COLORS.mindSoft,
+  },
   durationOptionText: { color: COLORS.muted, fontSize: 11, fontWeight: "700" },
   durationOptionTextSelected: { color: COLORS.mind },
   practiceButton: {
@@ -486,7 +605,12 @@ const styles = StyleSheet.create({
   practiceButtonPressed: { opacity: 0.84 },
   practiceButtonText: { color: COLORS.white, fontSize: 14, fontWeight: "800" },
   practiceButtonArrow: { color: COLORS.white, fontSize: 19, fontWeight: "600" },
-  practiceFootnote: { color: COLORS.muted, fontSize: 11, lineHeight: 17, textAlign: "center" },
+  practiceFootnote: {
+    color: COLORS.muted,
+    fontSize: 11,
+    lineHeight: 17,
+    textAlign: "center",
+  },
   grounding: { gap: 15 },
   groundingGuide: {
     padding: 16,
@@ -494,7 +618,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.mindSoft,
     gap: 8,
   },
-  groundingGuideTitle: { color: COLORS.mind, fontSize: 10, fontWeight: "800", letterSpacing: 0.8, marginBottom: 2 },
+  groundingGuideTitle: {
+    color: COLORS.mind,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    marginBottom: 2,
+  },
   groundingGuideItem: { color: COLORS.ink, fontSize: 13, lineHeight: 19 },
   groundingGuideCount: { color: COLORS.mind, fontWeight: "800" },
   groundingCard: {
@@ -505,10 +635,29 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     gap: 12,
   },
-  groundingProgressRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  groundingStepEyebrow: { color: COLORS.mind, fontSize: 10, fontWeight: "800", letterSpacing: 0.8 },
-  groundingStepCount: { color: COLORS.muted, fontSize: 11, fontWeight: "700", textTransform: "uppercase" },
-  groundingStepTitle: { color: COLORS.ink, fontSize: 17, fontWeight: "800", lineHeight: 23 },
+  groundingProgressRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  groundingStepEyebrow: {
+    color: COLORS.mind,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
+  groundingStepCount: {
+    color: COLORS.muted,
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+  },
+  groundingStepTitle: {
+    color: COLORS.ink,
+    fontSize: 17,
+    fontWeight: "800",
+    lineHeight: 23,
+  },
   groundingStepDetail: { color: COLORS.muted, fontSize: 13, lineHeight: 19 },
   groundingEntries: { gap: 8 },
   groundingEntryRow: { flexDirection: "row", alignItems: "center", gap: 9 },
