@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Marker, Polyline } from "react-native-maps";
+import Svg, { Polygon } from "react-native-svg";
 
 import type { TrailCoordinate } from "./TrailMap";
 
@@ -34,7 +35,7 @@ export function TrailPath({
     const target = coordinates[coordinates.length - 1];
     const fixed = coordinates.slice(0, -1);
     const startedAt = Date.now();
-    const animationDuration = 350;
+    const animationDuration = 900;
 
     const animate = () => {
       const progress = Math.min(
@@ -48,6 +49,7 @@ export function TrailPath({
             start.latitude + (target.latitude - start.latitude) * progress,
           longitude:
             start.longitude + (target.longitude - start.longitude) * progress,
+          heading: target.heading,
         },
       ];
       renderedRef.current = next;
@@ -88,11 +90,17 @@ export function TrailPath({
         />
       )}
       {current && (
-        <Marker
-          coordinate={current}
-          pinColor="#DD8C43"
-          title="Current position"
-        />
+        <Marker coordinate={current} title="Current position">
+          <Svg width={28} height={28} viewBox="0 0 28 28">
+            <Polygon
+              points="14,2 24,24 14,19 4,24"
+              fill="#DD8C43"
+              stroke="#FFFFFF"
+              strokeWidth={1.5}
+              transform={`rotate(${current.heading ?? 0} 14 14)`}
+            />
+          </Svg>
+        </Marker>
       )}
     </>
   );

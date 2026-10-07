@@ -70,12 +70,28 @@ export function TrailMap({
 
   const reportUserPoint = async () => {
     const map = mapRef.current;
-    if (!userLocation || tracking || !onUserPointChange || !map) return;
-    try {
-      const point = await map.pointForCoordinate(userLocation);
-      if (mapRef.current === map) onUserPointChange(point);
-    } catch {
-      // The native map can detach while switching modes or rebuilding tiles.
+    if (
+      !userLocation ||
+      tracking ||
+      !locateRequest ||
+      !onUserPointChange ||
+      !map
+    )
+      return;
+    for (const delay of [150, 300, 500]) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (mapRef.current !== map) return;
+      try {
+        const point = await map.pointForCoordinate(userLocation);
+        const isMapEdgePoint =
+          point.x <= 4 || point.y <= 4 || point.x >= 356 || point.y >= 296;
+        if (!isMapEdgePoint) {
+          onUserPointChange(point);
+          return;
+        }
+      } catch {
+        // The native map can detach while switching modes or rebuilding tiles.
+      }
     }
   };
 
@@ -102,7 +118,8 @@ export function TrailMap({
       hasCentered.current = false;
       return;
     }
-    if (hasCentered.current || !mapRef.current) return;
+    if (!mapRef.current) return;
+    if (hasCentered.current && !tracking) return;
     hasCentered.current = true;
     try {
       mapRef.current.animateToRegion(
@@ -112,12 +129,12 @@ export function TrailMap({
           latitudeDelta: 0.004,
           longitudeDelta: 0.004,
         },
-        700,
+        tracking ? 900 : 700,
       );
     } catch {
       // Ignore map teardown races during the first GPS update.
     }
-  }, [current]);
+  }, [current, tracking]);
 
   return (
     <MapView

@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 export type TrailCoordinate = {
   latitude: number;
   longitude: number;
+  heading?: number;
 };
 
 export type TrailMapHandle = {

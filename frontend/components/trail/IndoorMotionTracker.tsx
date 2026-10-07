@@ -124,6 +124,7 @@ export function IndoorMotionTracker({
             currentMagnitude > 1.06 &&
             now - lastStepAt.current > 300
           ) {
+            const previousStepAt = lastStepAt.current;
             lastStepAt.current = now;
             stepArmed.current = false;
             setSteps((current) => current + 1);
@@ -132,9 +133,15 @@ export function IndoorMotionTracker({
                 magnetic.current.y,
                 magnetic.current.x,
               );
+              const stepInterval = previousStepAt ? now - previousStepAt : 700;
+              const cadence = Math.min(170, Math.max(55, 60000 / stepInterval));
+              const stepLength = Math.min(
+                1,
+                Math.max(0.45, 0.35 + cadence * 0.004),
+              );
               const movement = {
-                dx: 0.7 * Math.sin(direction),
-                dy: 0.7 * Math.cos(direction),
+                dx: stepLength * Math.sin(direction),
+                dy: stepLength * Math.cos(direction),
               };
               onIndoorPositionRef.current(movement);
               if (!drawingPausedRef.current) onIndoorStepRef.current(movement);
@@ -209,6 +216,8 @@ export function IndoorMotionTracker({
       if (pollingTimer) clearInterval(pollingTimer);
     };
   }, [tracking, onStepsChange]);
+
+  if (mode !== "indoor") return null;
 
   return (
     <View style={styles.card}>

@@ -8,7 +8,8 @@ import {
   Text,
   View,
 } from "react-native";
-import Svg, { Circle, Polyline } from "react-native-svg";
+import Svg, { G, Polygon, Polyline } from "react-native-svg";
+import { SymbolView } from "expo-symbols";
 import * as Location from "expo-location";
 import {
   Accelerometer,
@@ -84,7 +85,7 @@ export default function TrailScreen() {
   });
   const [indoorBreaks, setIndoorBreaks] = useState<number[]>([]);
   const [gpsBreakAt, setGpsBreakAt] = useState<number | undefined>(undefined);
-  const [indoorOrigin, setIndoorOrigin] = useState({ x: 180, y: 135 });
+  const [indoorOrigin, setIndoorOrigin] = useState({ x: 180, y: 150 });
   const [userLocation, setUserLocation] = useState<TrailCoordinate | null>(
     null,
   );
@@ -121,7 +122,7 @@ export default function TrailScreen() {
 
   const startTracking = async () => {
     gpsDrawingRef.current = mode === "outdoor";
-    if (!(await outdoorTracker.start())) return;
+    if (mode === "outdoor" && !(await outdoorTracker.start())) return;
     setIndoorPath([{ x: 0, y: 0 }]);
     setIndoorLivePosition({ x: 0, y: 0 });
     setIndoorBreaks([]);
@@ -363,7 +364,15 @@ export default function TrailScreen() {
               onPress={() => void locateUser()}
               style={[styles.locateButton, locating && styles.disabled]}
             >
-              <Text style={styles.locateText}>◎</Text>
+              <SymbolView
+                name={{
+                  ios: "location.fill",
+                  android: "my_location",
+                  web: "my_location",
+                }}
+                tintColor={COLORS.teal}
+                size={22}
+              />
             </Pressable>
           )}
         </View>
@@ -452,34 +461,46 @@ function IndoorCanvas({
   livePosition: IndoorPoint;
 }) {
   const width = 360;
-  const height = 270;
-  const maxExtent = Math.max(
-    ...points.map((point) => Math.max(Math.abs(point.x), Math.abs(point.y))),
-    1,
+  const height = 300;
+  const allPoints = [...points, livePosition];
+  const padding = 24;
+  const rightMeters = Math.max(...allPoints.map((point) => point.x), 0);
+  const leftMeters = Math.max(...allPoints.map((point) => -point.x), 0);
+  const upMeters = Math.max(...allPoints.map((point) => point.y), 0);
+  const downMeters = Math.max(...allPoints.map((point) => -point.y), 0);
+  const scaleCandidates = [
+    rightMeters ? (width - padding - origin.x) / rightMeters : 16,
+    leftMeters ? (origin.x - padding) / leftMeters : 16,
+    upMeters ? (origin.y - padding) / upMeters : 16,
+    downMeters ? (height - padding - origin.y) / downMeters : 16,
+  ];
+  const pixelsPerMeter = Math.min(
+    16,
+    ...scaleCandidates.map((candidate) => Math.max(candidate, 1)),
   );
-  const availablePixels = Math.max(
-    12,
-    Math.min(
-      origin.x - 20,
-      width - origin.x - 20,
-      origin.y - 20,
-      height - origin.y - 20,
-    ),
-  );
-  const pixelsPerMeter = Math.min(16, availablePixels / maxExtent);
   const toScreenPoint = (point: IndoorPoint) =>
     `${origin.x + point.x * pixelsPerMeter},${origin.y - point.y * pixelsPerMeter}`;
   const segmentStarts = [0, ...breaks];
   const segments = segmentStarts.map((start, index) =>
     points.slice(start, segmentStarts[index + 1] ?? points.length),
   );
-  const currentX = origin.x + livePosition.x * pixelsPerMeter;
-  const currentY = origin.y - livePosition.y * pixelsPerMeter;
+  const currentPoint = toScreenPoint(livePosition).split(",");
+  const currentX = Number(currentPoint[0]);
+  const currentY = Number(currentPoint[1]);
+  const previousPoint = points[points.length - 2] ?? points[0];
+  const direction = previousPoint
+    ? (Math.atan2(
+        livePosition.x - previousPoint.x,
+        -(livePosition.y - previousPoint.y),
+      ) *
+        180) /
+      Math.PI
+    : 0;
 
   return (
     <Svg
       width="100%"
-      height={270}
+      height="100%"
       viewBox={`0 0 ${width} ${height}`}
       pointerEvents="none"
       style={[styles.indoorCanvas, styles.indoorOverlay]}
@@ -498,7 +519,14 @@ function IndoorCanvas({
             />
           ),
       )}
-      <Circle cx={currentX} cy={currentY} r="7" fill={COLORS.movement} />
+      <G transform={`translate(${currentX} ${currentY}) rotate(${direction})`}>
+        <Polygon
+          points="0,-11 8,8 0,4 -8,8"
+          fill={COLORS.movement}
+          stroke={COLORS.white}
+          strokeWidth="1.5"
+        />
+      </G>
     </Svg>
   );
 }
@@ -815,8 +843,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   mapStage: { position: "relative" },
-  indoorCanvas: { width: "100%", aspectRatio: 1.333 },
-  indoorOverlay: { position: "absolute", top: 0, left: 0, right: 0 },
+  indoorCanvas: { width: "100%", height: "100%" },
+  indoorOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 2,
+    elevation: 2,
+  },
   locateButton: {
     position: "absolute",
     top: 12,
