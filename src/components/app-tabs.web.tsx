@@ -39,6 +39,9 @@ export default function AppTabs() {
               Trail
             </TabButton>
           </TabTrigger>
+          <TabTrigger name="progress" href="/progress" asChild>
+            <TabButton icon={{ ios: "tree", web: "park" }}>Progress</TabButton>
+          </TabTrigger>
         </CustomTabList>
       </TabList>
     </Tabs>

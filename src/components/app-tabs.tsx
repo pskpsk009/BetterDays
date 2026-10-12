@@ -27,6 +27,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Trail</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="figure.walk" md="directions_walk" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="progress">
+        <NativeTabs.Trigger.Label>Progress</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="tree" md="park" />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

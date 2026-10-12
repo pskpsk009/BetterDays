@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Platform,
@@ -8,27 +8,23 @@ import {
   Text,
   View,
 } from "react-native";
-import Svg, { G, Polygon, Polyline } from "react-native-svg";
+import Svg, { G, Path, Polygon } from "react-native-svg";
 import { SymbolView } from "expo-symbols";
 import * as Location from "expo-location";
-import {
-  Accelerometer,
-  Gyroscope,
-  Magnetometer,
-  Pedometer,
-} from "expo-sensors";
 
 import {
   COLORS,
   MobileScreen,
   ScreenHeader,
 } from "../components/common/AppShell";
-import { TrailMap } from "../components/trail/TrailMap";
-import type { TrailCoordinate } from "../components/trail/TrailMap";
-import { useOutdoorGpsTracker } from "../components/trail/OutdoorGpsTracker";
-import { IndoorMotionTracker } from "../components/trail/IndoorMotionTracker";
-import { uploadTrailImage } from "../components/trail/saveTrailImage";
-import { buildTrailSvg } from "../components/trail/buildTrailSvg";
+import {
+  TrailMap,
+  useOutdoorGpsTracker,
+  IndoorMotionTracker,
+  uploadTrailImage,
+  buildTrailSvg,
+} from "../components/trail";
+import type { TrailCoordinate } from "../components/trail";
 import PublicTrailsScreen from "./public-trails";
 
 function distance(points: TrailCoordinate[]) {
@@ -449,7 +445,55 @@ export default function TrailScreen() {
   );
 }
 
-function IndoorCanvas({
+const CANVAS_WIDTH = 360;
+const CANVAS_HEIGHT = 300;
+const CANVAS_PADDING = 24;
+const MAX_PIXELS_PER_METER = 16;
+const HEAD_GLIDE_MS = 220;
+const HEAD_SNAP_METERS = 3;
+
+// Glides the drawing head toward each new step so the line grows instead of jumping.
+function useGlidingPoint(target: IndoorPoint) {
+  const [point, setPoint] = useState(target);
+  const pointRef = useRef(target);
+
+  useEffect(() => {
+    const from = pointRef.current;
+    const to = { x: target.x, y: target.y };
+    const snap = Math.hypot(to.x - from.x, to.y - from.y) > HEAD_SNAP_METERS;
+    const startedAt = Date.now();
+    let frame = requestAnimationFrame(function step() {
+      const progress = snap
+        ? 1
+        : Math.min(1, (Date.now() - startedAt) / HEAD_GLIDE_MS);
+      const eased = 1 - (1 - progress) ** 3;
+      const next = {
+        x: from.x + (to.x - from.x) * eased,
+        y: from.y + (to.y - from.y) * eased,
+      };
+      pointRef.current = next;
+      setPoint(next);
+      if (progress < 1) frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [target.x, target.y]);
+
+  return point;
+}
+
+function smoothPathData(points: { x: number; y: number }[]) {
+  if (points.length < 2) return "";
+  let data = `M${points[0].x},${points[0].y}`;
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const current = points[index];
+    const next = points[index + 1];
+    data += ` Q${current.x},${current.y} ${(current.x + next.x) / 2},${(current.y + next.y) / 2}`;
+  }
+  const last = points[points.length - 1];
+  return `${data} L${last.x},${last.y}`;
+}
+
+const IndoorCanvas = memo(function IndoorCanvas({
   points,
   breaks,
   origin,
@@ -460,57 +504,67 @@ function IndoorCanvas({
   origin: { x: number; y: number };
   livePosition: IndoorPoint;
 }) {
-  const width = 360;
-  const height = 300;
-  const allPoints = [...points, livePosition];
-  const padding = 24;
-  const rightMeters = Math.max(...allPoints.map((point) => point.x), 0);
-  const leftMeters = Math.max(...allPoints.map((point) => -point.x), 0);
-  const upMeters = Math.max(...allPoints.map((point) => point.y), 0);
-  const downMeters = Math.max(...allPoints.map((point) => -point.y), 0);
-  const scaleCandidates = [
-    rightMeters ? (width - padding - origin.x) / rightMeters : 16,
-    leftMeters ? (origin.x - padding) / leftMeters : 16,
-    upMeters ? (origin.y - padding) / upMeters : 16,
-    downMeters ? (height - padding - origin.y) / downMeters : 16,
-  ];
-  const pixelsPerMeter = Math.min(
-    16,
-    ...scaleCandidates.map((candidate) => Math.max(candidate, 1)),
-  );
-  const toScreenPoint = (point: IndoorPoint) =>
-    `${origin.x + point.x * pixelsPerMeter},${origin.y - point.y * pixelsPerMeter}`;
+  const head = useGlidingPoint(livePosition);
+
+  const pixelsPerMeter = useMemo(() => {
+    let right = 0;
+    let left = 0;
+    let up = 0;
+    let down = 0;
+    for (const point of [...points, livePosition]) {
+      right = Math.max(right, point.x);
+      left = Math.max(left, -point.x);
+      up = Math.max(up, point.y);
+      down = Math.max(down, -point.y);
+    }
+    const candidates = [
+      right ? (CANVAS_WIDTH - CANVAS_PADDING - origin.x) / right : MAX_PIXELS_PER_METER,
+      left ? (origin.x - CANVAS_PADDING) / left : MAX_PIXELS_PER_METER,
+      up ? (origin.y - CANVAS_PADDING) / up : MAX_PIXELS_PER_METER,
+      down ? (CANVAS_HEIGHT - CANVAS_PADDING - origin.y) / down : MAX_PIXELS_PER_METER,
+    ];
+    return Math.min(
+      MAX_PIXELS_PER_METER,
+      ...candidates.map((candidate) => Math.max(candidate, 1)),
+    );
+  }, [points, livePosition, origin]);
+
+  const toScreen = (point: IndoorPoint) => ({
+    x: origin.x + point.x * pixelsPerMeter,
+    y: origin.y - point.y * pixelsPerMeter,
+  });
+
+  const last = points[points.length - 1];
+  const headIsOnPath =
+    last && last.x === livePosition.x && last.y === livePosition.y;
+  const drawnPoints = headIsOnPath ? [...points.slice(0, -1), head] : points;
+
   const segmentStarts = [0, ...breaks];
   const segments = segmentStarts.map((start, index) =>
-    points.slice(start, segmentStarts[index + 1] ?? points.length),
+    drawnPoints.slice(start, segmentStarts[index + 1] ?? drawnPoints.length),
   );
-  const currentPoint = toScreenPoint(livePosition).split(",");
-  const currentX = Number(currentPoint[0]);
-  const currentY = Number(currentPoint[1]);
+
+  const headScreen = toScreen(head);
   const previousPoint = points[points.length - 2] ?? points[0];
-  const direction = previousPoint
-    ? (Math.atan2(
-        livePosition.x - previousPoint.x,
-        -(livePosition.y - previousPoint.y),
-      ) *
-        180) /
-      Math.PI
-    : 0;
+  const deltaX = livePosition.x - (previousPoint?.x ?? livePosition.x);
+  const deltaY = livePosition.y - (previousPoint?.y ?? livePosition.y);
+  const direction =
+    deltaX || deltaY ? (Math.atan2(deltaX, deltaY) * 180) / Math.PI : 0;
 
   return (
     <Svg
       width="100%"
       height="100%"
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
       pointerEvents="none"
       style={[styles.indoorCanvas, styles.indoorOverlay]}
     >
       {segments.map(
         (segment, index) =>
           segment.length > 1 && (
-            <Polyline
+            <Path
               key={`indoor-segment-${index}`}
-              points={segment.map(toScreenPoint).join(" ")}
+              d={smoothPathData(segment.map(toScreen))}
               fill="none"
               stroke={COLORS.movement}
               strokeWidth="5"
@@ -519,7 +573,9 @@ function IndoorCanvas({
             />
           ),
       )}
-      <G transform={`translate(${currentX} ${currentY}) rotate(${direction})`}>
+      <G
+        transform={`translate(${headScreen.x} ${headScreen.y}) rotate(${direction})`}
+      >
         <Polygon
           points="0,-11 8,8 0,4 -8,8"
           fill={COLORS.movement}
@@ -529,269 +585,8 @@ function IndoorCanvas({
       </G>
     </Svg>
   );
-}
+});
 
-function AccelerometerTest({
-  mode,
-  tracking,
-  onStepsChange,
-  onMovementChange,
-  onIndoorStep,
-  indoorPosition,
-}: {
-  mode: TrackingMode;
-  tracking: boolean;
-  onStepsChange: (steps: number) => void;
-  onMovementChange: (moving: boolean) => void;
-  onIndoorStep: (movement: { dx: number; dy: number }) => void;
-  indoorPosition: { x: number; y: number };
-}) {
-  const [acceleration, setAcceleration] = useState<{
-    x: number;
-    y: number;
-    z: number;
-  } | null>(null);
-  const [magnitude, setMagnitude] = useState<number | null>(null);
-  const [moving, setMoving] = useState(false);
-  const [rotation, setRotation] = useState<{
-    x: number;
-    y: number;
-    z: number;
-  } | null>(null);
-  const [magneticField, setMagneticField] = useState<{
-    x: number;
-    y: number;
-    z: number;
-  } | null>(null);
-  const [peakCount, setPeakCount] = useState(0);
-  const [pedometerSteps, setPedometerSteps] = useState(0);
-  const [pedometerStatus, setPedometerStatus] = useState("IDLE");
-  const previousFiltered = useRef<{ x: number; y: number; z: number } | null>(
-    null,
-  );
-  const previousMagnitude = useRef<number | null>(null);
-  const lastStepAt = useRef(0);
-  const magneticFieldRef = useRef<{ x: number; y: number; z: number } | null>(
-    null,
-  );
-  const trackingRef = useRef(false);
-  const modeRef = useRef<TrackingMode>(mode);
-
-  useEffect(() => {
-    trackingRef.current = tracking;
-  }, [tracking]);
-
-  useEffect(() => {
-    modeRef.current = mode;
-  }, [mode]);
-
-  useEffect(() => {
-    let active = true;
-    let subscription: ReturnType<typeof Accelerometer.addListener> | null =
-      null;
-    Accelerometer.isAvailableAsync().then((available) => {
-      if (!active || !available) return;
-      Accelerometer.setUpdateInterval(100);
-      subscription = Accelerometer.addListener((sample) => {
-        const previous = previousFiltered.current;
-        const smoothing = modeRef.current === "indoor" ? 0.22 : 0.35;
-        const filtered = previous
-          ? {
-              x: previous.x + (sample.x - previous.x) * smoothing,
-              y: previous.y + (sample.y - previous.y) * smoothing,
-              z: previous.z + (sample.z - previous.z) * smoothing,
-            }
-          : sample;
-        previousFiltered.current = filtered;
-        setAcceleration(filtered);
-        const currentMagnitude = Math.sqrt(
-          filtered.x ** 2 + filtered.y ** 2 + filtered.z ** 2,
-        );
-        setMagnitude(currentMagnitude);
-        const movementThreshold = modeRef.current === "indoor" ? 0.18 : 0.12;
-        const currentlyMoving =
-          Math.abs(currentMagnitude - 1) > movementThreshold;
-        setMoving(currentlyMoving);
-        onMovementChange(currentlyMoving);
-        const previousMagnitudeValue = previousMagnitude.current;
-        const stepThreshold = 1.1;
-        const stepCooldown = 400;
-        const now = Date.now();
-        if (
-          previousMagnitudeValue !== null &&
-          modeRef.current === "indoor" &&
-          previousMagnitudeValue <= stepThreshold &&
-          currentMagnitude > stepThreshold &&
-          now - lastStepAt.current > stepCooldown
-        ) {
-          lastStepAt.current = now;
-          setPeakCount((current) => current + 1);
-          const magnetic = magneticFieldRef.current;
-          if (trackingRef.current && magnetic) {
-            const heading = Math.atan2(magnetic.y, magnetic.x);
-            const stepLength = 0.7;
-            onIndoorStep({
-              dx: stepLength * Math.sin(heading),
-              dy: stepLength * Math.cos(heading),
-            });
-          }
-        }
-        previousMagnitude.current = currentMagnitude;
-      });
-    });
-    return () => {
-      active = false;
-      subscription?.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    let gyroscopeSubscription: ReturnType<typeof Gyroscope.addListener> | null =
-      null;
-    let magnetometerSubscription: ReturnType<
-      typeof Magnetometer.addListener
-    > | null = null;
-
-    const subscribe = async () => {
-      const [gyroAvailable, magnetometerAvailable] = await Promise.all([
-        Gyroscope.isAvailableAsync(),
-        Magnetometer.isAvailableAsync(),
-      ]);
-      if (!active) return;
-
-      if (gyroAvailable) {
-        Gyroscope.setUpdateInterval(100);
-        gyroscopeSubscription = Gyroscope.addListener((value) => {
-          if (active) setRotation(value);
-        });
-      }
-      if (magnetometerAvailable) {
-        Magnetometer.setUpdateInterval(100);
-        magnetometerSubscription = Magnetometer.addListener((value) => {
-          if (active) {
-            magneticFieldRef.current = value;
-            setMagneticField(value);
-          }
-        });
-      }
-    };
-
-    void subscribe();
-    return () => {
-      active = false;
-      gyroscopeSubscription?.remove();
-      magnetometerSubscription?.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!tracking) {
-      setPedometerStatus("IDLE");
-      return;
-    }
-    setPedometerSteps(0);
-    let active = true;
-    let subscription: ReturnType<typeof Pedometer.watchStepCount> | null = null;
-    let pollingTimer: ReturnType<typeof setInterval> | null = null;
-    const sessionStart = new Date();
-    const startPedometer = async () => {
-      setPedometerStatus("CHECKING");
-      if (!(await Pedometer.isAvailableAsync())) {
-        setPedometerStatus("UNAVAILABLE");
-        return;
-      }
-      const permission = await Pedometer.requestPermissionsAsync();
-      if (!active || !permission.granted) {
-        setPedometerStatus("DENIED");
-        return;
-      }
-      setPedometerStatus("READY");
-      subscription = Pedometer.watchStepCount(({ steps }) => {
-        if (active) {
-          setPedometerSteps(steps);
-          onStepsChange(steps);
-        }
-      });
-
-      if (Platform.OS === "ios") {
-        const refreshIosSteps = async () => {
-          const result = await Pedometer.getStepCountAsync(
-            sessionStart,
-            new Date(),
-          );
-          if (active) {
-            setPedometerSteps(result.steps);
-            onStepsChange(result.steps);
-          }
-        };
-        void refreshIosSteps();
-        pollingTimer = setInterval(() => void refreshIosSteps(), 2000);
-      }
-    };
-    void startPedometer().catch(() => setPedometerStatus("ERROR"));
-    return () => {
-      active = false;
-      subscription?.remove();
-      if (pollingTimer) clearInterval(pollingTimer);
-    };
-  }, [tracking]);
-
-  const status = acceleration
-    ? moving
-      ? "MOVING"
-      : "STILL"
-    : "WAITING FOR SENSOR";
-  const heading = magneticField
-    ? (Math.atan2(magneticField.y, magneticField.x) * 180) / Math.PI
-    : null;
-  const normalizedHeading = heading === null ? null : (heading + 360) % 360;
-  return (
-    <View style={styles.sensorCard}>
-      <View style={styles.sensorHeader}>
-        <Text style={styles.sensorTitle}>Accelerometer Test</Text>
-        <Text style={styles.sensorStatus}>{status}</Text>
-      </View>
-      <View style={styles.sensorValues}>
-        <SensorValue label="X" value={acceleration?.x} />
-        <SensorValue label="Y" value={acceleration?.y} />
-        <SensorValue label="Z" value={acceleration?.z} />
-      </View>
-      <Text style={styles.sensorHint}>
-        Magnitude: {magnitude === null ? "--" : magnitude.toFixed(2)}g. Move the
-        phone to test the threshold.
-      </Text>
-      <Text style={styles.sensorHint}>Pedometer: {pedometerStatus}</Text>
-      <Text style={styles.sensorHint}>Native steps: {pedometerSteps}</Text>
-      <Text style={styles.sensorHint}>Acceleration peaks: {peakCount}</Text>
-      <Text style={styles.sensorHint}>
-        Heading:{" "}
-        {normalizedHeading === null ? "--" : `${normalizedHeading.toFixed(0)}°`}
-      </Text>
-      <Text style={styles.sensorHint}>
-        Rotation:{" "}
-        {rotation
-          ? `${rotation.x.toFixed(2)}, ${rotation.y.toFixed(2)}, ${rotation.z.toFixed(2)}`
-          : "--"}
-      </Text>
-      <Text style={styles.sensorHint}>
-        Indoor X/Y: {indoorPosition.x.toFixed(1)}m,{" "}
-        {indoorPosition.y.toFixed(1)}m
-      </Text>
-    </View>
-  );
-}
-
-function SensorValue({ label, value }: { label: string; value?: number }) {
-  return (
-    <View style={styles.sensorValue}>
-      <Text style={styles.sensorLabel}>{label}</Text>
-      <Text style={styles.sensorNumber}>
-        {value === undefined ? "--" : value.toFixed(2)}
-      </Text>
-    </View>
-  );
-}
 
 function Stat({
   label,
@@ -933,42 +728,6 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     textAlign: "center",
   },
-  sensorCard: {
-    marginTop: 14,
-    padding: 16,
-    borderRadius: 15,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  sensorHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  sensorTitle: { color: COLORS.ink, fontSize: 13, fontWeight: "800" },
-  sensorStatus: {
-    color: COLORS.teal,
-    fontSize: 9,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-  sensorValues: { flexDirection: "row", gap: 8, marginTop: 12 },
-  sensorValue: {
-    flex: 1,
-    paddingVertical: 9,
-    borderRadius: 10,
-    backgroundColor: COLORS.tealSoft,
-    alignItems: "center",
-  },
-  sensorLabel: { color: COLORS.muted, fontSize: 10, fontWeight: "800" },
-  sensorNumber: {
-    color: COLORS.ink,
-    fontSize: 16,
-    fontWeight: "700",
-    marginTop: 3,
-  },
-  sensorHint: { color: COLORS.muted, fontSize: 11, marginTop: 11 },
   viewTrailsButton: {
     marginTop: 14,
     minHeight: 48,

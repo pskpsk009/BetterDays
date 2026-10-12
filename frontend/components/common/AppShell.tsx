@@ -29,15 +29,19 @@ export function useScrollLock() {
 export function MobileScreen({
   children,
   tone: _tone = "teal",
+  scrollRef,
 }: {
   children: React.ReactNode;
   tone?: Tone;
+  /** Lets a screen scroll itself, e.g. back to the top after a view change. */
+  scrollRef?: React.Ref<ScrollView>;
 }) {
   const insets = useSafeAreaInsets();
   const [scrollLocked, setScrollLocked] = useState(false);
   return (
     <View style={[styles.screen, { paddingTop: Math.max(insets.top, 18) }]}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingBottom: insets.bottom + 105 },

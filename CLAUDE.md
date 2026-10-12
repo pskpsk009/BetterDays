@@ -58,7 +58,8 @@ The current mobile prototype includes:
   - Movement & Flexibility: Daily Stretch, Desk Break, Mobility Flow, Movement Dice, Body Awareness Scan.
   - Good Night Sleep: Relaxing Bedtime Routine, Improve the Sleep Environment, Personalized Sleep Plan, Sleep Schedule Guidance (shared 24-hour scrollable TimePicker).
 - Movement Trail screen with simulated points, trail drawing, distance, duration, movement count, start, stop, and clear actions.
-- Native bottom tabs for Home, Mind, Body, and Trail.
+- Progress screen with a Mind-and-Body Growth Tree (two equal halves; equal importance, never a score) and three states: overview (`selectedArea = null`), Mind detail, and Body detail. It runs on frontend-only, clearly labelled demo data with an empty new-user preview; Supabase is not connected. The data seam is `frontend/components/progress/useProgressData.ts`.
+- Native bottom tabs for Home, Mind, Body, Trail, and Progress.
 
 Do not add unrelated product areas or a desktop website without an explicit scope decision.
 
@@ -67,7 +68,7 @@ Do not add unrelated product areas or a desktop website without an explicit scop
 ```text
 frontend/
   components/                 # shared native MyGrowth UI
-  screens/                    # Home, Mind, Body, and Trail implementations
+  screens/                    # Home, Mind, Body, Trail, and Progress implementations
 backend/
   README.md                  # placeholder until API and persistence are approved
 src/app/
@@ -76,6 +77,7 @@ src/app/
   mental.tsx                  # route wrapper for frontend/screens/mental.tsx
   body.tsx                    # route wrapper for frontend/screens/body.tsx
   trail.tsx                   # route wrapper for frontend/screens/trail.tsx
+  progress.tsx                # route wrapper for frontend/screens/progress.tsx
 .docs/
   design/                     # product design artifacts
   requirement/                # backlog, specs, and work logs
@@ -111,4 +113,4 @@ npx expo lint
 npx expo start
 ```
 
-Also verify the changed flow in Expo Go on a physical device or emulator. For user-facing changes, check the Home, Mind, Body, and Trail routes as applicable.
+Also verify the changed flow in Expo Go on a physical device or emulator. For user-facing changes, check the Home, Mind, Body, Trail, and Progress routes as applicable.

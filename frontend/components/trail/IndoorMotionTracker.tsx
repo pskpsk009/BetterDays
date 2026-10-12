@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
-import {
-  Accelerometer,
-  Gyroscope,
-  Magnetometer,
-  Pedometer,
-} from "expo-sensors";
+import { Accelerometer, Magnetometer, Pedometer } from "expo-sensors";
 
 import { COLORS } from "../common/AppShell";
 
@@ -32,11 +27,7 @@ export function IndoorMotionTracker({
   onIndoorStep,
   onIndoorPosition,
 }: Props) {
-  const [acceleration, setAcceleration] = useState<{
-    x: number;
-    y: number;
-    z: number;
-  } | null>(null);
+  const [hasSample, setHasSample] = useState(false);
   const [magnitude, setMagnitude] = useState<number | null>(null);
   const [moving, setMoving] = useState(false);
   const [steps, setSteps] = useState(0);
@@ -46,7 +37,9 @@ export function IndoorMotionTracker({
   const previousMagnitude = useRef<number | null>(null);
   const lastStepAt = useRef(0);
   const stepArmed = useRef(true);
-  const magnetic = useRef<{ x: number; y: number; z: number } | null>(null);
+  const magnetic = useRef<{ x: number; y: number } | null>(null);
+  const movingRef = useRef(false);
+  const lastReadoutAt = useRef(0);
   const trackingRef = useRef(tracking);
   const modeRef = useRef(mode);
   const drawingPausedRef = useRef(drawingPaused);
@@ -85,8 +78,6 @@ export function IndoorMotionTracker({
     let magnetometerSubscription: ReturnType<
       typeof Magnetometer.addListener
     > | null = null;
-    let gyroscopeSubscription: ReturnType<typeof Gyroscope.addListener> | null =
-      null;
 
     const subscribe = async () => {
       if (await Accelerometer.isAvailableAsync()) {
@@ -102,18 +93,25 @@ export function IndoorMotionTracker({
               }
             : sample;
           previous.current = filtered;
-          setAcceleration(filtered);
           const currentMagnitude = Math.sqrt(
             filtered.x ** 2 + filtered.y ** 2 + filtered.z ** 2,
           );
-          setMagnitude(currentMagnitude);
+          const now = Date.now();
+          // Sensor runs at 20 Hz; throttle the debug readout so the screen isn't re-rendered every sample.
+          if (now - lastReadoutAt.current > 250) {
+            lastReadoutAt.current = now;
+            setHasSample(true);
+            setMagnitude(currentMagnitude);
+          }
           const currentlyMoving =
             Math.abs(currentMagnitude - 1) >
             (modeRef.current === "indoor" ? 0.18 : 0.12);
-          setMoving(currentlyMoving);
-          onMovementChangeRef.current(currentlyMoving);
+          if (currentlyMoving !== movingRef.current) {
+            movingRef.current = currentlyMoving;
+            setMoving(currentlyMoving);
+            onMovementChangeRef.current(currentlyMoving);
+          }
           const oldMagnitude = previousMagnitude.current;
-          const now = Date.now();
           if (currentMagnitude < 1.0) stepArmed.current = true;
           if (
             modeRef.current === "indoor" &&
@@ -144,7 +142,7 @@ export function IndoorMotionTracker({
                 dy: stepLength * Math.cos(direction),
               };
               onIndoorPositionRef.current(movement);
-              if (!drawingPausedRef.current) onIndoorStepRef.current(movement);
+              onIndoorStepRef.current(movement);
             }
           }
           previousMagnitude.current = currentMagnitude;
@@ -153,14 +151,19 @@ export function IndoorMotionTracker({
       if (await Magnetometer.isAvailableAsync()) {
         Magnetometer.setUpdateInterval(100);
         magnetometerSubscription = Magnetometer.addListener((value) => {
-          magnetic.current = value;
+          // Low-pass the field vector (not the angle) so heading noise doesn't zigzag the path
+          // and averaging never breaks at the 0°/360° wraparound.
+          const old = magnetic.current;
+          const next = old
+            ? {
+                x: old.x + (value.x - old.x) * 0.25,
+                y: old.y + (value.y - old.y) * 0.25,
+              }
+            : { x: value.x, y: value.y };
+          magnetic.current = next;
           if (active)
-            setHeading((Math.atan2(value.y, value.x) * 180) / Math.PI);
+            setHeading(Math.round((Math.atan2(next.y, next.x) * 180) / Math.PI));
         });
-      }
-      if (await Gyroscope.isAvailableAsync()) {
-        Gyroscope.setUpdateInterval(100);
-        gyroscopeSubscription = Gyroscope.addListener(() => undefined);
       }
     };
 
@@ -169,7 +172,6 @@ export function IndoorMotionTracker({
       active = false;
       accelerometerSubscription?.remove();
       magnetometerSubscription?.remove();
-      gyroscopeSubscription?.remove();
     };
   }, []);
 
@@ -215,7 +217,7 @@ export function IndoorMotionTracker({
       subscription?.remove();
       if (pollingTimer) clearInterval(pollingTimer);
     };
-  }, [tracking, onStepsChange]);
+  }, [tracking]);
 
   if (mode !== "indoor") return null;
 
@@ -226,7 +228,7 @@ export function IndoorMotionTracker({
           {mode === "indoor" ? "Indoor Motion" : "Outdoor Motion"}
         </Text>
         <Text style={styles.status}>
-          {acceleration ? (moving ? "MOVING" : "STILL") : "WAITING"}
+          {hasSample ? (moving ? "MOVING" : "STILL") : "WAITING"}
         </Text>
       </View>
       <Text style={styles.value}>

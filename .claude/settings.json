@@ -1,5 +1,13 @@
 {
   "enabledPlugins": {
     "expo@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(rm *)",
+      "Bash(rm -r *)",
+      "Bash(rm -rf *)",
+      "PowerShell(Remove-Item *)"
+    ]
   }
 }

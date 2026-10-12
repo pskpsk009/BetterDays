@@ -1,14 +1,26 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import Animated, {
+  Easing,
+  cancelAnimation,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, {
   Circle,
   Defs,
   Ellipse,
   G,
+  Line,
   LinearGradient,
   Path,
+  Rect,
   Stop,
+  Text as SvgText,
 } from "react-native-svg";
 
 import { COLORS, MobileScreen } from "../components/common/AppShell";
@@ -43,95 +55,242 @@ export function HomeHeader() {
   );
 }
 
+const NAVIGATE_DELAY_MS = 450;
+const LIMB_OUTLINE = 6;
+
+function Callout({
+  label,
+  color,
+  selected,
+  pill,
+  from,
+  to,
+}: {
+  label: string;
+  color: string;
+  selected: boolean;
+  pill: { x: number; y: number };
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+}) {
+  return (
+    <G>
+      <Line
+        x1={from.x}
+        y1={from.y}
+        x2={to.x}
+        y2={to.y}
+        stroke={color}
+        strokeWidth="2"
+        strokeDasharray="3 4"
+        strokeLinecap="round"
+      />
+      <Circle cx={to.x} cy={to.y} r="5" fill={color} stroke="#FFF" strokeWidth="2" />
+      <Rect
+        x={pill.x}
+        y={pill.y}
+        width="80"
+        height="30"
+        rx="15"
+        fill={selected ? color : "#FFF"}
+        stroke={color}
+        strokeOpacity={selected ? 1 : 0.3}
+        strokeWidth="1.5"
+      />
+      <SvgText
+        x={pill.x + 40}
+        y={pill.y + 20}
+        fill={selected ? "#FFF" : color}
+        fontSize="14"
+        fontWeight="800"
+        textAnchor="middle"
+      >
+        {label}
+      </SvgText>
+    </G>
+  );
+}
+
+function BreathingHalo() {
+  const reduceMotion = useReducedMotion();
+  const breath = useSharedValue(0);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    breath.set(
+      withRepeat(
+        withTiming(1, { duration: 3200, easing: Easing.inOut(Easing.sin) }),
+        -1,
+        true,
+      ),
+    );
+    return () => cancelAnimation(breath);
+  }, [breath, reduceMotion]);
+
+  const outerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 0.95 + breath.get() * 0.07 }],
+    opacity: 0.6 + breath.get() * 0.4,
+  }));
+
+  return (
+    <>
+      <Animated.View style={[styles.haloOuter, outerStyle]} />
+      <View style={styles.haloInner} />
+    </>
+  );
+}
+
 export function HumanFigure() {
   const router = useRouter();
   const [active, setActive] = useState<Zone | null>(null);
+  const navigateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Home is a tab and stays mounted, so clear the selection whenever it regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      setActive(null);
+      return () => {
+        if (navigateTimer.current) clearTimeout(navigateTimer.current);
+      };
+    }, []),
+  );
+
   const select = (zone: Zone) => {
+    if (active) return;
     setActive(zone);
-    setTimeout(() => router.push(zones[zone].route), 450);
+    navigateTimer.current = setTimeout(
+      () => router.push(zones[zone].route),
+      NAVIGATE_DELAY_MS,
+    );
   };
-  const groupProps = (zone: Zone) => ({
+  const zoneProps = (zone: Zone) => ({
     onPress: () => select(zone),
-    accessibilityLabel: zones[zone].label,
+    accessibilityLabel: `Open ${zones[zone].label}`,
+    opacity: active && active !== zone ? 0.35 : 1,
   });
+  const outline = (zone: Zone) =>
+    active === zone ? zones[zone].color : "#FFF";
 
   return (
     <View style={styles.figureWrap}>
-      <View style={styles.figureHalo} />
+      <BreathingHalo />
       <Svg
-        width="270"
-        height="390"
-        viewBox="0 0 300 520"
+        width="310"
+        height="448"
+        viewBox="-30 0 360 520"
         accessibilityLabel="Tap head, body, or legs"
       >
         <Defs>
-          <LinearGradient id="homeHeadFill" x1="0" x2="1" y1="0" y2="1">
-            <Stop offset="0" stopColor="#B7D9F4" />
-            <Stop offset="1" stopColor="#88B4E7" />
+          <LinearGradient id="homeHeadFill" gradientUnits="userSpaceOnUse" x1="106" y1="24" x2="194" y2="112">
+            <Stop offset="0" stopColor="#C4DDF7" />
+            <Stop offset="1" stopColor="#7FA6E6" />
           </LinearGradient>
-          <LinearGradient id="homeBodyFill" x1="0" x2="1" y1="0" y2="1">
-            <Stop offset="0" stopColor="#B6E5D7" />
-            <Stop offset="1" stopColor="#73C5B1" />
+          <LinearGradient id="homeBodyFill" gradientUnits="userSpaceOnUse" x1="60" y1="116" x2="240" y2="282">
+            <Stop offset="0" stopColor="#BDE8DB" />
+            <Stop offset="1" stopColor="#5FB9A3" />
           </LinearGradient>
-          <LinearGradient id="homeLegFill" x1="0" x2="1" y1="0" y2="1">
-            <Stop offset="0" stopColor="#F8DCA5" />
-            <Stop offset="1" stopColor="#EABB71" />
+          <LinearGradient id="homeLegFill" gradientUnits="userSpaceOnUse" x1="100" y1="286" x2="200" y2="492">
+            <Stop offset="0" stopColor="#FADFAA" />
+            <Stop offset="1" stopColor="#E7A95E" />
           </LinearGradient>
         </Defs>
-        <Ellipse
-          cx="150"
-          cy="503"
-          rx="72"
-          ry="9"
-          fill="#B5D6CD"
-          opacity=".55"
-        />
-        <G
-          {...groupProps("head")}
-          opacity={active && active !== "head" ? 0.45 : 1}
-        >
-          <Path
-            d="M150 18 C123 18 112 37 113 61 C114 87 127 101 150 101 C173 101 186 87 187 61 C188 37 177 18 150 18Z"
-            fill="url(#homeHeadFill)"
+
+        <Ellipse cx="150" cy="500" rx="84" ry="10" fill="#B5D6CD" opacity=".5" />
+
+        <G {...zoneProps("head")}>
+          <Circle cx="150" cy="68" r="44" fill="url(#homeHeadFill)" stroke={outline("head")} strokeWidth="4" />
+          <G
             stroke="#FFF"
-            strokeWidth="3"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            transform="translate(150 47) scale(0.88 0.62) translate(-150 -70)"
+          >
+            <Path
+              d="M150 54 C145 49 136 50 134 57 C127 57 123 64 126 70 C121 74 123 83 130 84 C132 90 142 91 150 86 C158 91 168 90 170 84 C177 83 179 74 174 70 C177 64 173 57 166 57 C164 50 155 49 150 54Z"
+              fill="#FFF"
+              fillOpacity=".25"
+            />
+            <G fill="none">
+              <Path d="M150 54 L150 86" />
+              <Path d="M134 57 C137 61 141 62 144 60" />
+              <Path d="M126 70 C131 72 136 71 139 68" />
+              <Path d="M130 84 C134 80 139 80 142 82" />
+              <Path d="M166 57 C163 61 159 62 156 60" />
+              <Path d="M174 70 C169 72 164 71 161 68" />
+              <Path d="M170 84 C166 80 161 80 158 82" />
+            </G>
+          </G>
+          <Callout
+            label="Mind"
+            color={COLORS.mind}
+            selected={active === "head"}
+            pill={{ x: 236, y: 44 }}
+            from={{ x: 236, y: 59 }}
+            to={{ x: 194, y: 64 }}
           />
-          <Circle cx="150" cy="58" r="5" fill="#FFF" />
         </G>
-        <G
-          {...groupProps("body")}
-          opacity={active && active !== "body" ? 0.45 : 1}
-        >
+
+        <G {...zoneProps("body")}>
+          <G stroke={outline("body")} strokeLinecap="round">
+            <Line x1="96" y1="150" x2="68" y2="250" strokeWidth={30 + LIMB_OUTLINE} />
+            <Line x1="204" y1="150" x2="232" y2="250" strokeWidth={30 + LIMB_OUTLINE} />
+          </G>
+          <G stroke="url(#homeBodyFill)" strokeLinecap="round" strokeWidth="30">
+            <Line x1="96" y1="150" x2="68" y2="250" />
+            <Line x1="204" y1="150" x2="232" y2="250" />
+          </G>
           <Path
-            d="M135 107 L165 107 L169 115 C192 117 207 124 214 141 L253 245 Q261 264 248 270 Q235 276 228 257 L198 188 L190 255 Q188 270 184 282 L116 282 Q112 270 110 255 L102 188 L72 257 Q65 276 52 270 Q39 264 47 245 L86 141 Q93 120 131 115Z"
+            d="M114 126 Q150 116 186 126 Q206 132 205 154 L196 262 Q194 282 174 282 L126 282 Q106 282 104 262 L95 154 Q94 132 114 126Z"
             fill="url(#homeBodyFill)"
-            stroke="#FFF"
-            strokeWidth="3"
+            stroke={outline("body")}
+            strokeWidth="4"
           />
-          <Circle cx="150" cy="190" r="6" fill="#FFF" />
-        </G>
-        <G
-          {...groupProps("legs")}
-          opacity={active && active !== "legs" ? 0.45 : 1}
-        >
+          <Ellipse cx="126" cy="148" rx="18" ry="8" fill="#FFF" opacity=".3" transform="rotate(-20 126 148)" />
           <Path
-            d="M116 289 L184 289 Q190 316 183 356 L178 463 Q180 472 190 479 Q197 487 185 490 L160 490 Q148 489 149 477 L151 365 L145 365 L145 477 Q146 489 134 490 L109 490 Q97 487 104 479 Q115 472 116 463 L110 356 Q103 316 116 289Z"
-            fill="url(#homeLegFill)"
-            stroke="#FFF"
-            strokeWidth="3"
+            d="M150 214 C126 198 120 182 130 172 C138 164 147 167 150 176 C153 167 162 164 170 172 C180 182 174 198 150 214Z"
+            fill="#FFF"
           />
-          <Circle cx="150" cy="390" r="5" fill="#FFF" />
+          <Callout
+            label="Body"
+            color={COLORS.teal}
+            selected={active === "body"}
+            pill={{ x: -16, y: 300 }}
+            from={{ x: 64, y: 312 }}
+            to={{ x: 110, y: 254 }}
+          />
+        </G>
+
+        <G {...zoneProps("legs")}>
+          <G stroke={outline("legs")} strokeLinecap="round">
+            <Line x1="130" y1="300" x2="126" y2="466" strokeWidth={32 + LIMB_OUTLINE} />
+            <Line x1="170" y1="300" x2="174" y2="466" strokeWidth={32 + LIMB_OUTLINE} />
+          </G>
+          <G fill="url(#homeLegFill)" stroke={outline("legs")} strokeWidth="3">
+            <Path d="M112 292 Q150 284 188 292 L186 318 L114 318Z" />
+            <Ellipse cx="118" cy="478" rx="21" ry="11" />
+            <Ellipse cx="182" cy="478" rx="21" ry="11" />
+          </G>
+          <G stroke="url(#homeLegFill)" strokeLinecap="round" strokeWidth="32">
+            <Line x1="130" y1="300" x2="126" y2="466" />
+            <Line x1="170" y1="300" x2="174" y2="466" />
+          </G>
+          <G fill="none" stroke="#FFF" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+            <Path d="M120 392 L128 383 L136 392" />
+            <Path d="M120 406 L128 397 L136 406" opacity=".6" />
+            <Path d="M164 392 L172 383 L180 392" />
+            <Path d="M164 406 L172 397 L180 406" opacity=".6" />
+          </G>
+          <Callout
+            label="Trail"
+            color={COLORS.movement}
+            selected={active === "legs"}
+            pill={{ x: 236, y: 390 }}
+            from={{ x: 236, y: 405 }}
+            to={{ x: 190, y: 404 }}
+          />
         </G>
       </Svg>
-      <View style={[styles.pin, styles.pinHead]}>
-        <Text style={[styles.pinText, { color: COLORS.mind }]}>Mind</Text>
-      </View>
-      <View style={[styles.pin, styles.pinBody]}>
-        <Text style={[styles.pinText, { color: COLORS.teal }]}>Body</Text>
-      </View>
-      <View style={[styles.pin, styles.pinLegs]}>
-        <Text style={[styles.pinText, { color: COLORS.movement }]}>Trail</Text>
-      </View>
       {active && (
         <View style={styles.zoneToast}>
           <Text style={styles.toastSmall}>Selected area</Text>
@@ -158,7 +317,7 @@ export default function HomeScreen() {
         </Text>
       </View>
       <HumanFigure />
-      <Text style={styles.hint}>{"↓"} Tap the head, body or legs to begin</Text>
+      <Text style={styles.hint}>Tap the head, body or legs to begin</Text>
     </MobileScreen>
   );
 }
@@ -210,37 +369,29 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   figureWrap: {
-    height: 450,
+    height: 470,
     marginHorizontal: -7,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
   },
-  figureHalo: {
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: "#E5F4F0",
+  haloOuter: {
     position: "absolute",
+    width: 330,
+    height: 330,
+    borderRadius: 165,
+    backgroundColor: "#EAF6F2",
   },
-  pin: {
+  haloInner: {
     position: "absolute",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: COLORS.white,
-    shadowColor: "#265858",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: "#DDF0EA",
   },
-  pinText: { fontSize: 11, fontWeight: "800" },
-  pinHead: { top: 64, left: 26 },
-  pinBody: { top: 220, right: 20 },
-  pinLegs: { bottom: 42, left: 30 },
   zoneToast: {
     position: "absolute",
-    bottom: 20,
+    bottom: 0,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

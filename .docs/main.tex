@@ -1,0 +1,141 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage[a4paper,top=25mm,bottom=25mm,left=25mm,right=25mm]{geometry}
+\usepackage{graphicx,booktabs,tabularx,longtable,array,float,enumitem,hyperref,fancyhdr,caption,xcolor,setspace,titlesec}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\setstretch{1.35}
+\setlength{\parindent}{12mm}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.25}
+\pagestyle{fancy}\fancyhf{}\fancyfoot[R]{\thepage}\renewcommand{\headrulewidth}{0pt}
+\titleformat{\chapter}[display]{\bfseries\centering\Large}{CHAPTER \thechapter}{8pt}{\Large}
+\newcommand{\img}[2]{\begin{figure}[H]\centering\IfFileExists{#1}{\includegraphics[width=0.92\textwidth,height=125mm,keepaspectratio]{#1}}{\fbox{\parbox[c][55mm][c]{0.88\textwidth}{\centering Upload #1 to Overleaf}}}\caption{#2}\end{figure}}
+\newcommand{\tightlist}{\setlist{nosep,leftmargin=17mm}}
+\begin{document}
+
+\begin{titlepage}\thispagestyle{empty}\begin{center}
+\vspace*{8mm}\IfFileExists{Logo.png}{\includegraphics[width=28mm,height=28mm,keepaspectratio]{Logo.png}}{\fbox{\rule{0pt}{28mm}\rule{28mm}{0pt}}}\par\vspace{8mm}{\Large\bfseries SE PROJECT HUB\par}\vspace{22mm}
+{\large\bfseries SU YEE MON THEIN\par}\vspace{4mm}{\large\bfseries MOE MYA MYINTZU\par}\vspace{4mm}{\large\bfseries PAING SOE KHANT\par}
+\vfill{\large\bfseries BACHELOR OF ENGINEERING\par}\vspace{4mm}{\large\bfseries IN\par}\vspace{4mm}{\large\bfseries SOFTWARE ENGINEERING\par}\vfill
+{\large\bfseries SCHOOL OF APPLIED DIGITAL TECHNOLOGY\par}{\large\bfseries MAE FAH LUANG UNIVERSITY\par}\end{center}\end{titlepage}
+
+\clearpage\thispagestyle{empty}\begin{center}{\Large\bfseries SE PROJECT HUB\par}\vspace{20mm}{\large\bfseries SU YEE MON THEIN\par}\vspace{4mm}{\large\bfseries MOE MYA MYINTZU\par}\vspace{4mm}{\large\bfseries PAING SOE KHANT\par}\vfill A SENIOR PROJECT SUBMITTED TO\\MAE FAH LUANG UNIVERSITY IN PARTIAL FULFILLMENT OF\\THE REQUIREMENTS FOR THE DEGREE OF\\\vspace{6mm}{\large\bfseries BACHELOR OF ENGINEERING IN SOFTWARE ENGINEERING\par}\vfill{\large\bfseries SCHOOL OF APPLIED DIGITAL TECHNOLOGY\par}{\large\bfseries MAE FAH LUANG UNIVERSITY\par}\end{center}
+
+\clearpage\chapter*{ACKNOWLEDGEMENTS}
+We would like to express our sincere gratitude to our advisor, instructors, and project committee for their valuable guidance, support, and encouragement throughout the development of this senior project. Their constructive feedback greatly contributed to the improvement of both the system and this report.
+
+We also extend our appreciation to our classmates, test participants, and all individuals who provided suggestions during the design, implementation, and evaluation stages of the project. Their feedback helped us refine the usability and practicality of the SE Project Hub system.
+
+Finally, we would like to thank Mae Fah Luang University and the School of Applied Digital Technology for providing the academic environment and resources necessary for the completion of this project.
+\vfill\begin{flushright}Su Yee Mon Thein\\Moe Mya Myintzu\\Paing Soe Khant\end{flushright}
+
+\clearpage\chapter*{ABSTRACT}
+SE Project Hub is a web-based academic project management platform designed to support the coordination of student projects within software engineering education. Project registration, advisor assignment, submission tracking, evaluation, feedback, and archiving are often managed through disconnected spreadsheets, email, and manual records. This fragmented approach can lead to duplicated effort, inconsistent records, poor progress visibility, and difficulty preserving institutional knowledge.
+
+The platform centralizes these activities for students, advisors, and coordinators. It provides role-based access control, project and team management, rubric-based evaluation, roster management, analytics, and historical archiving. The frontend uses React and TypeScript; the backend uses Node.js and Express; Supabase PostgreSQL provides persistence and Firebase Authentication provides secure login and access control. The architecture, data model, and testing strategy were designed for maintainability, security, and scalability.
+
+The completed system demonstrates that a centralized academic project platform can improve workflow efficiency, strengthen data consistency, and support monitoring and evaluation of student projects.\par\textbf{Keywords:} SE Project Hub, academic project management, role-based access control, software engineering, web application.
+
+\clearpage\tableofcontents\clearpage\listoftables\clearpage\listoffigures
+
+\clearpage\chapter{INTRODUCTION}
+\section{Background and Problem Definition}
+The capstone Software Engineering project is a critical milestone for students. However, managing capstone, competition, and academic projects can involve email attachments, shared spreadsheets, and ad-hoc folders. Student submissions, advisor reviews, rubric-based grading, and program reporting are often managed separately.
+\begin{itemize}\tightlist
+\item \textbf{Lack of centralized project status:} There is no single source of truth for draft, under review, approved, and rejected states.
+\item \textbf{Inconsistent grading and evaluation:} Advisors may apply different informal criteria without a shared PLO-mapped rubric.
+\item \textbf{Manual roster management:} Course rosters are entered manually and are prone to errors.
+\item \textbf{Lack of consolidated reporting:} Coordinators lack a central view for semester and year reporting.
+\end{itemize}
+SE Project Hub addresses these issues through one web platform connecting students, advisors, and coordinators.
+\section{Objectives}
+\begin{enumerate}[leftmargin=15mm]
+\item \textbf{Centralize project submission:} Students submit projects, save drafts, and track review status.
+\item \textbf{Standardize project evaluation:} Advisors use approval, rejection, and rubric workflows mapped to PLO1-PLO6.
+\item \textbf{Automate administration:} Coordinators manage accounts and import student rosters using CSV.
+\item \textbf{Provide reporting:} The system generates semester and year reports.
+\item \textbf{Enforce role-based access:} Each role can access only permitted functions.
+\end{enumerate}
+\section{Scope}
+\begin{table}[H]\centering\caption{Project Scope}\begin{tabularx}{\textwidth}{XX}\toprule\textbf{In scope}&\textbf{Out of scope (v1)}\\\midrule Student, advisor, and coordinator dashboards&Native mobile app\\Firebase email/password and Google authentication&Automated plagiarism detection\\PLO-mapped rubrics&Payment and billing\\CSV course-roster import&Direct SIS integration beyond CSV\\Per-project comment threads&Real-time chat\\Reporting dashboard with export&Multi-institution tenancy\\\bottomrule\end{tabularx}\end{table}
+\section{Expected Result}
+The expected result is a deployed full-stack application in which a student submits a project, an advisor approves and grades it, and a coordinator reports on the same project without leaving the platform. Request-level tests cover routes touching user and project data, and a coordinator can generate a semester report in under two minutes.
+\clearpage\section{Project Plan and Resources}
+Development followed Agile Software Development: requirements and design; React/Vite/Tailwind frontend development; Node.js/Express backend development; Firebase integration and Jest/Vitest testing; and cloud deployment. Development used personal computers, Visual Studio Code, Git, Node.js, and modern browsers. Work occurred in the university SE lab and remotely. The budget was 0 Baht.
+
+\clearpage\chapter{LITERATURE REVIEW}
+\section{Theory}
+The system is based on role-based access control, distributed web architecture, centralized information systems, and rubric-based assessment. RBAC restricts actions by role and supports least privilege [9,10]. Centralization reduces redundancy and improves consistency. Shared scoring rubrics make criteria explicit and can improve assessment consistency [11,12]. Capstone projects integrate knowledge and prepare students for professional practice [13].
+\section{Technology and Tools}
+\begin{table}[H]\centering\caption{Technology and Tools}\begin{tabularx}{\textwidth}{>{\bfseries}p{0.25\textwidth}X}\toprule Layer&Technology\\\midrule Frontend&React 18, Vite 5, TypeScript, Tailwind CSS\\Backend&Node.js 20, Express 4, TypeScript, Zod, Helmet, rate limiting\\Auth&Firebase Authentication and Firebase Admin SDK\\Database&Supabase PostgreSQL, service-role client\\Storage&Supabase Storage\\Docs&Swagger UI at \texttt{/docs}\\Testing&Vitest, Testing Library, Jest, Supertest\\\bottomrule\end{tabularx}\end{table}
+\section{Related Work}
+Learning management systems support course materials, submissions, grading, rubrics, outcome alignment, and CSV enrollment, but are organized around courses and assignments. Trello and Jira support tasks, deadlines, and progress but not academic roles or approval workflows. Collaboration tools provide communication and file sharing but can scatter information. Assessment and portfolio systems store work but often do not support complete team-project lifecycles.
+\begin{table}[H]\centering\caption{Comparison of Existing Solution Types}\begin{tabularx}{\textwidth}{>{\bfseries}p{0.25\textwidth}XX}\toprule Solution type&Main strengths&Main limitations\\\midrule Learning management systems&Course content, submission, grading, rubrics&Limited lifecycle management and archiving\\Project-management tools&Task tracking and progress monitoring&Not designed for academic roles and rubrics\\Collaboration platforms&Communication and file sharing&Information fragmentation\\Assessment and portfolio systems&Work storage and assessment records&Limited team-project supervision\\SE Project Hub&Submission, review, evaluation, analytics, RBAC, archive&Needs continued usability and notification improvement\\\bottomrule\end{tabularx}\end{table}
+\clearpage\begin{table}[H]\centering\caption{Feature Comparison Matrix}\scriptsize\begin{tabularx}{\textwidth}{Xcccc}\toprule Capability&LMS&Project tools&Spreadsheet/email&SE Project Hub\\\midrule Separate role dashboards&Partial&Partial&No&Yes\\Draft submission and review status&Partial&Partial&Manual&Yes\\Advisor approve/reject&No&Partial&Manual&Yes\\Rubric evaluation&Yes&No&Manual&Yes\\PLO-mapped criteria&Partial&No&Manual&Yes\\CSV roster import&Yes&No&Manual&Yes\\Team formation&Partial&Yes&Manual&Yes\\Searchable archive&No&No&No&Yes\\Analytics and report export&Partial&Partial&Manual&Yes\\\bottomrule\end{tabularx}\end{table}
+The contribution of SE Project Hub is the combination of project lifecycle management, advisor interaction, PLO-mapped assessment, monitoring, analytics, and long-term archiving in one specialized platform.
+
+\clearpage\chapter{METHODOLOGY}
+\section{System Analysis}
+\begin{table}[H]\centering\caption{Stakeholders and Roles}\begin{tabularx}{\textwidth}{>{\bfseries}p{0.18\textwidth}p{0.30\textwidth}X}\toprule Role&Primary need&Key screens\\\midrule Student&Submit work and track feedback&My Projects, Submit Project, Rubrics\\Advisor&Review, approve or deny, and grade&Advisee Projects, Project Evaluation, Rubric Management\\Coordinator&Administer accounts, courses, rosters, and reports&Archive, User Management, Course Management, Student Roster, Reports\\\bottomrule\end{tabularx}\end{table}
+\begin{table}[H]\centering\caption{Functional and Non-Functional Requirements}\begin{tabularx}{\textwidth}{>{\bfseries}p{0.25\textwidth}X}\toprule Category&Requirement description\\\midrule Functional&Authentication and role-based access control\\Functional&Project creation and management\\Functional&Evaluation and feedback\\Functional&Course and roster management\\Functional&Data visualization and reporting\\Non-functional&Security and data protection\\Non-functional&Scalability\\Non-functional&Usability\\Non-functional&Maintainability and modularity\\\bottomrule\end{tabularx}\end{table}
+\section{Architecture Design}\img{Architecture.png}{System Architecture of SE Project Hub}
+\section{Data Model Design}
+\begin{longtable}{>{\bfseries}p{0.30\textwidth}p{0.62\textwidth}}\caption{Main System Entities}\\\toprule Entity&Description\\\midrule USER&Students, advisors, and coordinators with a primary role.\\USER\_ROLES&Additional roles assigned to a user.\\COURSE&Academic course optionally assigned to an advisor.\\COURSE\_ROSTER&Students enrolled in a course from CSV.\\STUDENTS&Students invited through bulk upload.\\PROJECT&Project information, status, grade, advisor, and course.\\TEAM\_MEMBER&Junction table linking students and projects.\\PROJECT\_COMMENT&Project communication and feedback.\\FILE / LINK&Files and external links attached to a project.\\RUBRIC hierarchy&Rubric, criteria mapped to PLOs, and performance levels.\\\bottomrule\end{longtable}
+\clearpage\img{ERD.png}{Entity Relationship Diagram of SE Project Hub}
+\section{Feature Design}
+\begin{table}[H]\centering\caption{Key Features}\begin{tabularx}{\textwidth}{>{\bfseries}p{0.24\textwidth}p{0.52\textwidth}p{0.16\textwidth}}\toprule Module&Description&API route\\\midrule Submission and drafts&Create, edit, and save projects before submission&/projects\\Review and comments&Approve or deny with threaded history&/projects, /comments\\Rubric evaluation&Score criteria mapped to PLO1-PLO6&/rubrics\\Course and roster admin&Create courses, assign advisors, import CSV&/courses\\User management&Account creation and role assignment&/users\\Reporting&Semester and year analytics&/analytics\\\bottomrule\end{tabularx}\end{table}
+\begin{table}[H]\centering\caption{Risks and Mitigations}\begin{tabularx}{\textwidth}{XX}\toprule Risk&Mitigation\\\midrule Credential leakage&Keep secrets in ignored environment files and host secret managers.\\Foreign-key deletion problems&Review migrations and require explicit destructive confirmation.\\Malformed CSV&Validate schema and provide row-level errors.\\Edited rubric after scoring&Consider rubric versioning before editing scored rubrics.\\\bottomrule\end{tabularx}\end{table}
+\clearpage\section{Use Case and User Flows}\img{UseCase.png}{Use Case Diagram of SE Project Hub}\clearpage\img{studentFlow.png}{Student Flow}\clearpage\img{AdvisorFlow.png}{Advisor Flow}\clearpage\img{CoordinatorFlow.png}{Coordinator Flow}
+\section{System Implementation Overview}
+The three-tier implementation uses a React and TypeScript presentation layer, an Express application layer, and Supabase PostgreSQL data storage. Firebase Authentication issues tokens; the backend verifies tokens, validates input with Zod, applies business logic, and accesses relational data. Helmet, rate limiting, centralized error handling, unit tests, and request-level tests provide hardening.
+
+\clearpage\chapter{RESULTS}
+\section{System Architecture and Database Realization}
+The deployed architecture separates presentation, business logic, authentication, storage, and database concerns. PostgreSQL constraints and foreign keys protect data integrity. Dependent files, links, comments, team members, and roster records use cascade deletion; optional advisor and course references use SET NULL.
+\section{User Interface and Dashboards}
+\img{LogIn.png}{Login page}\clearpage\img{ChooseDashboard.png}{Choose Dashboard Role}\clearpage\img{AllProject.png}{All Projects Page}\clearpage\img{UserMgmt.png}{User Management Page}\clearpage\img{CourseMgmt.png}{Course Management Page}\clearpage\img{RosterUpload.png}{Student Roster Upload Page}\clearpage\img{RubricMgmt.png}{Rubric Management Page}\clearpage\img{ReportAnalytic.png}{Reports and Analytics Page}\clearpage\img{Archive.png}{Project Archive Page}\clearpage\img{AccDetail.png}{Account Details Page}\clearpage\img{Advisor.png}{Advisor Courses Page}\clearpage\img{MyProject.png}{My Projects Page}\clearpage\img{SubmitPj1.png}{Submit New Project Page, first view}\clearpage\img{SubmitPj2.png}{Submit New Project Page, second view}\clearpage\img{RubricPage.png}{Student Rubrics Page}
+\section{Final Core Features}
+The final core features are automated roster ingestion, project and team formulation, dynamic rubric evaluation, and a persistent searchable archive. Roster ingestion sanitizes incoming records and prevents duplicates. Students bind registered peers to projects. Advisors score criteria and store qualitative feedback. Approved projects remain available as institutional knowledge.
+
+\clearpage\section{Testing and Validation Results}
+The test identifier format is FSEH-TCnnn. All supplied functional cases passed: login TC001-TC003; CSV roster upload TC004-TC006; project creation and team formation TC007-TC009; rubric evaluation TC010-TC012; role security and routing TC013-TC015; archive and search TC016-TC017; user role management TC018-TC020; status management TC021-TC023; resource attachments TC024-TC026; course management TC027-TC029; rubric creation TC030-TC032. Coordinator Dashboard TC033 verifies metrics and charts for the selected year and semester and must be recorded from the final deployed dashboard.
+\begin{table}[H]\centering\caption{Usability Test Participants}\begin{tabular}{lcc}\toprule Role&Participants&Dashboard\\\midrule Student&8&Student\\Advisor&1&Advisor\\Coordinator&1&Coordinator\\Total&10&All three\\\bottomrule\end{tabular}\end{table}
+\begin{table}[H]\centering\caption{Usability Evaluation Results, 5-point Likert scale}\begin{tabular}{lcc}\toprule Dimension&Mean&SD\\\midrule Ease of Use&4.40&0.51\\Interface Clarity&4.33&0.62\\Responsiveness&4.20&0.68\\Error Handling&4.07&0.80\\Project Workflow&4.40&0.51\\Evaluation and Rubric&4.47&0.52\\Overall Average&4.30&0.61\\\bottomrule\end{tabular}\end{table}
+\clearpage\begin{table}[H]\centering\caption{Task Performance Summary}\begin{tabular}{lccc}\toprule Task&Completion rate (\%)&Average minutes&Errors\\\midrule Project Submission&93.3&6.8&3\\Rubric Scoring&90.0&8.5&4\\CSV Ingestion&86.7&5.2&5\\\bottomrule\end{tabular}\end{table}
+CSV ingestion had the lowest completion rate and the highest error frequency, indicating a need for file previews, column mapping, row-level validation, and clearer messages. The study used eight students, one advisor, and one coordinator; therefore, the quantitative results should not be generalized beyond this sample.
+
+\clearpage\section{User Manual}
+\subsection{Getting Started}
+Enter email and password on the login page. Newly created accounts may prompt for a password with at least eight characters, one uppercase letter, one lowercase letter, and one number. The sidebar shows only role-relevant functions. Every role can change its password in Account Detail.
+\subsection{Student Manual}
+Students use My Projects to view Draft, Under Review, Approved, and Rejected projects; Submit Project to enter title, type, course, semester, year, keywords, description, team, links, and files; Rubrics to view evaluation criteria; project details to read feedback and add comments; and Account Detail to change a password.
+\subsection{Advisor Manual}
+Advisors use Advisee Projects to review, approve, deny, and comment; Project Evaluation to assign rubrics and score every criterion; Course to view assigned courses; Rubric Management to create and activate rubrics; and Account Detail to change a password.
+\subsection{Coordinator Manual}
+Coordinators use Project Archive to browse all projects; User Management to add, edit, delete, and assign roles; Course Management to create and assign courses; Student Roster to upload CSV data; Rubrics to manage criteria and levels; Reports to filter analytics and export reports; and Account Detail to change a password.
+
+\clearpage\chapter{CONCLUSION AND DISCUSSION}
+\section{Conclusion}
+SE Project Hub centralizes project submission, advisor review, rubric assessment, progress monitoring, role-based access, reporting, and archiving. Usability testing produced an overall average of 4.30 out of 5. Project submission achieved 93.3 percent completion, rubric scoring 90.0 percent, and CSV ingestion 86.7 percent. The system meets its core objectives within the tested scope.
+\section{Discussion}
+Centralization reduces duplicated information and makes project status visible. CSV ingestion needs clearer validation and error reporting. Rubric scoring takes longer because advisors must apply multiple criteria, but it provides a structured and transparent assessment process. Future work includes notifications, analytics for delayed projects and advisor workload, safer file handling, retry mechanisms, audit logs, secure backups, load testing, larger usability samples, and periodic access reviews. Software cannot remove differences in academic judgment; rubric moderation remains necessary.
+\section{Lessons Learned}
+Team communication across frontend, backend, and database work was essential. Early planning and role-based architecture reduced errors. Functional and usability testing were continuous activities. Feedback from students, advisors, and coordinators guided workflow improvements.
+\section{Completed Tasks by User Role}
+\textbf{Coordinator:} Manage users, roles, rosters, courses, assignments, rubrics, analytics, feedback, and archive.\\
+\textbf{Advisor:} View courses and advisee projects, evaluate with rubrics, provide comments, and monitor progress.\\
+\textbf{Student:} Create projects, form teams, submit resources, view evaluation feedback, and access the archive.
+
+\clearpage\chapter*{REFERENCES}
+\begin{enumerate}[label={[\arabic*]}]\item React Team, React Documentation, \url{https://react.dev}.\item Node.js Foundation, Node.js Documentation, \url{https://nodejs.org}.\item Express.js Documentation, \url{https://expressjs.com}.\item Supabase Documentation, \url{https://supabase.com/docs}.\item Firebase Authentication Documentation, \url{https://firebase.google.com/docs/auth}.\item PostgreSQL Documentation, \url{https://www.postgresql.org/docs}.\item Jest Documentation, \url{https://jestjs.io}.\item Vitest Documentation, \url{https://vitest.dev}.\item Sandhu et al., ``Role-based access control models,'' Computer, 29(2), 38--47, 1996.\item Ferraiolo et al., ``Proposed NIST standard for role-based access control,'' ACM TISSEC, 4(3), 224--274, 2001.\item Jonsson and Svingby, ``The use of scoring rubrics,'' Educational Research Review, 2(2), 130--144, 2007.\item Reddy and Andrade, ``A review of rubric use in higher education,'' Assessment and Evaluation in Higher Education, 35(4), 435--448, 2010.\item Dunlap, ``Problem-based learning and self-efficacy,'' Educational Technology Research and Development, 53(1), 65--83, 2005.\item Likert, ``A technique for the measurement of attitudes,'' Archives of Psychology, 22(140), 1--55, 1932.\item Nielsen, Usability Engineering, Morgan Kaufmann, 1994.\item Nielsen and Landauer, ``A mathematical model of the finding of usability problems,'' INTERCHI '93, 1993.\end{enumerate}
+
+\clearpage\appendix\chapter{Deployment and System Setup}
+Install frontend dependencies and run the React application in development or production mode. Configure the Node.js and Express backend with environment variables. Keep database credentials, API keys, and authentication tokens outside source control. Create Supabase PostgreSQL tables, constraints, relationships, and storage buckets. Configure Firebase Authentication and Firebase Admin SDK. Deploy frontend and backend as separate cloud services and verify production API endpoints and authentication.
+
+\clearpage\chapter*{CURRICULUM VITAE}
+\begin{table}[H]\centering\begin{tabularx}{\textwidth}{>{\bfseries}p{0.28\textwidth}X}\toprule NAME&Su Yee Mon Thein\\DATE OF BIRTH&19 May 2003\\ADDRESS&444 Moo. 1, Tha Sut, Mueang, Chiang Rai, Thailand 57100\\EDUCATIONAL BACKGROUND&Bachelor of Engineering in Software Engineering, Mae Fah Luang University, Year 3\\\bottomrule\end{tabularx}\end{table}
+\begin{table}[H]\centering\begin{tabularx}{\textwidth}{>{\bfseries}p{0.28\textwidth}X}\toprule NAME&Moe Mya Myintzu\\DATE OF BIRTH&24 October 2002\\ADDRESS&444 Moo. 1, Tha Sut, Mueang, Chiang Rai, Thailand 57100\\EDUCATIONAL BACKGROUND&Bachelor of Engineering in Software Engineering, Mae Fah Luang University, Year 3\\\bottomrule\end{tabularx}\end{table}
+\begin{table}[H]\centering\begin{tabularx}{\textwidth}{>{\bfseries}p{0.28\textwidth}X}\toprule NAME&Paing Soe Khant\\DATE OF BIRTH&15 August 2002\\ADDRESS&444 Moo. 1, Tha Sut, Mueang, Chiang Rai, Thailand 57100\\EDUCATIONAL BACKGROUND&Bachelor of Engineering in Software Engineering, Mae Fah Luang University, Year 3\\\bottomrule\end{tabularx}\end{table}
+\end{document}

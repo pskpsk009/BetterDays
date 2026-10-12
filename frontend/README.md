@@ -10,6 +10,10 @@ The mobile app owns all device-facing behavior:
 - `components/wellness/` contains only the reusable wellness card list.
 - `components/common/` contains shared app-shell primitives and theme values.
 - `components/trail/` contains map and trail rendering components.
+- `screens/progress.tsx` owns the Progress page state (`selectedArea`, period, demo/empty preview).
+- `components/progress/` contains the Growth Tree, charts, and Mind/Body detail views. Data flows
+  `useProgressData` (demo data today, Supabase later) -> `progressSummary.ts` / `progressMath.ts`
+  (pure calculations) -> presentation components.
 - `components/mygrowth-ui.tsx` is a compatibility barrel with exports only.
 
 GPS, accelerometer, pedometer, and map code stay in the frontend because they require the phone's native APIs.

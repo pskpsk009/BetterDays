@@ -41,7 +41,11 @@ export function BranchCard({
       accessibilityRole="button"
       accessibilityLabel={`${branch.title}. ${branch.tagline}`}
       onPress={onPress}
-      style={({ pressed }) => [mentalStyles.card, styles.branchCard, pressed && styles.cardPressed]}
+      style={({ pressed }) => [
+        mentalStyles.card,
+        styles.branchCard,
+        pressed && styles.cardPressed,
+      ]}
     >
       <View style={[styles.branchAccent, { backgroundColor: branch.color }]} />
       <View style={[styles.branchIcon, { backgroundColor: branch.soft }]}>
@@ -70,7 +74,10 @@ export function ActivityCard({
       accessibilityRole="button"
       accessibilityLabel={`${activity.title}. ${activity.detail}`}
       onPress={onPress}
-      style={({ pressed }) => [styles.activityCard, pressed && styles.cardPressed]}
+      style={({ pressed }) => [
+        styles.activityCard,
+        pressed && styles.cardPressed,
+      ]}
     >
       <View style={[styles.activityGlyph, { backgroundColor: branch.soft }]}>
         <Text style={[styles.activityGlyphText, { color: branch.color }]}>
@@ -141,7 +148,13 @@ type ButtonProps = {
   flex?: boolean;
 };
 
-export function PrimaryButton({ label, color, onPress, disabled, flex }: ButtonProps) {
+export function PrimaryButton({
+  label,
+  color,
+  onPress,
+  disabled,
+  flex,
+}: ButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -179,7 +192,11 @@ export function SecondaryButton({
       style={({ pressed }) => [
         styles.button,
         flex && styles.flex,
-        !subtle && { borderWidth: 1.5, borderColor: color, backgroundColor: COLORS.white },
+        !subtle && {
+          borderWidth: 1.5,
+          borderColor: color,
+          backgroundColor: COLORS.white,
+        },
         subtle && styles.subtleButton,
         disabled && styles.disabled,
         pressed && styles.pressed,
@@ -253,7 +270,12 @@ export function RatingSelector({
                 pressed && styles.pressed,
               ]}
             >
-              <Text style={[styles.ratingValue, { color: selected ? COLORS.white : color }]}>
+              <Text
+                style={[
+                  styles.ratingValue,
+                  { color: selected ? COLORS.white : color },
+                ]}
+              >
                 {rating}
               </Text>
             </Pressable>
@@ -293,7 +315,12 @@ export function useSessionTimer(
     const startedAt = Date.now();
     const runGeneration = generationRef.current;
     const timer = setInterval(() => {
-      const next = elapsedFor(bankedMs.current, startedAt, Date.now(), durationMs);
+      const next = elapsedFor(
+        bankedMs.current,
+        startedAt,
+        Date.now(),
+        durationMs,
+      );
       setElapsedMs(next);
       if (next >= durationMs) {
         clearInterval(timer);
@@ -304,7 +331,12 @@ export function useSessionTimer(
       clearInterval(timer);
       // Bank this run's time unless a reset happened since it started.
       if (generationRef.current === runGeneration) {
-        bankedMs.current = elapsedFor(bankedMs.current, startedAt, Date.now(), durationMs);
+        bankedMs.current = elapsedFor(
+          bankedMs.current,
+          startedAt,
+          Date.now(),
+          durationMs,
+        );
       }
     };
   }, [durationMs, running, generation]);
@@ -365,7 +397,10 @@ export function QuestionCard({
       style={[mentalStyles.card, styles.questionCard]}
     >
       <View style={styles.questionTop}>
-        <Text accessibilityLiveRegion="polite" style={[styles.stepLabel, { color }]}>
+        <Text
+          accessibilityLiveRegion="polite"
+          style={[styles.stepLabel, { color }]}
+        >
           {label.toUpperCase()}
         </Text>
         {aside && <Text style={mentalStyles.muted}>{aside}</Text>}
@@ -401,7 +436,10 @@ export function CompletionScreen({
   children?: React.ReactNode;
 }) {
   return (
-    <Animated.View entering={FadeInRight.duration(240)} style={[mentalStyles.card, styles.completion]}>
+    <Animated.View
+      entering={FadeInRight.duration(240)}
+      style={[mentalStyles.card, styles.completion]}
+    >
       <View style={[styles.completionBadge, { backgroundColor: soft }]}>
         <Text style={[styles.completionBadgeText, { color }]}>{badge}</Text>
       </View>
@@ -411,9 +449,17 @@ export function CompletionScreen({
       <Text style={[mentalStyles.body, styles.center]}>{message}</Text>
       {children}
       <View style={styles.completionActions}>
-        <PrimaryButton label={primary.label} color={color} onPress={primary.onPress} />
+        <PrimaryButton
+          label={primary.label}
+          color={color}
+          onPress={primary.onPress}
+        />
         {secondary && (
-          <SecondaryButton label={secondary.label} color={color} onPress={secondary.onPress} />
+          <SecondaryButton
+            label={secondary.label}
+            color={color}
+            onPress={secondary.onPress}
+          />
         )}
       </View>
     </Animated.View>
@@ -423,9 +469,8 @@ export function CompletionScreen({
 export function SupportNote({ children }: { children?: string }) {
   return (
     <Text style={[mentalStyles.muted, styles.center]}>
-      {children ?? "Nothing you enter here is saved."} If something feels
-      heavy or unsafe, please reach out to someone you trust or a local
-      support line.
+      {children ?? "Nothing you enter here is saved."} If something feels heavy
+      or unsafe, please reach out to someone you trust or a local support line.
     </Text>
   );
 }
@@ -556,7 +601,12 @@ const styles = StyleSheet.create({
   },
   chipText: { color: COLORS.ink, fontSize: 13, fontWeight: "600" },
   rating: { gap: 10 },
-  ratingRow: { flexDirection: "row", justifyContent: "space-between", gap: 6, paddingTop: 8 },
+  ratingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 6,
+    paddingTop: 8,
+  },
   ratingOption: {
     flex: 1,
     maxWidth: 56,
@@ -582,8 +632,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  stepLabel: { flexShrink: 1, fontSize: 11, fontWeight: "800", letterSpacing: 0.9 },
-  question: { color: COLORS.ink, fontSize: 19, fontWeight: "800", lineHeight: 25 },
+  stepLabel: {
+    flexShrink: 1,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.9,
+  },
+  question: {
+    color: COLORS.ink,
+    fontSize: 19,
+    fontWeight: "800",
+    lineHeight: 25,
+  },
   completion: { alignItems: "center", gap: 14, paddingVertical: 26 },
   completionBadge: {
     minWidth: 72,
@@ -594,6 +654,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   completionBadgeText: { fontSize: 28, fontWeight: "800" },
-  completionTitle: { color: COLORS.ink, fontSize: 21, fontWeight: "800", textAlign: "center" },
+  completionTitle: {
+    color: COLORS.ink,
+    fontSize: 21,
+    fontWeight: "800",
+    textAlign: "center",
+  },
   completionActions: { alignSelf: "stretch", gap: 10, marginTop: 6 },
 });
