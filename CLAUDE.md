@@ -49,7 +49,10 @@ When writing a requirement, design, or implementation plan, fold the following i
 The current mobile prototype includes:
 
 - Home screen with exactly three interactive SVG zones: Head, Torso/Body, Legs.
-- Mental Development screen with Focus & Attention, Learning & Memory, Emotional Wellbeing, and Mindfulness & Habits.
+- Mental Development screen with three branches, each opening three interactive activities that use local component state only (no progress tracking, persistence, or analytics):
+  - Mindfulness: Breathing Bubble, 5-Senses Grounding, Watch Your Thoughts.
+  - Self-Awareness: Emotion Explorer, Reflection Detective, What Can I Control?
+  - Concentration: Focus Sprint, Target Tap, Distraction Tracker.
 - Body Functions screen with Sleep, Nutrition, Energy, Physical Activity, and Health.
 - Movement Trail screen with simulated points, trail drawing, distance, duration, movement count, start, stop, and clear actions.
 - Native bottom tabs for Home, Mind, Body, and Trail.
