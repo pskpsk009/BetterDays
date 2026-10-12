@@ -53,7 +53,10 @@ The current mobile prototype includes:
   - Mindfulness: Breathing Bubble, 5-Senses Grounding, Watch Your Thoughts.
   - Self-Awareness: Emotion Explorer, Reflection Detective, What Can I Control?
   - Concentration: Focus Sprint, Target Tap, Distraction Tracker.
-- Body Functions screen with Sleep, Nutrition, Energy, Physical Activity, and Health.
+- Body Functions screen with three branches of interactive activities, local component state only:
+  - Fuel Your Body: Hydration Check-in, Build a Balanced Plate, Drink Detective.
+  - Movement & Flexibility: Daily Stretch, Desk Break, Mobility Flow, Movement Dice, Body Awareness Scan.
+  - Good Night Sleep: Relaxing Bedtime Routine, Improve the Sleep Environment, Personalized Sleep Plan, Sleep Schedule Guidance (shared 24-hour scrollable TimePicker).
 - Movement Trail screen with simulated points, trail drawing, distance, duration, movement count, start, stop, and clear actions.
 - Native bottom tabs for Home, Mind, Body, and Trail.
 

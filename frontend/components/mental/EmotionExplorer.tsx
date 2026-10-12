@@ -12,7 +12,7 @@ import {
   SelectionChip,
   SupportNote,
   toggleItem,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const EMOTIONS = [
   { name: "Happy", face: "😊", feelings: ["Content", "Grateful", "Proud", "Relieved", "Cheerful"] },

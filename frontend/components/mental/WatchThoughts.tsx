@@ -18,7 +18,7 @@ import {
   SecondaryButton,
   SelectionChip,
   SupportNote,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const CATEGORIES = [
   "Worry",

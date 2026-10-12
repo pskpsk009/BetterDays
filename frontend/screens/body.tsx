@@ -1,77 +1,54 @@
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityProps } from "../components/common/ActivityUI";
+import { BranchExplorer } from "../components/common/BranchExplorer";
+import { BodyBranchIcon } from "../components/body/BodyBranchIcon";
+import { BODY_BRANCHES, BodyActivityId, BodyBranchId } from "../components/body/branches";
+import { BalancedPlate } from "../components/body/fuel/BalancedPlate";
+import { DrinkDetective } from "../components/body/fuel/DrinkDetective";
+import { HydrationCheckin } from "../components/body/fuel/HydrationCheckin";
+import { BodyScan } from "../components/body/movement/BodyScan";
+import { DailyStretch } from "../components/body/movement/DailyStretch";
+import { DeskBreak } from "../components/body/movement/DeskBreak";
+import { MobilityFlow } from "../components/body/movement/MobilityFlow";
+import { MovementDice } from "../components/body/movement/MovementDice";
+import { BedtimeRoutine } from "../components/body/sleep/BedtimeRoutine";
+import { NightBanner } from "../components/body/sleep/NightBanner";
+import { ScheduleGuidance } from "../components/body/sleep/ScheduleGuidance";
+import { SleepEnvironment } from "../components/body/sleep/SleepEnvironment";
+import { SleepPlan } from "../components/body/sleep/SleepPlan";
 
-import {
-  COLORS,
-  MobileScreen,
-  ScreenHeader,
-} from "../components/common/AppShell";
-import {
-  WellnessCardList,
-  WellnessCardData,
-} from "../components/wellness/WellnessCardList";
-
-const bodyCards: WellnessCardData[] = [
-  {
-    title: "Sleep",
-    detail: "Rest that helps you feel restored.",
-    progress: 88,
-    value: "7h 30m",
-    icon: "z",
-  },
-  {
-    title: "Nutrition",
-    detail: "Fuel your day with care and balance.",
-    progress: 67,
-    value: "2 / 3",
-    icon: "+",
-  },
-  {
-    title: "Energy",
-    detail: "Check in with your natural rhythm.",
-    progress: 76,
-    value: "Good",
-    icon: "*",
-  },
-  {
-    title: "Physical Activity",
-    detail: "A little movement makes a difference.",
-    progress: 54,
-    value: "16 min",
-    icon: ">",
-  },
-  {
-    title: "Health",
-    detail: "Listen closely to what your body needs.",
-    progress: 80,
-    value: "Steady",
-    icon: "+",
-  },
-];
+const ACTIVITIES: Record<BodyActivityId, (props: ActivityProps) => React.ReactNode> = {
+  hydration: HydrationCheckin,
+  "balanced-plate": BalancedPlate,
+  "drink-detective": DrinkDetective,
+  "daily-stretch": DailyStretch,
+  "desk-break": DeskBreak,
+  "mobility-flow": MobilityFlow,
+  "movement-dice": MovementDice,
+  "body-scan": BodyScan,
+  "bedtime-routine": BedtimeRoutine,
+  "sleep-environment": SleepEnvironment,
+  "sleep-plan": SleepPlan,
+  "schedule-guidance": ScheduleGuidance,
+};
 
 export default function BodyScreen() {
   return (
-    <MobileScreen tone="body">
-      <ScreenHeader
-        title="Body Functions"
-        subtitle="Small choices that help you feel more like you."
-      />
-      <View style={styles.intro}>
-        <Text style={styles.eyebrow}>Body space</Text>
-        <Text style={styles.introTitle}>Your daily foundations</Text>
-      </View>
-      <WellnessCardList cards={bodyCards} tone="body" />
-    </MobileScreen>
+    <BranchExplorer
+      title="Body Functions"
+      subtitle="Small choices that help you feel more like you."
+      eyebrow="Body space"
+      introTitle="Your daily foundations"
+      accent="#247F7B"
+      branches={BODY_BRANCHES}
+      activities={ACTIVITIES}
+      renderIcon={(branch, size) => (
+        <BodyBranchIcon branch={branch.id as BodyBranchId} color={branch.color} size={size} />
+      )}
+      renderHero={(branch) =>
+        branch.id === "sleep" ? (
+          <NightBanner eyebrow={branch.tagline} title={branch.title} subtitle={branch.description} />
+        ) : null
+      }
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  intro: { paddingBottom: 18 },
-  eyebrow: {
-    marginBottom: 8,
-    color: COLORS.teal,
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 0.4,
-  },
-  introTitle: { color: "#315C61", fontSize: 18, fontWeight: "700" },
-});

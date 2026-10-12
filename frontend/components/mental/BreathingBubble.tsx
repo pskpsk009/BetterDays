@@ -9,7 +9,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { COLORS } from "../common/AppShell";
-import { BUBBLE_MIN_SCALE, formatClock, getBreathPhase } from "./timing";
+import { BUBBLE_MIN_SCALE, getBreathPhase } from "./timing";
+import { formatClock } from "../common/time";
 import {
   ActivityHeader,
   CompletionScreen,
@@ -19,7 +20,7 @@ import {
   SelectionChip,
   SessionTimer,
   useSessionTimer,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const DURATIONS = [1, 3, 5];
 

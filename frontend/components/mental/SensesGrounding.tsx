@@ -9,7 +9,7 @@ import {
   PrimaryButton,
   QuestionCard,
   SecondaryButton,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const SENSES = [
   {

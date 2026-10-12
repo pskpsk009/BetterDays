@@ -1,65 +1,39 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
-import Svg, { Circle, Path } from "react-native-svg";
 
-import { COLORS } from "../common/AppShell";
-import type { ActivityData, BranchData, BranchId } from "./branches";
-import { elapsedFor, formatClock } from "./timing";
+import { COLORS } from "./AppShell";
+import { elapsedFor, formatClock } from "./time";
 
-// Shared building blocks for the Mental Development branches and activities.
+// Shared building blocks for branch-and-activity screens (Mind and Body).
 
-export function BranchIcon({
-  branch,
-  color,
-  size = 46,
-}: {
-  branch: BranchId;
+export type ActivityInfo = {
+  id: string;
+  title: string;
+  detail: string;
+  glyph: string;
+};
+
+export type BranchInfo = {
+  id: string;
+  title: string;
+  tagline: string;
+  description: string;
   color: string;
-  size?: number;
-}) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      {branch === "mindfulness" && (
-        <>
-          <Circle cx={24} cy={24} r={20} fill={color} opacity={0.14} />
-          <Circle cx={24} cy={24} r={13} fill={color} opacity={0.24} />
-          <Path
-            d="M24 33c-6-3.5-8-8-6.5-13.5C22 21 24 24 24 33Zm0 0c6-3.5 8-8 6.5-13.5C26 21 24 24 24 33Z"
-            fill={color}
-          />
-        </>
-      )}
-      {branch === "awareness" && (
-        <>
-          <Circle cx={24} cy={24} r={20} fill={color} opacity={0.14} />
-          <Path
-            d="M10 24c4-7 9-10 14-10s10 3 14 10c-4 7-9 10-14 10s-10-3-14-10Z"
-            fill="none"
-            stroke={color}
-            strokeWidth={2.6}
-            strokeLinejoin="round"
-          />
-          <Circle cx={24} cy={24} r={5} fill={color} />
-        </>
-      )}
-      {branch === "concentration" && (
-        <>
-          <Circle cx={24} cy={24} r={20} fill={color} opacity={0.14} />
-          <Circle cx={24} cy={24} r={13} fill="none" stroke={color} strokeWidth={2.6} />
-          <Circle cx={24} cy={24} r={7} fill="none" stroke={color} strokeWidth={2.6} />
-          <Circle cx={24} cy={24} r={2.6} fill={color} />
-        </>
-      )}
-    </Svg>
-  );
-}
+  soft: string;
+  activities: ActivityInfo[];
+};
+
+/** Props every activity screen receives from the branch explorer. */
+export type ActivityProps = { color: string; soft: string; onExit: () => void };
 
 export function BranchCard({
   branch,
+  icon,
   onPress,
 }: {
-  branch: BranchData;
+  branch: BranchInfo;
+  icon: React.ReactNode;
   onPress: () => void;
 }) {
   return (
@@ -71,7 +45,7 @@ export function BranchCard({
     >
       <View style={[styles.branchAccent, { backgroundColor: branch.color }]} />
       <View style={[styles.branchIcon, { backgroundColor: branch.soft }]}>
-        <BranchIcon branch={branch.id} color={branch.color} />
+        {icon}
       </View>
       <View style={styles.cardCopy}>
         <Text style={styles.branchTitle}>{branch.title}</Text>
@@ -87,8 +61,8 @@ export function ActivityCard({
   branch,
   onPress,
 }: {
-  activity: ActivityData;
-  branch: BranchData;
+  activity: ActivityInfo;
+  branch: BranchInfo;
   onPress: () => void;
 }) {
   return (
@@ -295,8 +269,9 @@ export function RatingSelector({
 
 /**
  * A pausable countdown. Time is measured from the clock rather than by
- * counting ticks, so pausing, resuming and ending stay accurate. The
- * interval is cleared on pause, finish and unmount.
+ * counting ticks, so pausing, resuming and ending stay accurate. `reset()`
+ * starts a fresh count (and restarts the clock if still running). The
+ * interval is cleared on pause, finish, reset and unmount.
  */
 export function useSessionTimer(
   durationMs: number,
@@ -304,6 +279,8 @@ export function useSessionTimer(
   onFinish: () => void,
 ) {
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [generation, setGeneration] = useState(0);
+  const generationRef = useRef(0);
   const bankedMs = useRef(0);
   const onFinishRef = useRef(onFinish);
 
@@ -314,6 +291,7 @@ export function useSessionTimer(
   useEffect(() => {
     if (!running) return;
     const startedAt = Date.now();
+    const runGeneration = generationRef.current;
     const timer = setInterval(() => {
       const next = elapsedFor(bankedMs.current, startedAt, Date.now(), durationMs);
       setElapsedMs(next);
@@ -324,12 +302,17 @@ export function useSessionTimer(
     }, 200);
     return () => {
       clearInterval(timer);
-      bankedMs.current = elapsedFor(bankedMs.current, startedAt, Date.now(), durationMs);
+      // Bank this run's time unless a reset happened since it started.
+      if (generationRef.current === runGeneration) {
+        bankedMs.current = elapsedFor(bankedMs.current, startedAt, Date.now(), durationMs);
+      }
     };
-  }, [durationMs, running]);
+  }, [durationMs, running, generation]);
 
   const reset = useCallback(() => {
+    generationRef.current += 1;
     bankedMs.current = 0;
+    setGeneration(generationRef.current);
     setElapsedMs(0);
   }, []);
 

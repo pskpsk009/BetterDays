@@ -24,7 +24,7 @@ import {
   SecondaryButton,
   SessionTimer,
   useSessionTimer,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const SHAPE_COLORS: Record<ShapeColor, string> = {
   blue: "#3F6FC4",

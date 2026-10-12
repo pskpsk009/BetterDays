@@ -9,7 +9,7 @@ import {
   PrimaryButton,
   SecondaryButton,
   SupportNote,
-} from "./ui";
+} from "../common/ActivityUI";
 
 // Parts carry an optional note for elements that mix both sides. There is no
 // "correct" bucket: the activity is about spotting next steps, not grading.

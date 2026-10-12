@@ -1,3 +1,5 @@
+import type { ActivityInfo, BranchInfo } from "../common/ActivityUI";
+
 export type BranchId = "mindfulness" | "awareness" | "concentration";
 
 export type ActivityId =
@@ -11,20 +13,10 @@ export type ActivityId =
   | "target-tap"
   | "distraction-tracker";
 
-export type ActivityData = {
-  id: ActivityId;
-  title: string;
-  detail: string;
-  glyph: string;
-};
+export type ActivityData = ActivityInfo & { id: ActivityId };
 
-export type BranchData = {
+export type BranchData = BranchInfo & {
   id: BranchId;
-  title: string;
-  tagline: string;
-  description: string;
-  color: string;
-  soft: string;
   activities: ActivityData[];
 };
 

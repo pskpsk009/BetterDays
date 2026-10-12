@@ -12,7 +12,7 @@ import {
   SelectionChip,
   SupportNote,
   toggleItem,
-} from "./ui";
+} from "../common/ActivityUI";
 
 type ClueId = "situation" | "thought" | "emotion" | "reaction" | "alternative" | "nextStep";
 

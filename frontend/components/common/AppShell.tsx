@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { createContext, useContext, useState } from "react";
 import { ScrollView, StyleSheet, Text, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -18,6 +19,13 @@ export const COLORS = {
 
 type Tone = "teal" | "mind" | "body" | "movement";
 
+// Lets a child (e.g. a drag interaction) pause page scrolling while active.
+const ScrollLockContext = createContext<(locked: boolean) => void>(() => {});
+
+export function useScrollLock() {
+  return useContext(ScrollLockContext);
+}
+
 export function MobileScreen({
   children,
   tone: _tone = "teal",
@@ -26,6 +34,7 @@ export function MobileScreen({
   tone?: Tone;
 }) {
   const insets = useSafeAreaInsets();
+  const [scrollLocked, setScrollLocked] = useState(false);
   return (
     <View style={[styles.screen, { paddingTop: Math.max(insets.top, 18) }]}>
       <ScrollView
@@ -33,9 +42,13 @@ export function MobileScreen({
           styles.scrollContent,
           { paddingBottom: insets.bottom + 105 },
         ]}
+        keyboardShouldPersistTaps="handled"
+        scrollEnabled={!scrollLocked}
         showsVerticalScrollIndicator={false}
       >
-        {children}
+        <ScrollLockContext.Provider value={setScrollLocked}>
+          {children}
+        </ScrollLockContext.Provider>
       </ScrollView>
     </View>
   );

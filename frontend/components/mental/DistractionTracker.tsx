@@ -9,7 +9,7 @@ import {
   PrimaryButton,
   SecondaryButton,
   toggleItem,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const CATEGORIES = [
   {

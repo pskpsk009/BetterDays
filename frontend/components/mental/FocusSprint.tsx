@@ -3,7 +3,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { COLORS } from "../common/AppShell";
-import { formatClock } from "./timing";
+import { formatClock } from "../common/time";
 import {
   ActivityHeader,
   CompletionScreen,
@@ -13,7 +13,7 @@ import {
   SelectionChip,
   SessionTimer,
   useSessionTimer,
-} from "./ui";
+} from "../common/ActivityUI";
 
 const DURATIONS = [5, 10, 15, 25];
 const TASK_IDEAS = ["Studying", "Reading", "Coding", "Writing"];
