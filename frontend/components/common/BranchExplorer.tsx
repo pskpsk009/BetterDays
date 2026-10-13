@@ -31,6 +31,7 @@ export function BranchExplorer({
   activities,
   renderIcon,
   renderHero,
+  headerExtra,
 }: {
   title: string;
   subtitle: string;
@@ -42,6 +43,8 @@ export function BranchExplorer({
   renderIcon: (branch: BranchInfo, size: number) => React.ReactNode;
   /** Optional custom hero for a branch's activity list. */
   renderHero?: (branch: BranchInfo) => React.ReactNode | null;
+  /** Optional content under the header on the branch list, e.g. a section switch. */
+  headerExtra?: React.ReactNode;
 }) {
   const [view, setView] = useState<ExplorerView>({ screen: "main" });
 
@@ -75,6 +78,7 @@ export function BranchExplorer({
     content = (
       <>
         <ScreenHeader title={title} subtitle={subtitle} />
+        {headerExtra}
         <View style={styles.intro}>
           <Text style={[styles.eyebrow, { color: accent }]}>{eyebrow}</Text>
           <Text style={styles.introTitle}>{introTitle}</Text>

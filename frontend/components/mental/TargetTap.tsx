@@ -121,7 +121,7 @@ export function TargetTap({
     }
   }
 
-  const header = <ActivityHeader eyebrow="Concentration" title="Target Tap" color={color} />;
+  const header = <ActivityHeader eyebrow="Find Your Focus" title="Target Tap" color={color} />;
 
   if (status === "results") {
     const summary = summarizeRound(correct, incorrect);
@@ -148,7 +148,7 @@ export function TargetTap({
             />
           </View>
         </CompletionScreen>
-        <SecondaryButton subtle label="Back to Concentration" color={COLORS.muted} onPress={onExit} />
+        <SecondaryButton subtle label="Back to Find Your Focus" color={COLORS.muted} onPress={onExit} />
       </View>
     );
   }

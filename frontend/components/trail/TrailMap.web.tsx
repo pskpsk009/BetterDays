@@ -10,7 +10,8 @@ export function TrailMap({
   locateRequest: _locateRequest,
   onUserPointChange: _onUserPointChange,
   userLocationColor: _userLocationColor,
-  pathBreakAt: _pathBreakAt,
+  pathBreaks: _pathBreaks,
+  liveLocation: _liveLocation,
   mapRef: _mapRef,
 }: {
   coordinates: TrailCoordinate[];
@@ -19,7 +20,8 @@ export function TrailMap({
   locateRequest: number;
   onUserPointChange?: (point: { x: number; y: number }) => void;
   userLocationColor?: string;
-  pathBreakAt?: number;
+  pathBreaks?: number[];
+  liveLocation?: TrailCoordinate | null;
   mapRef?: RefObject<TrailMapHandle | null>;
 }) {
   return (

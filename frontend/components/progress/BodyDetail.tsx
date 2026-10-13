@@ -104,7 +104,7 @@ function NutritionMetrics({ ctx }: { ctx: ProgressContext }) {
         </>
       )}
       <GentleNote>
-        The plate is a learning activity with four equal sections. It isn't a dietary rule or a measure of what you
+        The plate is a learning activity with five equal slices. It isn't a dietary rule or a measure of what you
         eat, and this page never tracks calories or weight.
       </GentleNote>
     </SectionCard>

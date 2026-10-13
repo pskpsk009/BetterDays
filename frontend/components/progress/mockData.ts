@@ -130,7 +130,7 @@ export function createDemoDataset(today: Date = new Date()): ProgressDataset {
     }
 
     if (chance(0.35)) {
-      const groups: FoodGroup[] = ["produce", "protein", "carbs", "fats"];
+      const groups: FoodGroup[] = ["vegetables", "fruits", "protein", "carbs", "fats"];
       data.plates.push({ date, groups: groups.filter(() => chance(0.85)) });
     }
 

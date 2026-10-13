@@ -78,7 +78,7 @@ export function SensesGrounding({
     setStepIndex(0);
   }
 
-  const header = <ActivityHeader eyebrow="Mindfulness" title="5-Senses Grounding" color={color} />;
+  const header = <ActivityHeader eyebrow="Live the Life" title="5-Senses Grounding" color={color} />;
 
   if (stepIndex >= SENSES.length) {
     return (
@@ -91,7 +91,7 @@ export function SensesGrounding({
           color={color}
           soft={soft}
           primary={{ label: "Restart", onPress: restart }}
-          secondary={{ label: "Back to Mindfulness", onPress: onExit }}
+          secondary={{ label: "Back to Live the Life", onPress: onExit }}
         />
       </View>
     );

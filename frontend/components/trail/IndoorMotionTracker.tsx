@@ -116,7 +116,6 @@ export function IndoorMotionTracker({
           if (
             modeRef.current === "indoor" &&
             trackingRef.current &&
-            !drawingPausedRef.current &&
             stepArmed.current &&
             oldMagnitude !== null &&
             currentMagnitude > 1.06 &&
@@ -125,7 +124,9 @@ export function IndoorMotionTracker({
             const previousStepAt = lastStepAt.current;
             lastStepAt.current = now;
             stepArmed.current = false;
-            setSteps((current) => current + 1);
+            // While paused, steps still move the live position but don't draw.
+            const drawing = !drawingPausedRef.current;
+            if (drawing) setSteps((current) => current + 1);
             if (magnetic.current) {
               const direction = Math.atan2(
                 magnetic.current.y,
@@ -142,7 +143,7 @@ export function IndoorMotionTracker({
                 dy: stepLength * Math.cos(direction),
               };
               onIndoorPositionRef.current(movement);
-              onIndoorStepRef.current(movement);
+              if (drawing) onIndoorStepRef.current(movement);
             }
           }
           previousMagnitude.current = currentMagnitude;

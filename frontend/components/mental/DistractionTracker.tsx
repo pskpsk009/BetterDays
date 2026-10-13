@@ -91,7 +91,7 @@ export function DistractionTracker({
 
   return (
     <View style={mentalStyles.screen}>
-      <ActivityHeader eyebrow="Concentration" title="Distraction Tracker" color={color} />
+      <ActivityHeader eyebrow="Find Your Focus" title="Distraction Tracker" color={color} />
       <Text style={mentalStyles.body}>
         Lost focus? Note what pulled you away. Spotting the pattern can make it
         easier to plan around next time.
@@ -205,7 +205,7 @@ export function DistractionTracker({
       <Text style={[mentalStyles.muted, styles.center]}>
         This list is temporary. It clears when you leave this activity.
       </Text>
-      <SecondaryButton label="Back to Concentration" color={color} onPress={onExit} />
+      <SecondaryButton label="Back to Find Your Focus" color={color} onPress={onExit} />
     </View>
   );
 }

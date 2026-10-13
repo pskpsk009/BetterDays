@@ -27,9 +27,11 @@ import {
 import type { TrailCoordinate } from "../components/trail";
 import PublicTrailsScreen from "./public-trails";
 
-function distance(points: TrailCoordinate[]) {
+// `breaks` are indexes where a new segment starts after a pause; the gap
+// walked while paused is not counted.
+function distance(points: TrailCoordinate[], breaks: number[] = []) {
   return points.reduce((sum, current, index) => {
-    if (!index) return sum;
+    if (!index || breaks.includes(index)) return sum;
     const previous = points[index - 1];
     const latitudeDelta =
       ((current.latitude - previous.latitude) * Math.PI) / 180;
@@ -52,10 +54,10 @@ function duration(seconds: number) {
 type TrackingMode = "outdoor" | "indoor";
 type IndoorPoint = { x: number; y: number };
 
-function indoorDistance(points: IndoorPoint[]) {
+function indoorDistance(points: IndoorPoint[], breaks: number[] = []) {
   return points.reduce(
     (total, point, index) =>
-      index
+      index && !breaks.includes(index)
         ? total +
           Math.hypot(
             point.x - points[index - 1].x,
@@ -80,7 +82,9 @@ export default function TrailScreen() {
     y: 0,
   });
   const [indoorBreaks, setIndoorBreaks] = useState<number[]>([]);
-  const [gpsBreakAt, setGpsBreakAt] = useState<number | undefined>(undefined);
+  const [gpsBreaks, setGpsBreaks] = useState<number[]>([]);
+  // Direction of the latest indoor step, in degrees (0 = up on the canvas).
+  const [indoorHeading, setIndoorHeading] = useState(0);
   const [indoorOrigin, setIndoorOrigin] = useState({ x: 180, y: 150 });
   const [userLocation, setUserLocation] = useState<TrailCoordinate | null>(
     null,
@@ -122,7 +126,8 @@ export default function TrailScreen() {
     setIndoorPath([{ x: 0, y: 0 }]);
     setIndoorLivePosition({ x: 0, y: 0 });
     setIndoorBreaks([]);
-    setGpsBreakAt(undefined);
+    setGpsBreaks([]);
+    setIndoorHeading(0);
     setNativeSteps(0);
     setTimeout(() => setUserLocation(null), 800);
     setPaused(false);
@@ -162,7 +167,12 @@ export default function TrailScreen() {
 
   const saveTrailImage = async () => {
     try {
-      const svg = buildTrailSvg({ mode, coordinates, indoorPath });
+      const svg = buildTrailSvg({
+        mode,
+        coordinates,
+        indoorPath,
+        breaks: mode === "indoor" ? indoorBreaks : gpsBreaks,
+      });
       const uploaded = await uploadTrailImage(svg, {
         mode,
         distanceMeters: currentDistance,
@@ -202,8 +212,10 @@ export default function TrailScreen() {
       setPaused(true);
       return;
     }
+    // Resume starts a new segment wherever you are now.
     if (mode === "outdoor") {
-      setGpsBreakAt(coordinates.length);
+      setGpsBreaks((current) => [...current, coordinates.length]);
+      outdoorTracker.startNewSegment();
     } else {
       setIndoorBreaks((current) => [...current, indoorPath.length]);
       setIndoorPath((current) => [...current, indoorLivePosition]);
@@ -212,13 +224,14 @@ export default function TrailScreen() {
     setPaused(false);
   };
 
-  const pauseLocation = paused
-    ? mode === "outdoor"
-      ? currentLocation
-      : navigationLocation
-    : null;
-  const visibleLocation =
-    running && mode === "outdoor" ? pauseLocation : userLocation;
+  // While paused outdoors the arrow follows your live GPS position.
+  const liveLocation =
+    running && paused && mode === "outdoor" ? currentLocation : null;
+  const visibleLocation = running
+    ? mode === "indoor" && paused
+      ? navigationLocation
+      : null
+    : userLocation;
 
   const clear = () => {
     finishStopTracking();
@@ -227,7 +240,8 @@ export default function TrailScreen() {
     setIndoorPath([{ x: 0, y: 0 }]);
     setIndoorLivePosition({ x: 0, y: 0 });
     setIndoorBreaks([]);
-    setGpsBreakAt(undefined);
+    setGpsBreaks([]);
+    setIndoorHeading(0);
     setNativeSteps(0);
   };
 
@@ -239,6 +253,7 @@ export default function TrailScreen() {
   };
 
   const recordIndoorPosition = ({ dx, dy }: { dx: number; dy: number }) => {
+    setIndoorHeading((Math.atan2(dx, dy) * 180) / Math.PI);
     setIndoorLivePosition((current) => ({
       x: current.x + dx,
       y: current.y + dy,
@@ -251,14 +266,17 @@ export default function TrailScreen() {
     outdoorTracker.clear();
     setIndoorPath([{ x: 0, y: 0 }]);
     setIndoorBreaks([]);
-    setGpsBreakAt(undefined);
+    setGpsBreaks([]);
+    setIndoorHeading(0);
     setSeconds(0);
     setNativeSteps(0);
   };
 
   const indoorPosition = indoorPath[indoorPath.length - 1];
   const currentDistance =
-    mode === "indoor" ? indoorDistance(indoorPath) : distance(coordinates);
+    mode === "indoor"
+      ? indoorDistance(indoorPath, indoorBreaks)
+      : distance(coordinates, gpsBreaks);
   const estimatedSteps = Math.round(currentDistance / 0.7);
   const displayedSteps = nativeSteps > 0 ? nativeSteps : estimatedSteps;
 
@@ -332,7 +350,8 @@ export default function TrailScreen() {
               locateRequest={locateRequest}
               onUserPointChange={running ? undefined : setIndoorOrigin}
               userLocationColor="#DD8C43"
-              pathBreakAt={gpsBreakAt}
+              pathBreaks={gpsBreaks}
+              liveLocation={liveLocation}
             />
           ) : (
             <>
@@ -343,13 +362,15 @@ export default function TrailScreen() {
                 locateRequest={locateRequest}
                 onUserPointChange={running ? undefined : setIndoorOrigin}
                 userLocationColor="#DD8C43"
-                pathBreakAt={gpsBreakAt}
+                pathBreaks={gpsBreaks}
+              liveLocation={liveLocation}
               />
               <IndoorCanvas
                 points={indoorPath}
                 breaks={indoorBreaks}
                 origin={indoorOrigin}
                 livePosition={indoorLivePosition}
+                heading={indoorHeading}
               />
             </>
           )}
@@ -498,11 +519,14 @@ const IndoorCanvas = memo(function IndoorCanvas({
   breaks,
   origin,
   livePosition,
+  heading,
 }: {
   points: IndoorPoint[];
   breaks: number[];
   origin: { x: number; y: number };
   livePosition: IndoorPoint;
+  /** Direction of the latest step in degrees, so the arrow turns while paused too. */
+  heading: number;
 }) {
   const head = useGlidingPoint(livePosition);
 
@@ -545,11 +569,7 @@ const IndoorCanvas = memo(function IndoorCanvas({
   );
 
   const headScreen = toScreen(head);
-  const previousPoint = points[points.length - 2] ?? points[0];
-  const deltaX = livePosition.x - (previousPoint?.x ?? livePosition.x);
-  const deltaY = livePosition.y - (previousPoint?.y ?? livePosition.y);
-  const direction =
-    deltaX || deltaY ? (Math.atan2(deltaX, deltaY) * 180) / Math.PI : 0;
+  const direction = heading;
 
   return (
     <Svg

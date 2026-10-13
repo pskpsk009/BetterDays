@@ -1,21 +1,32 @@
 // Pure, non-judgemental feedback for the Build a Balanced Plate activity.
-// The plate has four equal quarters; each holds one food group or is empty.
+// The plate has five equal slices of 20%; each holds one food group or is empty.
 
-export type FoodGroup = "produce" | "protein" | "carbs" | "fats";
+export type FoodGroup = "vegetables" | "fruits" | "protein" | "carbs" | "fats";
 
-export type PlateQuarter = FoodGroup | null;
+export type PlateSlice = FoodGroup | null;
+
+export const SLICE_COUNT = 5;
+export const SLICE_PERCENT = 100 / SLICE_COUNT;
 
 export const FOOD_GROUPS: Record<
   FoodGroup,
   { name: string; short: string; icon: string; color: string; examples: string; provides: string }
 > = {
-  produce: {
-    name: "Vegetables and fruits",
-    short: "Veg & fruit",
+  vegetables: {
+    name: "Vegetables",
+    short: "Vegetables",
     icon: "🥦",
     color: "#7BBF6A",
-    examples: "e.g. leafy greens, carrots, berries, apples",
-    provides: "Vegetables and fruits contribute fibre, vitamins, and minerals.",
+    examples: "e.g. leafy greens, carrots, broccoli, peppers",
+    provides: "Vegetables contribute fibre, vitamins, and minerals.",
+  },
+  fruits: {
+    name: "Fruits",
+    short: "Fruits",
+    icon: "🍎",
+    color: "#E07A8F",
+    examples: "e.g. berries, apples, bananas, oranges",
+    provides: "Fruits add fibre, vitamins, and natural sweetness.",
   },
   protein: {
     name: "Protein",
@@ -43,28 +54,25 @@ export const FOOD_GROUPS: Record<
   },
 };
 
-export const GROUP_ORDER: FoodGroup[] = ["produce", "protein", "carbs", "fats"];
+export const GROUP_ORDER: FoodGroup[] = ["vegetables", "fruits", "protein", "carbs", "fats"];
 
 export type PlateCounts = Record<FoodGroup, number>;
 
-export function countPlate(plate: PlateQuarter[]): PlateCounts {
-  const counts: PlateCounts = { produce: 0, protein: 0, carbs: 0, fats: 0 };
-  for (const quarter of plate) if (quarter) counts[quarter] += 1;
+export function countPlate(plate: PlateSlice[]): PlateCounts {
+  const counts: PlateCounts = { vegetables: 0, fruits: 0, protein: 0, carbs: 0, fats: 0 };
+  for (const slice of plate) if (slice) counts[slice] += 1;
   return counts;
 }
 
-/** Percentage of the whole plate per group (each quarter is 25%). */
-export function platePercentages(plate: PlateQuarter[]): PlateCounts {
+/** Percentage of the whole plate per group (each slice is 20%). */
+export function platePercentages(plate: PlateSlice[]): PlateCounts {
   const counts = countPlate(plate);
-  return {
-    produce: counts.produce * 25,
-    protein: counts.protein * 25,
-    carbs: counts.carbs * 25,
-    fats: counts.fats * 25,
-  };
+  const percentages = { ...counts };
+  for (const group of GROUP_ORDER) percentages[group] = counts[group] * SLICE_PERCENT;
+  return percentages;
 }
 
-export function describeComposition(plate: PlateQuarter[]): string {
+export function describeComposition(plate: PlateSlice[]): string {
   const percentages = platePercentages(plate);
   return GROUP_ORDER.filter((group) => percentages[group] > 0)
     .map((group) => `${percentages[group]}% ${FOOD_GROUPS[group].short.toLowerCase()}`)
@@ -93,12 +101,20 @@ const SINGLE_GROUP: Record<FoodGroup, PlateFeedback> = {
       "Pairing carbs with some protein, vegetables, or fruit can round the meal out.",
     ],
   },
-  produce: {
-    title: "An all-vegetable-and-fruit plate",
+  vegetables: {
+    title: "An all-vegetable plate",
     points: [
-      FOOD_GROUPS.produce.provides,
-      "On their own, vegetables and fruits may provide less protein and longer-lasting energy than a mixed meal.",
+      FOOD_GROUPS.vegetables.provides,
+      "On their own, vegetables may provide less protein and longer-lasting energy than a mixed meal.",
       "Adding a protein or grain alongside them can help the meal keep you going.",
+    ],
+  },
+  fruits: {
+    title: "An all-fruit plate",
+    points: [
+      FOOD_GROUPS.fruits.provides,
+      "A meal of only fruit may provide little protein or longer-lasting energy.",
+      "Fruit works well alongside a protein or grain, for example with yoghurt or oats.",
     ],
   },
   fats: {
@@ -111,11 +127,12 @@ const SINGLE_GROUP: Record<FoodGroup, PlateFeedback> = {
   },
 };
 
-export function plateFeedback(plate: PlateQuarter[]): PlateFeedback {
+export function plateFeedback(plate: PlateSlice[]): PlateFeedback {
   const counts = countPlate(plate);
   const filled = plate.filter(Boolean).length;
   const present = GROUP_ORDER.filter((group) => counts[group] > 0);
   const missing = GROUP_ORDER.filter((group) => counts[group] === 0);
+  const plants = counts.vegetables + counts.fruits;
 
   if (filled === 0) {
     return { title: "Your plate is empty", points: ["Add food groups to the plate to see feedback."] };
@@ -123,18 +140,26 @@ export function plateFeedback(plate: PlateQuarter[]): PlateFeedback {
 
   let result: PlateFeedback;
 
-  if (present.length === 1 && filled === 4) {
+  if (present.length === 1 && filled === SLICE_COUNT) {
     result = { ...SINGLE_GROUP[present[0]], points: [...SINGLE_GROUP[present[0]].points] };
-  } else if (counts.produce === 2 && counts.protein === 1 && counts.carbs === 1) {
+  } else if (present.length === GROUP_ORDER.length) {
+    result = {
+      title: "All five food groups",
+      points: [
+        "This plate includes every food group, which is an easy way to get a wide variety of nutrients in one meal.",
+        ...present.map((group) => FOOD_GROUPS[group].provides),
+      ],
+    };
+  } else if (plants >= 3 && counts.protein >= 1 && counts.carbs >= 1) {
     result = {
       title: "Plenty of colour, with protein and energy",
       points: [
-        "Half the plate is vegetables and fruits, giving a good range of fibre, vitamins, and minerals.",
-        "The protein quarter supports growth and repair, and the carbohydrate quarter provides energy.",
+        "More than half the plate is vegetables and fruits, giving a good range of fibre, vitamins, and minerals.",
+        "The protein supports growth and repair, and the carbohydrates provide energy.",
         "Adding a small amount of healthy fat, like olive oil or seeds, is one way to add even more variety.",
       ],
     };
-  } else if (counts.carbs === 2 && counts.protein === 1 && counts.produce === 1) {
+  } else if (counts.carbs >= 2 && counts.protein >= 1 && plants >= 1) {
     result = {
       title: "Energy-focused, with protein and plants",
       points: [
@@ -142,17 +167,9 @@ export function plateFeedback(plate: PlateQuarter[]): PlateFeedback {
         "Adding variety, such as a wider range of vegetables, and a source of healthy fat can help make meals more balanced.",
       ],
     };
-  } else if (present.length === 4) {
-    result = {
-      title: "All four food groups",
-      points: [
-        "This plate includes every food group, which is an easy way to get a wide variety of nutrients in one meal.",
-        ...present.map((group) => FOOD_GROUPS[group].provides),
-      ],
-    };
   } else {
     result = {
-      title: filled < 4 ? "Your plate so far" : "A mixed plate",
+      title: filled < SLICE_COUNT ? "Your plate so far" : "A mixed plate",
       points: [
         ...present.map((group) => FOOD_GROUPS[group].provides),
         `To add variety, you could try including ${missing
@@ -162,9 +179,10 @@ export function plateFeedback(plate: PlateQuarter[]): PlateFeedback {
     };
   }
 
-  if (filled < 4) {
+  const empty = SLICE_COUNT - filled;
+  if (empty > 0) {
     result.points.push(
-      `${4 - filled} quarter${4 - filled === 1 ? " is" : "s are"} still empty. Fill the plate to explore a whole meal.`,
+      `${empty} slice${empty === 1 ? " is" : "s are"} still empty. Fill the plate to explore a whole meal.`,
     );
   }
   result.points.push(NEEDS_DIFFER);

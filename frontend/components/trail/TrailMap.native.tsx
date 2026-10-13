@@ -28,7 +28,10 @@ type TrailMapProps = {
   locateRequest: number;
   onUserPointChange?: (point: { x: number; y: number }) => void;
   userLocationColor?: string;
-  pathBreakAt?: number;
+  /** Indexes where a new line segment starts (one per resume). */
+  pathBreaks?: number[];
+  /** Live position while drawing is paused; the arrow and camera follow it. */
+  liveLocation?: TrailCoordinate | null;
 };
 
 export function TrailMap({
@@ -38,10 +41,11 @@ export function TrailMap({
   locateRequest,
   onUserPointChange,
   userLocationColor,
-  pathBreakAt,
+  pathBreaks,
+  liveLocation = null,
   mapRef: snapshotRef,
 }: TrailMapProps & { mapRef?: RefObject<TrailMapHandle | null> }) {
-  const current = coordinates[coordinates.length - 1];
+  const current = liveLocation ?? coordinates[coordinates.length - 1];
   const mapRef = useRef<MapView>(null);
   const hasCentered = useRef(false);
   const currentRegion = useRef<Region>(DEFAULT_REGION);
@@ -154,7 +158,11 @@ export function TrailMap({
         void reportUserPoint();
       }}
     >
-      <TrailPath coordinates={coordinates} breakAt={pathBreakAt} />
+      <TrailPath
+        coordinates={coordinates}
+        breaks={pathBreaks}
+        liveLocation={liveLocation}
+      />
       {userLocation && (
         <Marker
           key="user-location-marker"

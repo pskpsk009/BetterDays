@@ -4,13 +4,53 @@ import Svg, { Polygon } from "react-native-svg";
 
 import type { TrailCoordinate } from "./TrailMap";
 
+const LIVE_GLIDE_MS = 800;
+
+// Glides the live-position arrow between GPS fixes instead of jumping.
+function useGlidingCoordinate(target: TrailCoordinate | null) {
+  const [point, setPoint] = useState(target);
+  const pointRef = useRef(target);
+
+  useEffect(() => {
+    const from = pointRef.current;
+    if (!target || !from) {
+      pointRef.current = target;
+      setPoint(target);
+      return;
+    }
+    const startedAt = Date.now();
+    let frame = requestAnimationFrame(function step() {
+      const progress = Math.min(1, (Date.now() - startedAt) / LIVE_GLIDE_MS);
+      const next = {
+        latitude: from.latitude + (target.latitude - from.latitude) * progress,
+        longitude: from.longitude + (target.longitude - from.longitude) * progress,
+        heading: target.heading,
+      };
+      pointRef.current = next;
+      setPoint(next);
+      if (progress < 1) frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
+
+  return point;
+}
+
+/**
+ * Draws the trail as separate segments (a new one starts at each index in
+ * `breaks`, i.e. after every pause). The arrow sits at the end of the line,
+ * or at `liveLocation` while drawing is paused so it keeps following you.
+ */
 export function TrailPath({
   coordinates,
-  breakAt,
+  breaks = [],
+  liveLocation = null,
 }: {
   coordinates: TrailCoordinate[];
-  breakAt?: number;
+  breaks?: number[];
+  liveLocation?: TrailCoordinate | null;
 }) {
+  const live = useGlidingCoordinate(liveLocation);
   const [renderedCoordinates, setRenderedCoordinates] =
     useState<TrailCoordinate[]>(coordinates);
   const renderedRef = useRef<TrailCoordinate[]>(coordinates);
@@ -63,31 +103,29 @@ export function TrailPath({
     };
   }, [coordinates]);
 
-  const current = renderedCoordinates[renderedCoordinates.length - 1];
-  const firstSegment = breakAt ? renderedCoordinates.slice(0, breakAt) : [];
-  const secondSegment = breakAt
-    ? renderedCoordinates.slice(breakAt)
-    : renderedCoordinates;
+  const pathEnd = renderedCoordinates[renderedCoordinates.length - 1];
+  const current = live
+    ? { ...live, heading: live.heading ?? pathEnd?.heading }
+    : pathEnd;
+  const starts = [0, ...breaks.filter((index) => index > 0)];
+  const segments = starts.map((start, index) =>
+    renderedCoordinates.slice(start, starts[index + 1] ?? renderedCoordinates.length),
+  );
 
   return (
     <>
-      {firstSegment.length > 1 && (
-        <Polyline
-          coordinates={firstSegment}
-          strokeColor="#DD8C43"
-          strokeWidth={5}
-          lineCap="round"
-          lineJoin="round"
-        />
-      )}
-      {secondSegment.length > 1 && (
-        <Polyline
-          coordinates={secondSegment}
-          strokeColor="#DD8C43"
-          strokeWidth={5}
-          lineCap="round"
-          lineJoin="round"
-        />
+      {segments.map(
+        (segment, index) =>
+          segment.length > 1 && (
+            <Polyline
+              key={`trail-segment-${index}`}
+              coordinates={segment}
+              strokeColor="#DD8C43"
+              strokeWidth={5}
+              lineCap="round"
+              lineJoin="round"
+            />
+          ),
       )}
       {current && (
         <Marker coordinate={current} title="Current position">

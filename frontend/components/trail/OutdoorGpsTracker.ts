@@ -24,6 +24,10 @@ export function useOutdoorGpsTracker(
   const [currentLocation, setCurrentLocation] =
     useState<TrailCoordinate | null>(null);
   const subscription = useRef<Location.LocationSubscription | null>(null);
+  // Latest accurate fix, kept even while drawing is paused.
+  const latestFix = useRef<TrailCoordinate | null>(null);
+  // After a resume, the next accurate fix starts a fresh segment.
+  const segmentPending = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -49,9 +53,16 @@ export function useOutdoorGpsTracker(
           longitude: coords.longitude,
           heading: coords.heading ?? undefined,
         };
+        // The live position keeps updating while paused; only drawing stops.
         setCurrentLocation(next);
-        if (drawingPausedRef.current || !drawingEnabledRef.current) return;
         if (coords.accuracy && coords.accuracy > 25) return;
+        latestFix.current = next;
+        if (drawingPausedRef.current || !drawingEnabledRef.current) return;
+        if (segmentPending.current) {
+          segmentPending.current = false;
+          setCoordinates((current) => [...current, next]);
+          return;
+        }
         setCoordinates((current) => {
           const previous = current[current.length - 1];
           if (!previous) return [next];
@@ -83,10 +94,26 @@ export function useOutdoorGpsTracker(
     subscription.current = null;
   };
 
+  /**
+   * Begins a new segment after a pause, at the current position, so the
+   * line never bridges the distance walked while paused.
+   */
+  const startNewSegment = () => {
+    const fix = latestFix.current;
+    if (fix) {
+      segmentPending.current = false;
+      setCoordinates((current) => [...current, fix]);
+    } else {
+      segmentPending.current = true;
+    }
+  };
+
   const clear = () => {
     setCoordinates([]);
     setCurrentLocation(null);
+    latestFix.current = null;
+    segmentPending.current = false;
   };
 
-  return { coordinates, currentLocation, start, stop, clear };
+  return { coordinates, currentLocation, start, stop, clear, startNewSegment };
 }

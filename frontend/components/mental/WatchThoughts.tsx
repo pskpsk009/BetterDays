@@ -58,7 +58,7 @@ export function WatchThoughts({
 
   return (
     <View style={mentalStyles.screen}>
-      <ActivityHeader eyebrow="Mindfulness" title="Watch Your Thoughts" color={color} />
+      <ActivityHeader eyebrow="Live the Life" title="Watch Your Thoughts" color={color} />
 
       <View style={[styles.scene, { backgroundColor: soft }]}>
         <DriftingBackground color={color} />
@@ -192,7 +192,7 @@ export function WatchThoughts({
         <View style={styles.stack}>
           <PrimaryButton label="Watch another thought" color={color} onPress={restart} />
           <SecondaryButton
-            label="Back to Mindfulness"
+            label="Back to Live the Life"
             color={color}
 
             onPress={onExit}

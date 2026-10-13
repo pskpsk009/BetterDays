@@ -1,7 +1,9 @@
 import { View } from "react-native";
 
+import { EmotionalBranchIcon } from "../emotional/EmotionalBranchIcon";
+import { getEmotionalBranch } from "../emotional/branches";
 import { BranchIcon } from "../mental/BranchIcon";
-import { getBranch } from "../mental/branches";
+import { getMentalBranch } from "../mental/branches";
 import { AssessmentComparison } from "./AssessmentComparison";
 import { ProgressChart } from "./ProgressChart";
 import { formatNumber, formatPercent } from "./progressMath";
@@ -33,14 +35,14 @@ const rating = (value: number | null) => (value === null ? "—" : `${formatNumb
 const percent = (value: number | null) => (value === null ? "—" : formatPercent(value));
 
 function MindfulnessMetrics({ ctx }: { ctx: ProgressContext }) {
-  const branch = getBranch("mindfulness");
+  const branch = getMentalBranch("live-the-life");
   const d = mindfulnessDetail(ctx);
   return (
     <SectionCard
       eyebrow="Mind · A"
       title="Mindfulness"
       color={branch.color}
-      icon={<BranchIcon branch="mindfulness" color={branch.color} size={40} />}
+      icon={<BranchIcon branch="live-the-life" color={branch.color} size={40} />}
     >
       {d.sessions === 0 ? (
         <EmptyState message="Try Breathing Bubble or 5-Senses Grounding to start seeing your mindfulness practice here." />
@@ -107,14 +109,14 @@ function MindfulnessMetrics({ ctx }: { ctx: ProgressContext }) {
 }
 
 function SelfAwarenessMetrics({ ctx }: { ctx: ProgressContext }) {
-  const branch = getBranch("awareness");
+  const branch = getEmotionalBranch("self-awareness");
   const d = selfAwarenessDetail(ctx);
   return (
     <SectionCard
       eyebrow="Mind · B"
       title="Self-Awareness"
       color={branch.color}
-      icon={<BranchIcon branch="awareness" color={branch.color} size={40} />}
+      icon={<EmotionalBranchIcon branch="self-awareness" color={branch.color} size={40} />}
     >
       {d.sessions === 0 ? (
         <EmptyState message="Try Emotion Explorer or Reflection Detective to start seeing your self-awareness practice here." />
@@ -180,14 +182,14 @@ function SelfAwarenessMetrics({ ctx }: { ctx: ProgressContext }) {
 }
 
 function ConcentrationMetrics({ ctx }: { ctx: ProgressContext }) {
-  const branch = getBranch("concentration");
+  const branch = getMentalBranch("find-your-focus");
   const d = concentrationDetail(ctx);
   return (
     <SectionCard
       eyebrow="Mind · C"
       title="Concentration"
       color={branch.color}
-      icon={<BranchIcon branch="concentration" color={branch.color} size={40} />}
+      icon={<BranchIcon branch="find-your-focus" color={branch.color} size={40} />}
     >
       {d.sessions === 0 ? (
         <EmptyState message="Try a Focus Sprint or Target Tap to start seeing your focus sessions here." />

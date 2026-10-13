@@ -6,9 +6,11 @@ type Options = {
   mode: "indoor" | "outdoor";
   coordinates: TrailCoordinate[];
   indoorPath: IndoorPoint[];
+  /** Indexes where a new segment starts after a pause. */
+  breaks?: number[];
 };
 
-export function buildTrailSvg({ mode, coordinates, indoorPath }: Options) {
+export function buildTrailSvg({ mode, coordinates, indoorPath, breaks = [] }: Options) {
   const points =
     mode === "indoor"
       ? indoorPath
@@ -32,12 +34,18 @@ export function buildTrailSvg({ mode, coordinates, indoorPath }: Options) {
   const scale = Math.min(24, 220 / extent);
   const originX = width / 2;
   const originY = height / 2;
-  const line = points
-    .map((point) => `${originX + point.x * scale},${originY - point.y * scale}`)
-    .join(" ");
+  const starts = [0, ...breaks.filter((index) => index > 0)];
+  const lines = starts
+    .map((start, index) =>
+      points
+        .slice(start, starts[index + 1] ?? points.length)
+        .map((point) => `${originX + point.x * scale},${originY - point.y * scale}`)
+        .join(" "),
+    )
+    .filter((line) => line.includes(" "));
   const current = points[points.length - 1] ?? { x: 0, y: 0 };
   const currentX = originX + current.x * scale;
   const currentY = originY - current.y * scale;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#E8F4EF"/><polyline points="${line}" fill="none" stroke="#DD8C43" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${currentX}" cy="${currentY}" r="14" fill="#DD8C43"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#E8F4EF"/>${lines.map((line) => `<polyline points="${line}" fill="none" stroke="#DD8C43" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`).join("")}<circle cx="${currentX}" cy="${currentY}" r="14" fill="#DD8C43"/></svg>`;
 }

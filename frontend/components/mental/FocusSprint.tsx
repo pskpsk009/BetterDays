@@ -73,7 +73,7 @@ export function FocusSprint({
     setStatus("setup");
   }
 
-  const header = <ActivityHeader eyebrow="Concentration" title="Focus Sprint" color={color} />;
+  const header = <ActivityHeader eyebrow="Find Your Focus" title="Focus Sprint" color={color} />;
 
   if (status === "finished" || status === "ended") {
     const finished = status === "finished";
@@ -91,7 +91,7 @@ export function FocusSprint({
           color={color}
           soft={soft}
           primary={{ label: "Start another sprint", onPress: newSession }}
-          secondary={{ label: "Back to Concentration", onPress: onExit }}
+          secondary={{ label: "Back to Find Your Focus", onPress: onExit }}
         />
       </View>
     );

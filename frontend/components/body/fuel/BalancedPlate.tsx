@@ -23,28 +23,39 @@ import {
   FOOD_GROUPS,
   FoodGroup,
   GROUP_ORDER,
-  PlateQuarter,
+  PlateSlice,
   plateFeedback,
+  SLICE_COUNT,
+  SLICE_PERCENT,
 } from "./plateFeedback";
 
-const QUARTER_NAMES = ["Top left", "Top right", "Bottom right", "Bottom left"];
-const EMPTY_PLATE: PlateQuarter[] = [null, null, null, null];
+const SLICE_NAMES = ["Top", "Upper right", "Lower right", "Lower left", "Upper left"];
+const EMPTY_PLATE: PlateSlice[] = Array(SLICE_COUNT).fill(null);
+const SLICE_DEGREES = 360 / SLICE_COUNT;
 const LONG_PRESS_MS = 180;
 
 type Rect = { x: number; y: number; width: number; height: number };
 
-/** Which quarter a window point falls in, or null if outside the plate. */
-function quarterAt(rect: Rect, pageX: number, pageY: number): number | null {
-  const cx = rect.x + rect.width / 2;
-  const cy = rect.y + rect.height / 2;
-  const radius = rect.width / 2;
-  if ((pageX - cx) ** 2 + (pageY - cy) ** 2 > radius ** 2) return null;
-  if (pageY < cy) return pageX < cx ? 0 : 1;
-  return pageX < cx ? 3 : 2;
+/** Slices run clockwise from 12 o'clock. Angle 0 here is straight up. */
+function pointAt(center: number, radius: number, degrees: number) {
+  const radians = ((degrees - 90) * Math.PI) / 180;
+  return { x: center + radius * Math.cos(radians), y: center + radius * Math.sin(radians) };
+}
+
+/** Which slice a point (relative to the plate's top-left) falls in, or null if off the plate. */
+function sliceAt(size: number, x: number, y: number): number | null {
+  const center = size / 2;
+  if ((x - center) ** 2 + (y - center) ** 2 > center ** 2) return null;
+  const degrees = ((Math.atan2(y - center, x - center) * 180) / Math.PI + 90 + 360) % 360;
+  return Math.min(SLICE_COUNT - 1, Math.floor(degrees / SLICE_DEGREES));
+}
+
+function sliceAtPage(rect: Rect, pageX: number, pageY: number): number | null {
+  return sliceAt(rect.width, pageX - rect.x, pageY - rect.y);
 }
 
 export function BalancedPlate({ color, soft }: ActivityProps) {
-  const [plate, setPlate] = useState<PlateQuarter[]>(EMPTY_PLATE);
+  const [plate, setPlate] = useState<PlateSlice[]>(EMPTY_PLATE);
   const [selectedGroup, setSelectedGroup] = useState<FoodGroup | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [plateSize, setPlateSize] = useState(260);
@@ -57,68 +68,93 @@ export function BalancedPlate({ color, soft }: ActivityProps) {
     setPlate((current) => current.map((value, i) => (i === index ? group : value)));
   }
 
-  function tapQuarter(index: number) {
+  function tapSlice(index: number) {
     if (selectedGroup) assign(index, selectedGroup);
     else if (plate[index]) assign(index, null);
   }
 
   function dropAt(group: FoodGroup, pageX: number, pageY: number) {
     plateRef.current?.measureInWindow((x, y, width, height) => {
-      const index = quarterAt({ x, y, width, height }, pageX, pageY);
+      const index = sliceAtPage({ x, y, width, height }, pageX, pageY);
       if (index !== null) assign(index, group);
     });
   }
 
   const r = plateSize / 2 - 6;
   const c = plateSize / 2;
-  const slices = [
-    `M${c} ${c} L${c} ${c - r} A${r} ${r} 0 0 0 ${c - r} ${c} Z`,
-    `M${c} ${c} L${c + r} ${c} A${r} ${r} 0 0 0 ${c} ${c - r} Z`,
-    `M${c} ${c} L${c} ${c + r} A${r} ${r} 0 0 0 ${c + r} ${c} Z`,
-    `M${c} ${c} L${c - r} ${c} A${r} ${r} 0 0 0 ${c} ${c + r} Z`,
-  ];
+  const labelSize = r * 0.66;
+  const slices = plate.map((_, index) => {
+    const from = pointAt(c, r, index * SLICE_DEGREES);
+    const to = pointAt(c, r, (index + 1) * SLICE_DEGREES);
+    return {
+      d: `M${c} ${c} L${from.x} ${from.y} A${r} ${r} 0 0 1 ${to.x} ${to.y} Z`,
+      edge: from,
+      label: pointAt(c, r * 0.6, (index + 0.5) * SLICE_DEGREES),
+    };
+  });
 
   return (
     <View style={mentalStyles.screen}>
       <ActivityHeader eyebrow="Fuel Your Body" title="Build a Balanced Plate" color={color} />
       <Text style={mentalStyles.body}>
-        The plate is split into four quarters of 25%. Tap a food group, then
-        tap a quarter, or press and hold a card and drag it onto the plate.
+        The plate is split into five equal slices of 20%. Tap a food group,
+        then tap a slice, or press and hold a card and drag it onto the plate.
       </Text>
 
       <View
         style={styles.plateArea}
         onLayout={(event) => setPlateSize(Math.min(300, event.nativeEvent.layout.width - 8))}
       >
-        <View
+        {/* Taps anywhere on the plate pick the slice by angle; the labelled
+            buttons inside give each slice its own accessible target. */}
+        <Pressable
           ref={plateRef}
           collapsable={false}
+          accessible={false}
+          onPress={(event) => {
+            // Page coordinates: locationX/Y are relative to whichever child was touched.
+            const { pageX, pageY } = event.nativeEvent;
+            plateRef.current?.measureInWindow((x, y, width, height) => {
+              const index = sliceAtPage({ x, y, width, height }, pageX, pageY);
+              if (index !== null) tapSlice(index);
+            });
+          }}
           style={{ width: plateSize, height: plateSize }}
         >
-          <Svg width={plateSize} height={plateSize}>
-            <Circle cx={c} cy={c} r={c - 1} fill="#FFFFFF" stroke={COLORS.border} strokeWidth={2} />
-            {slices.map((d, index) => {
-              const group = plate[index];
-              return (
-                <Path
-                  key={d}
-                  d={d}
-                  fill={group ? FOOD_GROUPS[group].color : "#F2F6F4"}
-                  opacity={group ? 0.85 : 1}
+          <View pointerEvents="none">
+            <Svg width={plateSize} height={plateSize}>
+              <Circle cx={c} cy={c} r={c - 1} fill="#FFFFFF" stroke={COLORS.border} strokeWidth={2} />
+              {slices.map((slice, index) => {
+                const group = plate[index];
+                return (
+                  <Path
+                    key={SLICE_NAMES[index]}
+                    d={slice.d}
+                    fill={group ? FOOD_GROUPS[group].color : "#F2F6F4"}
+                    opacity={group ? 0.85 : 1}
+                  />
+                );
+              })}
+              {slices.map((slice, index) => (
+                <Line
+                  key={`divider-${SLICE_NAMES[index]}`}
+                  x1={c}
+                  y1={c}
+                  x2={slice.edge.x}
+                  y2={slice.edge.y}
+                  stroke="#FFFFFF"
+                  strokeWidth={4}
                 />
-              );
-            })}
-            <Line x1={c} y1={c - r} x2={c} y2={c + r} stroke="#FFFFFF" strokeWidth={4} />
-            <Line x1={c - r} y1={c} x2={c + r} y2={c} stroke="#FFFFFF" strokeWidth={4} />
-          </Svg>
-          {plate.map((group, index) => {
-            const left = index === 0 || index === 3 ? 0 : plateSize / 2;
-            const top = index < 2 ? 0 : plateSize / 2;
+              ))}
+            </Svg>
+          </View>
+          {slices.map((slice, index) => {
+            const group = plate[index];
             return (
               <Pressable
-                key={QUARTER_NAMES[index]}
+                key={SLICE_NAMES[index]}
                 accessibilityRole="button"
-                accessibilityLabel={`${QUARTER_NAMES[index]} quarter, ${
+                accessibilityLabel={`${SLICE_NAMES[index]} slice, ${
                   group ? FOOD_GROUPS[group].name : "empty"
                 }`}
                 accessibilityHint={
@@ -128,33 +164,32 @@ export function BalancedPlate({ color, soft }: ActivityProps) {
                       ? "Removes this food group"
                       : "Select a food group first"
                 }
-                onPress={() => tapQuarter(index)}
+                onPress={() => tapSlice(index)}
                 style={[
-                  styles.quarter,
-                  { left, top, width: plateSize / 2, height: plateSize / 2 },
-                  index === 0 && styles.alignBR,
-                  index === 1 && styles.alignBL,
-                  index === 2 && styles.alignTL,
-                  index === 3 && styles.alignTR,
+                  styles.slice,
+                  {
+                    left: slice.label.x - labelSize / 2,
+                    top: slice.label.y - labelSize / 2,
+                    width: labelSize,
+                    height: labelSize,
+                  },
                 ]}
               >
-                <View style={styles.quarterLabel}>
-                  {group ? (
-                    <>
-                      <Text style={styles.quarterIcon}>{FOOD_GROUPS[group].icon}</Text>
-                      <Text style={styles.quarterName}>{FOOD_GROUPS[group].short}</Text>
-                      <Text style={styles.quarterPct}>25%</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.quarterEmpty}>
-                      {selectedGroup ? "Tap to place" : "Empty"}
+                {group ? (
+                  <>
+                    <Text style={styles.sliceIcon}>{FOOD_GROUPS[group].icon}</Text>
+                    <Text style={styles.sliceName} numberOfLines={2}>
+                      {FOOD_GROUPS[group].short}
                     </Text>
-                  )}
-                </View>
+                    <Text style={styles.slicePct}>{SLICE_PERCENT}%</Text>
+                  </>
+                ) : (
+                  <Text style={styles.sliceEmpty}>{selectedGroup ? "Tap to place" : "Empty"}</Text>
+                )}
               </Pressable>
             );
           })}
-        </View>
+        </Pressable>
       </View>
 
       <Text accessibilityLiveRegion="polite" style={[mentalStyles.body, styles.center]}>
@@ -176,8 +211,8 @@ export function BalancedPlate({ color, soft }: ActivityProps) {
       </View>
       <Text style={[mentalStyles.muted, styles.center]}>
         {selectedGroup
-          ? `${FOOD_GROUPS[selectedGroup].name} selected. Tap a quarter to place it.`
-          : "To change a quarter, place a different group on it. With no card selected, tap a quarter to empty it."}
+          ? `${FOOD_GROUPS[selectedGroup].name} selected. Tap a slice to place it.`
+          : "To change a slice, place a different group on it. With no card selected, tap a slice to empty it."}
       </Text>
 
       <View style={mentalStyles.row}>
@@ -329,7 +364,7 @@ function DraggableFoodCard({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={`${info.name}. ${info.examples}`}
-      accessibilityHint="Selects this food group. Then tap a plate quarter."
+      accessibilityHint="Selects this food group. Then tap a plate slice."
       accessibilityActions={[{ name: "activate" }]}
       onAccessibilityAction={() => onSelect()}
       style={[
@@ -353,16 +388,11 @@ function DraggableFoodCard({
 const styles = StyleSheet.create({
   center: { textAlign: "center" },
   plateArea: { alignItems: "center", paddingVertical: 4 },
-  quarter: { position: "absolute", padding: 14 },
-  alignBR: { alignItems: "flex-end", justifyContent: "flex-end" },
-  alignBL: { alignItems: "flex-start", justifyContent: "flex-end" },
-  alignTL: { alignItems: "flex-start", justifyContent: "flex-start" },
-  alignTR: { alignItems: "flex-end", justifyContent: "flex-start" },
-  quarterLabel: { width: "78%", height: "78%", alignItems: "center", justifyContent: "center" },
-  quarterIcon: { fontSize: 26 },
-  quarterName: { color: COLORS.ink, fontSize: 11, fontWeight: "800", textAlign: "center" },
-  quarterPct: { color: COLORS.ink, fontSize: 11, fontWeight: "600" },
-  quarterEmpty: { color: COLORS.muted, fontSize: 12, fontWeight: "600", textAlign: "center" },
+  slice: { position: "absolute", alignItems: "center", justifyContent: "center" },
+  sliceIcon: { fontSize: 22 },
+  sliceName: { color: COLORS.ink, fontSize: 10, fontWeight: "800", textAlign: "center" },
+  slicePct: { color: COLORS.ink, fontSize: 10, fontWeight: "600" },
+  sliceEmpty: { color: COLORS.muted, fontSize: 11, fontWeight: "600", textAlign: "center" },
   cards: { gap: 10, zIndex: 10 },
   foodCard: {
     minHeight: 68,

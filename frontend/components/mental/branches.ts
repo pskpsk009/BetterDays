@@ -1,30 +1,131 @@
 import type { ActivityInfo, BranchInfo } from "../common/ActivityUI";
 
-export type BranchId = "mindfulness" | "awareness" | "concentration";
+// Mental Wellness: five branches, three activities each.
+// Activity IDs reused from the original Mind branches are unchanged.
 
-export type ActivityId =
+export type MentalBranchId =
+  | "self-acceptance"
+  | "discover-joy"
+  | "purpose"
+  | "live-the-life"
+  | "find-your-focus";
+
+export type MentalActivityId =
+  | "letter-to-past-self"
+  | "lessons-not-labels"
+  | "strengths-garden"
+  | "joy-explorer"
+  | "try-something-new"
+  | "little-moments"
+  | "values-compass"
+  | "future-me"
+  | "one-small-step"
   | "breathing-bubble"
   | "senses-grounding"
   | "watch-thoughts"
-  | "emotion-explorer"
-  | "reflection-detective"
-  | "what-can-i-control"
   | "focus-sprint"
   | "target-tap"
   | "distraction-tracker";
 
-export type ActivityData = ActivityInfo & { id: ActivityId };
+export type MentalActivity = ActivityInfo & { id: MentalActivityId };
 
-export type BranchData = BranchInfo & {
-  id: BranchId;
-  activities: ActivityData[];
+export type MentalBranch = BranchInfo & {
+  id: MentalBranchId;
+  activities: [MentalActivity, MentalActivity, MentalActivity];
 };
 
-export const BRANCHES: BranchData[] = [
+export const MENTAL_BRANCHES: MentalBranch[] = [
   {
-    id: "mindfulness",
-    title: "Mindfulness",
-    tagline: "Learn to notice the present moment.",
+    id: "self-acceptance",
+    title: "Self-Acceptance",
+    tagline: "Make peace with the past.",
+    description:
+      "Look back with kindness, learn from experiences without being defined by them, and notice your strengths.",
+    color: "#5E8C61",
+    soft: "#EAF3EA",
+    activities: [
+      {
+        id: "letter-to-past-self",
+        title: "Letter to My Past Self",
+        detail: "Write a few kind words to a younger you.",
+        glyph: "✉",
+      },
+      {
+        id: "lessons-not-labels",
+        title: "Lessons, Not Labels",
+        detail: "Find what an experience taught you, without judging yourself.",
+        glyph: "✎",
+      },
+      {
+        id: "strengths-garden",
+        title: "My Strengths Garden",
+        detail: "Pick the strengths and qualities you'd like to grow.",
+        glyph: "✿",
+      },
+    ],
+  },
+  {
+    id: "discover-joy",
+    title: "Discover Your Joy",
+    tagline: "Enjoy today by finding what you love.",
+    description:
+      "Explore interests, try something small and new, and notice the moments that make everyday life feel good.",
+    color: "#B7791F",
+    soft: "#FBF1DE",
+    activities: [
+      {
+        id: "joy-explorer",
+        title: "Joy Explorer",
+        detail: "Browse hobbies and pick ones you might enjoy.",
+        glyph: "☀",
+      },
+      {
+        id: "try-something-new",
+        title: "Try Something New",
+        detail: "Choose one small, easy thing to try today.",
+        glyph: "+",
+      },
+      {
+        id: "little-moments",
+        title: "Little Moments Journal",
+        detail: "Capture a small moment that felt good.",
+        glyph: "❋",
+      },
+    ],
+  },
+  {
+    id: "purpose",
+    title: "Purpose in Life",
+    tagline: "Explore what matters to you, for tomorrow.",
+    description:
+      "Discover your values and hopes. You don't need your whole future figured out, and small goals count too.",
+    color: "#3D7F8F",
+    soft: "#E3F1F4",
+    activities: [
+      {
+        id: "values-compass",
+        title: "Values Compass",
+        detail: "Choose the values that matter most to you.",
+        glyph: "✦",
+      },
+      {
+        id: "future-me",
+        title: "Future Me",
+        detail: "Imagine what a meaningful future could look like.",
+        glyph: "→",
+      },
+      {
+        id: "one-small-step",
+        title: "One Small Step",
+        detail: "Pick one manageable action toward a goal.",
+        glyph: "↗",
+      },
+    ],
+  },
+  {
+    id: "live-the-life",
+    title: "Live the Life",
+    tagline: "Notice and enjoy the present moment.",
     description:
       "Slow down, notice the present moment, and become more aware of thoughts and surroundings.",
     color: "#2B8273",
@@ -51,38 +152,9 @@ export const BRANCHES: BranchData[] = [
     ],
   },
   {
-    id: "awareness",
-    title: "Self-Awareness",
-    tagline: "Learn to understand emotions, thoughts, and behaviors.",
-    description:
-      "Explore emotions, thoughts, reactions, and personal habits.",
-    color: "#7E5DB5",
-    soft: "#F2EDFA",
-    activities: [
-      {
-        id: "emotion-explorer",
-        title: "Emotion Explorer",
-        detail: "Put a name to what you are feeling.",
-        glyph: "♡",
-      },
-      {
-        id: "reflection-detective",
-        title: "Reflection Detective",
-        detail: "Look gently at a moment from your day.",
-        glyph: "?",
-      },
-      {
-        id: "what-can-i-control",
-        title: "What Can I Control?",
-        detail: "Sort what is in your hands and what is not.",
-        glyph: "◐",
-      },
-    ],
-  },
-  {
-    id: "concentration",
-    title: "Concentration",
-    tagline: "Practice directing and maintaining attention.",
+    id: "find-your-focus",
+    title: "Find Your Focus",
+    tagline: "Practice directing and holding attention.",
     description:
       "Practice focusing attention, maintaining focus, and returning to tasks after distractions.",
     color: "#3F6FC4",
@@ -110,8 +182,8 @@ export const BRANCHES: BranchData[] = [
   },
 ];
 
-export function getBranch(id: BranchId): BranchData {
-  const branch = BRANCHES.find((item) => item.id === id);
-  if (!branch) throw new Error(`Unknown branch: ${id}`);
+export function getMentalBranch(id: MentalBranchId): MentalBranch {
+  const branch = MENTAL_BRANCHES.find((item) => item.id === id);
+  if (!branch) throw new Error(`Unknown mental branch: ${id}`);
   return branch;
 }

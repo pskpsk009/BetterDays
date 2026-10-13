@@ -2,7 +2,8 @@
 // They work the same on demo data and on future Supabase records.
 
 import { BODY_BRANCHES } from "../body/branches";
-import { BRANCHES } from "../mental/branches";
+import { EMOTIONAL_BRANCHES } from "../emotional/branches";
+import { MENTAL_BRANCHES } from "../mental/branches";
 import {
   average,
   bucketSeries,
@@ -213,7 +214,7 @@ export function hydrationDetail(ctx: ProgressContext) {
 
 export function nutritionDetail(ctx: ProgressContext) {
   const plates = within(ctx.data.plates, ctx.window);
-  const groupCounts: Record<FoodGroup, number> = { produce: 0, protein: 0, carbs: 0, fats: 0 };
+  const groupCounts: Record<FoodGroup, number> = { vegetables: 0, fruits: 0, protein: 0, carbs: 0, fats: 0 };
   for (const plate of plates) for (const group of plate.groups) groupCounts[group] += 1;
   return {
     plates: plates.length,
@@ -278,7 +279,7 @@ export function sleepDetail(ctx: ProgressContext) {
 // ---------- Recent activity ----------
 
 const ACTIVITY_TITLES: Record<string, string> = Object.fromEntries(
-  [...BRANCHES, ...BODY_BRANCHES].flatMap((branch) =>
+  [...MENTAL_BRANCHES, ...EMOTIONAL_BRANCHES, ...BODY_BRANCHES].flatMap((branch) =>
     branch.activities.map((activity) => [activity.id, activity.title]),
   ),
 );

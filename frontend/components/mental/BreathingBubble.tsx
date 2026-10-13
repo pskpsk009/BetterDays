@@ -83,7 +83,7 @@ export function BreathingBubble({
   if (status === "complete") {
     return (
       <View style={mentalStyles.screen}>
-        <ActivityHeader eyebrow="Mindfulness" title="Breathing Bubble" color={color} />
+        <ActivityHeader eyebrow="Live the Life" title="Breathing Bubble" color={color} />
         <CompletionScreen
           badge="○"
           title="Nicely done"
@@ -91,7 +91,7 @@ export function BreathingBubble({
           color={color}
           soft={soft}
           primary={{ label: "Breathe again", onPress: startAgain }}
-          secondary={{ label: "Back to Mindfulness", onPress: onExit }}
+          secondary={{ label: "Back to Live the Life", onPress: onExit }}
         />
       </View>
     );
@@ -99,7 +99,7 @@ export function BreathingBubble({
 
   return (
     <View style={mentalStyles.screen}>
-      <ActivityHeader eyebrow="Mindfulness" title="Breathing Bubble" color={color} />
+      <ActivityHeader eyebrow="Live the Life" title="Breathing Bubble" color={color} />
       <Text style={mentalStyles.body}>
         Let the bubble set a slow pace. Breathe in as it grows and out as it
         shrinks. There is no need to hold your breath.
