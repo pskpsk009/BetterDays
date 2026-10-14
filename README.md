@@ -1,5 +1,4 @@
-# MyGrowth
-
+# BetterDays
 MyGrowth (project name: **Better Days Wellbeing Companion**) is a mobile-first Expo app for students and young adults. It helps people reflect on everyday routines, notice patterns, and try small, practical actions that support their wellbeing.
 
 > **Prototype.** MyGrowth is a habit-support tool. It does not diagnose mental-health conditions, replace therapy, provide medical treatment, or decide whether someone is safe. Activities keep their state on the device and nothing is saved, except trail images that a user chooses to upload.
