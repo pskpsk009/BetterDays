@@ -3,23 +3,46 @@ BetterDyas (project name: **Better Days Wellbeing Companion**) is a mobile-first
 
 > **Prototype.** MyGrowth is a habit-support tool. It does not diagnose mental-health conditions, replace therapy, provide medical treatment, or decide whether someone is safe. Activities keep their state on the device and nothing is saved, except trail images that a user chooses to upload.
 
+## At a glance
+
+**The problem.** Students and young adults often want to feel better day to day, but advice is vague and their journals, habit trackers, and tips are spread across different apps. They lose motivation and don't notice small improvements.
+
+**The idea.** One calm app that turns wellbeing into small, hands-on activities (breathing, reflection, stretching, sleep planning, walking) grouped by **Mind** and **Body**, with a visual Growth Tree that shows progress without labels or diagnoses.
+
+**What's in the prototype**
+
+- **35+ interactive activities** across 9 Mind branches and 3 Body branches. Examples: an animated breathing bubble, a reaction-time focus game, a balanced-plate builder, and a sleep-schedule calculator.
+- **Trail tracker** that draws your walk outdoors with GPS, and indoors with no GPS at all by detecting steps (accelerometer) and direction (magnetometer). Users can save the trail as an image and share it to a public gallery.
+- **Growth Tree progress view** built with custom SVG charts, running on demo data behind a single data hook so it can be switched to a real backend.
+
+**Technical highlights**
+
+- **Content separate from UI.** Activities are defined as data (`branches.ts`) and rendered by reusable templates, so most new activities need no new screen code.
+- **One shared navigator** (`BranchExplorer`) handles branch → activity flow and Android back for every section.
+- **Platform-aware code.** Native and web versions of the tab bar and map (`.native.tsx` / `.web.tsx`), so the app also runs in a browser.
+- **Privacy by design.** No accounts and no stored wellbeing data. The only network use is anonymous Supabase sign-in for trail images the user chooses to upload.
+- **Pure, testable logic.** Progress maths, sleep timing, and game rules live in plain TypeScript files, separate from components.
+
+**What I'd build next:** a real data layer (Supabase with row-level security, export, and delete), daily check-ins feeding the Growth Tree, and automated tests for the pure logic files.
+
 ## Features
 
 The app has five tabs.
 
-| Tab | What it does |
-|---|---|
-| **Home** | An interactive figure. Tap the head, body, or legs to open Mind, Body, or Trail. |
-| **Mind** | Two sections, switched at the top: **Mental Wellness** and **Emotional Wellness**. |
-| **Body** | Fuel Your Body, Movement & Flexibility, and Good Night Sleep. |
-| **Trail** | Draws a walking trail using outdoor GPS or indoor motion sensors. You can pause and resume, save a trail image, and browse public trails. |
-| **Progress** | A Mind-and-Body Growth Tree with overview, Mind detail, and Body detail views. It runs on clearly labelled **demo data**. |
+| Tab          | What it does                                                                                                                              |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Home**     | An interactive figure. Tap the head, body, or legs to open Mind, Body, or Trail.                                                          |
+| **Mind**     | Two sections, switched at the top: **Mental Wellness** and **Emotional Wellness**.                                                        |
+| **Body**     | Fuel Your Body, Movement & Flexibility, and Good Night Sleep.                                                                             |
+| **Trail**    | Draws a walking trail using outdoor GPS or indoor motion sensors. You can pause and resume, save a trail image, and browse public trails. |
+| **Progress** | A Mind-and-Body Growth Tree with overview, Mind detail, and Body detail views. It runs on clearly labelled **demo data**.                 |
 
 ### Mind tab
 
 Every branch has three activities.
 
 **Mental Wellness**
+
 - **Self-Acceptance:** Letter to My Past Self, Lessons Not Labels, My Strengths Garden
 - **Discover Your Joy:** Joy Explorer, Try Something New, Little Moments Journal
 - **Purpose in Life:** Values Compass, Future Me, One Small Step
@@ -27,6 +50,7 @@ Every branch has three activities.
 - **Find Your Focus:** Focus Sprint, Target Tap, Distraction Tracker
 
 **Emotional Wellness**
+
 - **Stand Up Again:** My Next Step, Plan B, My Support Circle
 - **Self-Awareness:** Emotion Explorer, Reflection Detective, What Can I Control?
 - **Self-Control:** Pause Before Reacting, Calm-Down Toolkit, Choose Your Response
@@ -63,6 +87,7 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
 `.env.local` is gitignored. Never commit real keys.
 
 Saving and browsing trails requires the following in your Supabase project:
+
 - **Anonymous sign-ins** enabled.
 - A storage bucket named **`public-trails`**.
 
@@ -126,6 +151,7 @@ Read these before changing features:
 - [CLAUDE.md](CLAUDE.md): working rules for the codebase
 
 In short:
+
 - Labels describe habits; they never diagnose.
 - Safety concerns are never hidden in a score.
 - Recommendations stay small, optional, and non-clinical.
