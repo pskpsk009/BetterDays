@@ -3,41 +3,13 @@ import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
 import { ActivityProps, mentalStyles, SecondaryButton, SelectionChip } from "../../common/ActivityUI";
-import { COLORS } from "../../common/AppShell";
 import { NIGHT, NightBanner } from "./NightBanner";
 import { ClockTime, formatDuration, formatTime, gradualSchedule, shortestShift } from "./sleepMath";
+import { SleepEnvironmentTips } from "./SleepEnvironment";
 import { TimeField } from "./TimeField";
 
 const PACES = [15, 30];
 const MAX_SHOWN_STEPS = 8;
-
-const PRINCIPLES = [
-  {
-    icon: "⏰",
-    title: "Anchor your wake-up time",
-    body: "A consistent wake-up time, even on days off where possible, does a lot of the work of setting your body clock.",
-  },
-  {
-    icon: "☀️",
-    title: "Get morning light",
-    body: "Daylight soon after waking helps your body clock shift earlier. A few minutes outside or near a window helps.",
-  },
-  {
-    icon: "😴",
-    title: "Leave room for enough sleep",
-    body: "Plan a sleep window that gives you enough rest. Many adults need around 7–9 hours, and teenagers often more.",
-  },
-  {
-    icon: "🐢",
-    title: "Go at your own pace",
-    body: "Move when it feels manageable. If a step feels hard, stay there for a few more nights before moving again.",
-  },
-  {
-    icon: "🌍",
-    title: "Your schedule is yours",
-    body: "There's no single right bedtime. Shift work, study, family, and natural night-owl or early-bird tendencies all differ.",
-  },
-];
 
 export function ScheduleGuidance({ color, soft, onExit }: ActivityProps) {
   const [current, setCurrent] = useState<ClockTime>({ hour: 2, minute: 0 });
@@ -120,16 +92,8 @@ export function ScheduleGuidance({ color, soft, onExit }: ActivityProps) {
         flexible.
       </Text>
 
-      <Text style={mentalStyles.label}>WHAT HELPS</Text>
-      {PRINCIPLES.map((item) => (
-        <View key={item.title} style={[styles.principle, { backgroundColor: soft }]}>
-          <Text style={styles.principleTitle}>
-            {item.icon} {item.title}
-          </Text>
-          <Text style={mentalStyles.body}>{item.body}</Text>
-        </View>
-      ))}
-      <SecondaryButton label="Back to Good Night Sleep" color={color} onPress={onExit} />
+      <SleepEnvironmentTips color={color} soft={soft} />
+      <SecondaryButton label="Back to Body" color={color} onPress={onExit} />
     </View>
   );
 }
@@ -177,6 +141,4 @@ const styles = StyleSheet.create({
   railIcon: { color: "#F6EFC8", fontSize: 18 },
   rowCopy: { flex: 1 },
   rowTime: { color: NIGHT.text, fontSize: 18, fontWeight: "800", fontVariant: ["tabular-nums"] },
-  principle: { padding: 16, borderRadius: 16, gap: 6 },
-  principleTitle: { color: COLORS.ink, fontSize: 15, fontWeight: "800" },
 });

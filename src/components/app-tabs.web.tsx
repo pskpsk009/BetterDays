@@ -8,7 +8,7 @@ import {
 } from "expo-router/ui";
 import { Link } from "expo-router";
 import { SymbolView, type AndroidSymbol, type SFSymbol } from "expo-symbols";
-import { Pressable, useColorScheme, View, StyleSheet } from "react-native";
+import { Pressable, useColorScheme, View, StyleSheet, type HostInstance } from "react-native";
 
 import { ThemedText } from "./themed-text";
 import { ThemedView } from "./themed-view";
@@ -54,12 +54,18 @@ export function TabButton({
   children,
   icon,
   isFocused,
+  ref,
   ...props
 }: TabTriggerSlotProps & {
   icon: TabIcon;
 }) {
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable
+      {...props}
+      // expo-router still types the slot ref as the View component, not its instance.
+      ref={ref as React.Ref<HostInstance>}
+      style={({ pressed }) => pressed && styles.pressed}
+    >
       <ThemedView
         type={isFocused ? "backgroundSelected" : "backgroundElement"}
         style={styles.tabButtonView}
@@ -82,7 +88,7 @@ export function TabButton({
 
 export function CustomTabList(props: TabListProps) {
   const scheme = useColorScheme();
-  const colors = Colors[scheme === "unspecified" ? "light" : scheme];
+  const colors = Colors[scheme ?? "light"];
 
   return (
     <View {...props} style={styles.tabListContainer}>

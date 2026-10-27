@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type ScrollViewInstance,
 } from "react-native";
 
 import { PrimaryButton } from "./ActivityUI";
@@ -94,7 +95,7 @@ function WheelColumn({
   label: string;
   color: string;
 }) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const lastIndex = useRef(index);
   const positioned = useRef(false);
   const [centered, setCentered] = useState(index);

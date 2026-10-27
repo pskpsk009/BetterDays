@@ -15,7 +15,7 @@ export type MentalActivityId =
   | "lessons-not-labels"
   | "strengths-garden"
   | "joy-explorer"
-  | "try-something-new"
+  | "develop-your-skill"
   | "little-moments"
   | "values-compass"
   | "future-me"
@@ -76,14 +76,14 @@ export const MENTAL_BRANCHES: MentalBranch[] = [
       {
         id: "joy-explorer",
         title: "Joy Explorer",
-        detail: "Browse hobbies and pick ones you might enjoy.",
+        detail: "Pick a field and roll the dice for an idea to try.",
         glyph: "☀",
       },
       {
-        id: "try-something-new",
-        title: "Try Something New",
-        detail: "Choose one small, easy thing to try today.",
-        glyph: "+",
+        id: "develop-your-skill",
+        title: "Develop Your Skill",
+        detail: "Polish a skill you have, or find one to start.",
+        glyph: "◎",
       },
       {
         id: "little-moments",

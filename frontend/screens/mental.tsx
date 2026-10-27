@@ -11,15 +11,21 @@ import { EmotionExplorer } from "../components/emotional/EmotionExplorer";
 import { ReflectionDetective } from "../components/emotional/ReflectionDetective";
 import { CalmDownToolkit, ChooseYourResponse, PauseBeforeReacting } from "../components/emotional/selfControl";
 import { ConversationBuilder, HealthyBoundaries, WalkInTheirShoes } from "../components/emotional/socialCreatures";
-import { MyNextStep, PlanB, SupportCircle } from "../components/emotional/standUpAgain";
+import { PlanB } from "../components/emotional/PlanB";
+import { MyNextStep } from "../components/emotional/standUpAgain";
+import { SupportCircle } from "../components/emotional/SupportCircle";
 import { BranchIcon } from "../components/mental/BranchIcon";
 import { MENTAL_BRANCHES, MentalActivityId, MentalBranchId } from "../components/mental/branches";
 import { BreathingBubble } from "../components/mental/BreathingBubble";
-import { JoyExplorer, LittleMoments, TrySomethingNew } from "../components/mental/discoverJoy";
+import { DevelopSkill } from "../components/mental/DevelopSkill";
+import { LittleMoments } from "../components/mental/discoverJoy";
+import { JoyExplorer } from "../components/mental/JoyExplorer";
 import { DistractionTracker } from "../components/mental/DistractionTracker";
 import { FocusSprint } from "../components/mental/FocusSprint";
-import { FutureMe, OneSmallStep, ValuesCompass } from "../components/mental/purpose";
-import { LessonsNotLabels, LetterToPastSelf, StrengthsGarden } from "../components/mental/selfAcceptance";
+import { FutureMe, OneSmallStep } from "../components/mental/purpose";
+import { ValuesCompass } from "../components/mental/ValuesCompass";
+import { LessonsNotLabels, LetterToPastSelf } from "../components/mental/selfAcceptance";
+import { StrengthsGarden } from "../components/mental/StrengthsGarden";
 import { SensesGrounding } from "../components/mental/SensesGrounding";
 import { TargetTap } from "../components/mental/TargetTap";
 import { WatchThoughts } from "../components/mental/WatchThoughts";
@@ -31,7 +37,7 @@ const MENTAL_ACTIVITIES: Record<MentalActivityId, Activity> = {
   "lessons-not-labels": LessonsNotLabels,
   "strengths-garden": StrengthsGarden,
   "joy-explorer": JoyExplorer,
-  "try-something-new": TrySomethingNew,
+  "develop-your-skill": DevelopSkill,
   "little-moments": LittleMoments,
   "values-compass": ValuesCompass,
   "future-me": FutureMe,

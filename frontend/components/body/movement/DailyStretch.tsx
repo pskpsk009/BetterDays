@@ -61,7 +61,7 @@ export function DailyStretch({ color, soft, onExit }: ActivityProps) {
           color={color}
           soft={soft}
           primary={{ label: "Stretch again", onPress: () => setStatus("setup") }}
-          secondary={{ label: "Back to Movement", onPress: onExit }}
+          secondary={{ label: "Back to Body", onPress: onExit }}
         />
       </View>
     );

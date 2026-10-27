@@ -14,7 +14,7 @@ export function buildTrailSvg({ mode, coordinates, indoorPath, breaks = [] }: Op
   const points =
     mode === "indoor"
       ? indoorPath
-      : coordinates.map((coordinate, index) => {
+      : coordinates.map((coordinate) => {
           const origin = coordinates[0] ?? coordinate;
           const latitude = (origin.latitude * Math.PI) / 180;
           return {

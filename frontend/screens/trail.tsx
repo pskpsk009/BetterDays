@@ -1,8 +1,6 @@
-import { useRouter } from "expo-router";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -69,7 +67,6 @@ function indoorDistance(points: IndoorPoint[], breaks: number[] = []) {
 }
 
 export default function TrailScreen() {
-  const router = useRouter();
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);

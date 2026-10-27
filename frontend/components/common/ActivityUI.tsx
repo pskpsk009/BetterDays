@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 
 import { COLORS } from "./AppShell";
@@ -475,6 +475,60 @@ export function SupportNote({ children }: { children?: string }) {
   );
 }
 
+/** A large tappable card for choosing how to start an activity. */
+export function ModeCard({
+  icon,
+  title,
+  detail,
+  color,
+  soft,
+  onPress,
+}: {
+  icon: string;
+  title: string;
+  detail: string;
+  color: string;
+  soft: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [mentalStyles.card, styles.modeCard, pressed && styles.cardPressed]}
+    >
+      <View style={[styles.modeIcon, { backgroundColor: soft }]}>
+        <Text style={styles.modeIconText}>{icon}</Text>
+      </View>
+      <View style={styles.modeCopy}>
+        <Text style={[styles.modeTitle, { color }]}>{title}</Text>
+        <Text style={mentalStyles.muted}>{detail}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+/**
+ * Privacy note for activities that remember things between visits: says what
+ * is kept and where, and offers a confirmed delete.
+ */
+export function SavedOnDeviceNote({ what, onDelete }: { what: string; onDelete: () => void }) {
+  function confirmDelete() {
+    Alert.alert(`Delete your ${what}?`, "This removes it from this phone and can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: onDelete },
+    ]);
+  }
+  return (
+    <View style={styles.savedNote}>
+      <Text style={[mentalStyles.muted, styles.center]}>
+        🔒 Your {what} is saved on this phone only. It isn&apos;t sent anywhere, and you can delete it at any time.
+      </Text>
+      <SecondaryButton subtle label={`Delete my ${what}`} color={COLORS.muted} onPress={confirmDelete} />
+    </View>
+  );
+}
+
 export function toggleItem<T>(items: T[], item: T): T[] {
   return items.includes(item)
     ? items.filter((value) => value !== item)
@@ -518,6 +572,12 @@ export const mentalStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  savedNote: { gap: 4 },
+  modeCard: { flexDirection: "row", alignItems: "center", gap: 14 },
+  modeIcon: { width: 48, height: 48, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+  modeIconText: { fontSize: 24 },
+  modeCopy: { flex: 1, gap: 4 },
+  modeTitle: { fontSize: 16, fontWeight: "800" },
   flex: { flex: 1 },
   center: { textAlign: "center" },
   pressed: { opacity: 0.78 },

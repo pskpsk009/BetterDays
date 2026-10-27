@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { createContext, useContext, useState } from "react";
-import { ScrollView, StyleSheet, Text, Pressable, View } from "react-native";
+import { ScrollView, StyleSheet, Text, Pressable, View, type ScrollViewInstance } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const COLORS = {
@@ -34,7 +34,7 @@ export function MobileScreen({
   children: React.ReactNode;
   tone?: Tone;
   /** Lets a screen scroll itself, e.g. back to the top after a view change. */
-  scrollRef?: React.Ref<ScrollView>;
+  scrollRef?: React.Ref<ScrollViewInstance>;
 }) {
   const insets = useSafeAreaInsets();
   const [scrollLocked, setScrollLocked] = useState(false);

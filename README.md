@@ -60,7 +60,7 @@ Every branch has three activities.
 
 - **Fuel Your Body:** Hydration Check-in, Build a Balanced Plate (five equal 20% slices), Drink Detective
 - **Movement & Flexibility:** Daily Stretch, Desk Break, Mobility Flow, Movement Dice, Body Awareness Scan
-- **Good Night Sleep:** Relaxing Bedtime Routine, Improve the Sleep Environment, Personalized Sleep Plan, Sleep Schedule Guidance
+- **Good Night Sleep:** Relaxing Bedtime Routine, Improve the Sleep Environment, Sleep Schedule Guidance
 
 ## Getting started
 

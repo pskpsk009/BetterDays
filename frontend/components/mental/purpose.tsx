@@ -1,67 +1,10 @@
 import type { ActivityProps } from "../common/ActivityUI";
-import { ChoiceExplorer, ReflectionJournal, SmallStepPicker } from "../common/GuidedActivities";
+import { ReflectionJournal, SmallStepPicker } from "../common/GuidedActivities";
 
 // Purpose in Life activities: exploration, not pressure. Purpose can change,
 // and small everyday goals are meaningful too.
 
 const BRANCH = "Purpose in Life";
-
-export function ValuesCompass(props: ActivityProps) {
-  return (
-    <ChoiceExplorer
-      {...props}
-      branch={BRANCH}
-      title="Values Compass"
-      intro="Values are what matter to you, the direction you'd like to head in. Pick up to five that feel most like you right now."
-      pickLabel="Your values"
-      maxPicks={5}
-      groups={[
-        {
-          title: "Connection",
-          options: [
-            { label: "Family", icon: "🏡", note: "Being there for the people closest to you." },
-            { label: "Friendship", icon: "🤝", note: "Building and keeping meaningful friendships." },
-            { label: "Kindness", icon: "💛", note: "Treating others and yourself with care." },
-            { label: "Community", icon: "🌍", note: "Being part of something bigger than yourself." },
-          ],
-        },
-        {
-          title: "Growth",
-          options: [
-            { label: "Learning", icon: "📖", note: "Staying curious and building knowledge." },
-            { label: "Creativity", icon: "🎨", note: "Expressing yourself and making new things." },
-            { label: "Achievement", icon: "🏅", note: "Working toward goals you care about." },
-            { label: "Adventure", icon: "🧭", note: "Trying new experiences." },
-          ],
-        },
-        {
-          title: "Way of living",
-          options: [
-            { label: "Health", icon: "🌿", note: "Looking after your body and mind." },
-            { label: "Honesty", icon: "🔍", note: "Being truthful with yourself and others." },
-            { label: "Independence", icon: "🦋", note: "Making your own choices." },
-            { label: "Fun", icon: "🎈", note: "Making room for play and enjoyment." },
-            { label: "Fairness", icon: "⚖️", note: "Standing up for what's right." },
-            { label: "Calm", icon: "🌊", note: "Peace and balance in daily life." },
-          ],
-        },
-      ]}
-      customPlaceholder="Add a value of your own…"
-      customNote="A value that's personal to you."
-      resultTitle="Your compass"
-      resultIntro="These values can guide everyday choices, big and small. They may shift over time, and that's okay."
-      followUp="Which value would you like to act on this week?"
-      followUpAnswer={(label) =>
-        `One small way to live “${label}” this week could become your next step. One Small Step can help you choose it.`
-      }
-      completion={{
-        badge: "✦",
-        title: "Compass set",
-        message: "When a choice feels hard, asking “which option fits my values?” can help point the way.",
-      }}
-    />
-  );
-}
 
 export function FutureMe(props: ActivityProps) {
   return (

@@ -1,54 +1,93 @@
-import { ActivityProps } from "../components/common/ActivityUI";
-import { BranchExplorer } from "../components/common/BranchExplorer";
-import { BodyBranchIcon } from "../components/body/BodyBranchIcon";
-import { BODY_BRANCHES, BodyActivityId, BodyBranchId } from "../components/body/branches";
-import { BalancedPlate } from "../components/body/fuel/BalancedPlate";
-import { DrinkDetective } from "../components/body/fuel/DrinkDetective";
-import { HydrationCheckin } from "../components/body/fuel/HydrationCheckin";
-import { BodyScan } from "../components/body/movement/BodyScan";
-import { DailyStretch } from "../components/body/movement/DailyStretch";
-import { DeskBreak } from "../components/body/movement/DeskBreak";
-import { MobilityFlow } from "../components/body/movement/MobilityFlow";
-import { MovementDice } from "../components/body/movement/MovementDice";
-import { BedtimeRoutine } from "../components/body/sleep/BedtimeRoutine";
-import { NightBanner } from "../components/body/sleep/NightBanner";
-import { ScheduleGuidance } from "../components/body/sleep/ScheduleGuidance";
-import { SleepEnvironment } from "../components/body/sleep/SleepEnvironment";
-import { SleepPlan } from "../components/body/sleep/SleepPlan";
+import { useEffect, useState } from "react";
+import { BackHandler, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 
-const ACTIVITIES: Record<BodyActivityId, (props: ActivityProps) => React.ReactNode> = {
+import { ActivityCard, ActivityProps, BackPill } from "../components/common/ActivityUI";
+import { MobileScreen, ScreenHeader } from "../components/common/AppShell";
+import { BODY_BRANCHES, BodyActivityId } from "../components/body/branches";
+import { BalancedPlate } from "../components/body/fuel/BalancedPlate";
+import { HydrationCheckin } from "../components/body/fuel/HydrationCheckin";
+import { DailyStretch } from "../components/body/movement/DailyStretch";
+import { ScheduleGuidance } from "../components/body/sleep/ScheduleGuidance";
+
+const ACCENT = "#247F7B";
+
+const ACTIVITIES: Partial<Record<BodyActivityId, (props: ActivityProps) => React.ReactNode>> = {
   hydration: HydrationCheckin,
   "balanced-plate": BalancedPlate,
-  "drink-detective": DrinkDetective,
   "daily-stretch": DailyStretch,
-  "desk-break": DeskBreak,
-  "mobility-flow": MobilityFlow,
-  "movement-dice": MovementDice,
-  "body-scan": BodyScan,
-  "bedtime-routine": BedtimeRoutine,
-  "sleep-environment": SleepEnvironment,
-  "sleep-plan": SleepPlan,
   "schedule-guidance": ScheduleGuidance,
 };
 
+// Each activity keeps the colours of the branch it came from.
+const ENTRIES = BODY_BRANCHES.flatMap((branch) =>
+  branch.activities
+    .filter((activity) => activity.id in ACTIVITIES)
+    .map((activity) => ({ activity, branch })),
+);
+
+/** Body tab: a single list of activities, each opening in place. */
 export default function BodyScreen() {
+  const [activityId, setActivityId] = useState<BodyActivityId | null>(null);
+
+  useEffect(() => {
+    if (!activityId) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      setActivityId(null);
+      return true;
+    });
+    return () => subscription.remove();
+  }, [activityId]);
+
+  const entry = ENTRIES.find((item) => item.activity.id === activityId);
+  const Activity = activityId ? ACTIVITIES[activityId] : undefined;
+  const back = () => setActivityId(null);
+
   return (
-    <BranchExplorer
-      title="Body Functions"
-      subtitle="Small choices that help you feel more like you."
-      eyebrow="Body space"
-      introTitle="Your daily foundations"
-      accent="#247F7B"
-      branches={BODY_BRANCHES}
-      activities={ACTIVITIES}
-      renderIcon={(branch, size) => (
-        <BodyBranchIcon branch={branch.id as BodyBranchId} color={branch.color} size={size} />
-      )}
-      renderHero={(branch) =>
-        branch.id === "sleep" ? (
-          <NightBanner eyebrow={branch.tagline} title={branch.title} subtitle={branch.description} />
-        ) : null
-      }
-    />
+    // Keying the screen resets scroll position and activity state between views.
+    <MobileScreen key={activityId ?? "main"}>
+      <Animated.View entering={FadeIn.duration(220)}>
+        {entry && Activity ? (
+          <View style={styles.subscreen}>
+            <BackPill label="Body" color={entry.branch.color} soft={entry.branch.soft} onPress={back} />
+            <Activity color={entry.branch.color} soft={entry.branch.soft} onExit={back} />
+          </View>
+        ) : (
+          <>
+            <ScreenHeader
+              title="Body Functions"
+              subtitle="Small choices that help you feel more like you."
+            />
+            <View style={styles.intro}>
+              <Text style={[styles.eyebrow, { color: ACCENT }]}>Body space</Text>
+              <Text style={styles.introTitle}>Your daily foundations</Text>
+            </View>
+            <View style={styles.list}>
+              {ENTRIES.map(({ activity, branch }) => (
+                <ActivityCard
+                  key={activity.id}
+                  activity={activity}
+                  branch={branch}
+                  onPress={() => setActivityId(activity.id as BodyActivityId)}
+                />
+              ))}
+            </View>
+          </>
+        )}
+      </Animated.View>
+    </MobileScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  intro: { paddingBottom: 18 },
+  eyebrow: {
+    marginBottom: 8,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.4,
+  },
+  introTitle: { color: "#315C61", fontSize: 18, fontWeight: "700" },
+  list: { gap: 12 },
+  subscreen: { gap: 18, paddingTop: 6 },
+});

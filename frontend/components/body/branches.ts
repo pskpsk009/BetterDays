@@ -13,7 +13,6 @@ export type BodyActivityId =
   | "body-scan"
   | "bedtime-routine"
   | "sleep-environment"
-  | "sleep-plan"
   | "schedule-guidance";
 
 export type BodyBranch = BranchInfo & {
@@ -112,12 +111,6 @@ export const BODY_BRANCHES: BodyBranch[] = [
         title: "Improve the Sleep Environment",
         detail: "Simple ways to make your bedroom more restful.",
         glyph: "🛏️",
-      },
-      {
-        id: "sleep-plan",
-        title: "Personalized Sleep Plan",
-        detail: "Explore your sleep times and get a gentle plan.",
-        glyph: "⏰",
       },
       {
         id: "schedule-guidance",

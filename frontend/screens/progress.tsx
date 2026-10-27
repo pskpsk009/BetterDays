@@ -1,6 +1,6 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BackHandler, ScrollView, StyleSheet, Text, View } from "react-native";
+import { BackHandler, StyleSheet, Text, View, type ScrollViewInstance } from "react-native";
 import Animated, { FadeIn, useReducedMotion } from "react-native-reanimated";
 
 import { COLORS, MobileScreen, ScreenHeader } from "../components/common/AppShell";
@@ -47,7 +47,7 @@ export default function ProgressScreen() {
   const [selectedArea, setSelectedArea] = useState<ProgressArea | null>(null);
   const [period, setPeriod] = useState<PeriodId>("7d");
   const [dataMode, setDataMode] = useState<DataMode>("demo");
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const reduceMotion = useReducedMotion();
   // Fade only when switching views; the first render stays static so web
   // static rendering and hydration agree.

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type HostInstance,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import Svg, { Circle, Line, Path } from "react-native-svg";
@@ -59,7 +60,7 @@ export function BalancedPlate({ color, soft }: ActivityProps) {
   const [selectedGroup, setSelectedGroup] = useState<FoodGroup | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [plateSize, setPlateSize] = useState(260);
-  const plateRef = useRef<View>(null);
+  const plateRef = useRef<HostInstance>(null);
 
   const filled = plate.filter(Boolean).length;
   const feedback = plateFeedback(plate);

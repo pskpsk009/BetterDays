@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { ActivityProps, mentalStyles, SecondaryButton, toggleItem } from "../../common/ActivityUI";
+import { mentalStyles, toggleItem } from "../../common/ActivityUI";
 import { COLORS } from "../../common/AppShell";
-import { NightBanner } from "./NightBanner";
 
 const TIPS = [
   {
@@ -44,19 +43,16 @@ const TIPS = [
   },
 ];
 
-export function SleepEnvironment({ color, soft, onExit }: ActivityProps) {
+/** "Improve the sleep environment" section, shown inside Sleep Schedule Guidance. */
+export function SleepEnvironmentTips({ color, soft }: { color: string; soft: string }) {
   const [trying, setTrying] = useState<string[]>([]);
 
   return (
-    <View style={mentalStyles.screen}>
-      <NightBanner
-        eyebrow="Good Night Sleep"
-        title="Improve the Sleep Environment"
-        subtitle="Small changes to your space can make rest easier."
-      />
+    <View style={styles.section}>
+      <Text style={mentalStyles.label}>IMPROVE THE SLEEP ENVIRONMENT</Text>
       <Text style={mentalStyles.body}>
-        Read through the ideas and tap &quot;I&apos;ll try this&quot; on any you&apos;d like to
-        experiment with tonight.
+        Small changes to your space can make rest easier. Tap &quot;I&apos;ll try this&quot; on
+        any you&apos;d like to experiment with tonight.
       </Text>
 
       {TIPS.map((item) => {
@@ -102,12 +98,12 @@ export function SleepEnvironment({ color, soft, onExit }: ActivityProps) {
       <Text style={[mentalStyles.muted, styles.center]}>
         Everyone&apos;s ideal sleep space is different. Your picks aren&apos;t saved.
       </Text>
-      <SecondaryButton label="Back to Good Night Sleep" color={color} onPress={onExit} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  section: { gap: 18 },
   center: { textAlign: "center" },
   pressed: { opacity: 0.8 },
   card: { gap: 10 },

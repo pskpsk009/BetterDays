@@ -113,9 +113,11 @@ export function ReflectionJournal(
     main: JournalPath;
     /** A gentler, present-focused alternative to the main prompts. */
     light?: JournalPath;
+    /** Where "Back" on the first prompt goes when there is no path choice. Defaults to exiting. */
+    onBack?: () => void;
   },
 ) {
-  const { branch, title, intro, color, soft, onExit, main, light } = props;
+  const { branch, title, intro, color, onExit, main, light, onBack = onExit } = props;
   const [path, setPath] = useState<JournalPath | null>(light ? null : main);
   const [step, setStep] = useState<number | "review" | "done">(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -237,7 +239,7 @@ export function ReflectionJournal(
           flex
           label="Back"
           color={color}
-          onPress={() => (step === 0 ? (light ? setPath(null) : onExit()) : setStep(step - 1))}
+          onPress={() => (step === 0 ? (light ? setPath(null) : onBack()) : setStep(step - 1))}
         />
         <PrimaryButton
           flex
@@ -273,13 +275,19 @@ export function ChoiceExplorer(
     followUpAnswer?: (label: string) => string;
     tips?: string[];
     safetyNote?: string;
+    /** Picks to start from, e.g. when editing a saved list. */
+    initialPicks?: ChoiceOption[];
+    /** Replaces the completion screen: receives the picks when the person finishes. */
+    onComplete?: (picked: ChoiceOption[]) => void;
+    completeLabel?: string;
   },
 ) {
   const {
     branch, title, intro, color, soft, onExit, groups, pickLabel, maxPicks,
     customPlaceholder, customNote, resultTitle, resultIntro, followUp, followUpAnswer, tips, safetyNote,
+    initialPicks, onComplete, completeLabel,
   } = props;
-  const [picked, setPicked] = useState<ChoiceOption[]>([]);
+  const [picked, setPicked] = useState<ChoiceOption[]>(initialPicks ?? []);
   const [custom, setCustom] = useState("");
   const [stage, setStage] = useState<"pick" | "result" | "done">("pick");
   const [favourite, setFavourite] = useState<string | null>(null);
@@ -356,7 +364,12 @@ export function ChoiceExplorer(
         {safetyNote && <Text style={[mentalStyles.muted, styles.safety]}>{safetyNote}</Text>}
         <View style={mentalStyles.row}>
           <SecondaryButton flex label="Change picks" color={color} onPress={() => setStage("pick")} />
-          <PrimaryButton flex label="Finish" color={color} onPress={() => setStage("done")} />
+          <PrimaryButton
+            flex
+            label={completeLabel ?? "Finish"}
+            color={color}
+            onPress={() => (onComplete ? onComplete(picked) : setStage("done"))}
+          />
         </View>
       </Animated.View>
     );
