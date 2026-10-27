@@ -1,0 +1,321 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin=2cm]{geometry}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{BetterDays Test Plan\\ \large Better Days Wellbeing Companion \\ 1305493 SE Case Studies, 1/2569}
+\author{
+  Thira Min Htun \\ 6631503095
+  \and Myint Myat Pyae Sone \\ 6631503073
+  \and Min Myat Hein \\ 6631503068
+  \and Paing Soe Khant \\ 6631503082
+}
+\date{October 2026}
+
+\begin{document}
+
+\maketitle
+
+% =====================================================================
+\section{Scope}
+
+This plan tests the BetterDays core workflow that is built today, \textbf{Find and Keep a Small Wellbeing Action} (Home finder $\rightarrow$ activity $\rightarrow$ saved on the device $\rightarrow$ optional account backup $\rightarrow$ export and delete), plus the eight legal requirements, on the current Expo SDK 58 build in Expo Go. It runs at least 10 real-user sessions in two rounds: round 1 on the class testing day, Wednesday 4 November 2026, and round 2 on 7--8 November after fixes.
+
+\textbf{System under test:} Expo (React Native 0.88, Expo Router) app run in Expo Go on Android and iPhone; on-device storage through \texttt{expo-sqlite} (\texttt{localStore}); optional Supabase email and password accounts, account backup (\texttt{consents}, \texttt{user\_data}, \texttt{audit\_events}) and trail image storage.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{2.6cm}|Y|L{1.4cm}|L{2.4cm}|}
+\hline
+\textbf{Item} & \textbf{What is tested} & \textbf{Priority} & \textbf{Traces to} \\ \hline
+Need finder and activities & ``What do you need right now?'' maps 8 needs to 3 activities each and opens one directly; Mind and Body activities run & Must & F6, P2 \\ \hline
+Sleep Schedule Guidance & Bedtime and wake targets, gradual steps, one morning log per day, saved on the device & Must & P1, P3 \\ \hline
+Account, notice and backup & Welcome screens with the data notice; sign up and sign in; backup off by default and on only after a versioned consent & Must & F1, LR1 \\ \hline
+Data rights & Download my data (JSON), Delete all data, Delete account, consent withdrawal & Must & F10, LR3 \\ \hline
+Safety information & Crisis guidance (``contact your local emergency number'') reachable from the app & Must & F8, LR7 \\ \hline
+Progress Growth Tree & Mind and Body halves built from the user's own activity history saved on the device (which activity, date, minutes), a labelled demo view, no overall score & Should & F7 \\ \hline
+Movement Trail & Outdoor GPS and indoor step tracking, save and share a trail image & Should & P1 \\ \hline
+LR1--LR8 & Consent, minimisation, user rights, ownership, audit, non-diagnostic wording, separate safety support, recommendation limits & Legal & rule.md, spec \S4 \\ \hline
+\end{tabularx}
+\end{center}
+
+\textbf{Out of scope:} F2--F5 onboarding questionnaire, weighted scoring, progress profile and daily check-in (not built yet); F9 community stories and LR9--LR10 moderation (not built); F14 and LR11 AI recommendations (Later); the web build; load and penetration testing; clinical value of activity wording (needs the wellbeing-advisor review, B34).
+
+\textbf{Pre-test gaps to close or accept:} the spec's core workflow (questionnaire $\rightarrow$ score $\rightarrow$ profile $\rightarrow$ check-in) is not built, so this plan tests the built workflow and records the gap; there is no test runner and no automated test in the repository; \texttt{audit\_events} logs backup, export and deletion but not sign-in events (LR5); the weekly audit purge (\texttt{pg\_cron}) is optional and not confirmed as scheduled; the consent text must name Supabase and its region (region to confirm) before real users sign up; the activity and safety wording has not had advisor review (B34).
+
+% =====================================================================
+\section{Test levels}
+
+Four levels follow the Testing Pyramid: many fast unit tests at the base, fewer integration tests, a few end-to-end runs, then UAT with real users. Each level must pass its exit criterion before the next starts.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{1.9cm}|L{3.2cm}|Y|L{2.4cm}|L{2.3cm}|}
+\hline
+\textbf{Level} & \textbf{What it covers} & \textbf{How / tools} & \textbf{Environment} & \textbf{Exit criterion} \\ \hline
+Unit & Need map, sleep maths and schedule window, progress maths, banned-word copy check & \texttt{node:test} + \texttt{assert} run with \texttt{tsx} on the pure modules (\texttt{needs.ts}, \texttt{sleepMath.ts}, \texttt{sleepSchedule.ts}, \texttt{progressMath.ts}); synthetic data only & Local & 100\% of unit tests pass \\ \hline
+Integration & Supabase row-level security, consent trigger, audit rows, account deletion, size limits & \texttt{node:test} with \texttt{@supabase/supabase-js} signed in as test users; SQL checks on \texttt{consents}, \texttt{user\_data}, \texttt{audit\_events} & Local + separate Supabase test project & Every policy allows or denies as expected and writes the expected audit row \\ \hline
+System (E2E) & Full flow: Home $\rightarrow$ finder $\rightarrow$ activity $\rightarrow$ save $\rightarrow$ sign in $\rightarrow$ consent $\rightarrow$ backup $\rightarrow$ export $\rightarrow$ delete & Manual scripted run of the test cases in Section 3 in Expo Go & 1 Android and 1 iPhone, production Supabase & All Must and Legal test cases pass; no open severity 3--4 issue \\ \hline
+Acceptance (UAT) & Real users complete the tasks in Section 4 & Moderated task-based sessions with think-aloud, SUS and UTAUT2 questionnaires, short interview & Participant's own phone in Expo Go, or a team phone & Section 5 targets met \\ \hline
+\end{tabularx}
+\end{center}
+
+\textbf{Severity scale (Nielsen):} 0 not a problem, 1 cosmetic, 2 minor, 3 major, 4 catastrophe (must fix before release). Severity 3--4 issues found in round 1 are fixed before round 2. Any wording that reads as a diagnosis, or any leak of one user's data to another, is severity 4.
+
+% =====================================================================
+\section{Test cases}
+
+20 test cases: TC01--TC18 cover every Must and Legal item, TC19--TC20 cover the Should items (Progress and Trail). All run with team-owned test accounts and synthetic data, never a participant's account or real wellbeing notes. Result is set after each run; a Fail opens a GitHub issue with its severity.
+
+{\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{|L{0.95cm}|L{1.35cm}|L{1.55cm}|L{3.0cm}|L{2.75cm}|L{3.85cm}|L{1.1cm}|}
+\hline
+\textbf{ID} & \textbf{Traces to} & \textbf{Level} & \textbf{Steps} & \textbf{Test data} & \textbf{Expected result} & \textbf{Result} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Traces to} & \textbf{Level} & \textbf{Steps} & \textbf{Test data} & \textbf{Expected result} & \textbf{Result} \\ \hline
+\endhead
+TC01 & F6, P2 & Unit & Resolve every finder pick against the branch lists & \texttt{NEEDS} in \texttt{needs.ts}; Mind, Emotional and Body branches & 8 needs $\times$ 3 picks = 24 activity IDs, each one exists; no duplicate within a need & Not run \\ \hline
+TC02 & P1, P3 & Unit & Call \texttt{shortestShift} and \texttt{gradualSchedule} across midnight & 01:30 $\rightarrow$ 23:00; 23:00 $\rightarrow$ 00:30 & Shift takes the shorter way round the clock; the last step equals the target & Not run \\ \hline
+TC03 & P1, P3 & Unit & Check a night against its window & Target 23:45; actual 00:10, 00:20, 00:50; windows $\pm$30 min and $\pm$1 h & 00:10 on schedule in both; 00:20 off at $\pm$30, on at $\pm$1 h; 00:50 off in both & Not run \\ \hline
+TC04 & LR6, LR8 & Unit & Scan all user-facing strings for banned words & Branch, needs, welcome and \texttt{privacyRules.ts} text; list from rule.md & No ``diagnosis'', ``disorder'', ``clinical risk'', ``recovered'', ``medically healthy'', ``treatment'' outside a disclaimer & Not run \\ \hline
+TC05 & F1, LR1, LR5 & Integration & Turn backup on as a signed-in user & Test account A & \texttt{consents} row with user\_id, text version, accepted\_at; \texttt{audit\_events} row \texttt{backup\_on} & Not run \\ \hline
+TC06 & LR1, LR3 & Integration & Withdraw consent (backup off) & Test account A with backup data & withdrawn\_at set; all of A's \texttt{user\_data} rows deleted; audit row \texttt{backup\_off} & Not run \\ \hline
+TC07 & LR4, LR2 & Integration & Read and write another user's backup; write with no consent; write as anonymous & Tokens of accounts A and B; an anonymous trail session & B sees 0 of A's rows and cannot change them; writes without consent or from an anonymous session are rejected & Not run \\ \hline
+TC08 & LR5 & Integration & Select from \texttt{audit\_events}; insert a forged action & Account A token & Select returns 0 rows; only \texttt{export} and \texttt{data\_deleted} inserts for A's own ID succeed & Not run \\ \hline
+TC09 & LR5 & Integration & Check audit retention & Rows dated 89, 91 and 181 days ago; \texttt{purge\_old\_audit\_events}; cron schedule & 89- and 91-day rows kept (at least 90 days), 181-day row purged; schedule confirmed & Not run \\ \hline
+TC10 & F10, LR3 & Integration & Call \texttt{delete\_my\_account} & Account B with consent, backup and one trail image & Auth user, consents, backup and trail rows and image gone; \texttt{account\_deleted} audit row kept & Not run \\ \hline
+TC11 & LR2 & Integration & Upload oversized or wrong-type data & 65 KB backup value; 600 KB JPEG; PNG trail & All three rejected with a plain message in the app & Not run \\ \hline
+TC12 & F1, LR1, LR6 & System & Open the app for the first time & Fresh Expo Go install & Three skippable welcome screens; data notice shown; ``i'' reopens it; no diagnostic wording & Not run \\ \hline
+TC13 & F6, P2 & System & Pick a need in the finder and open a suggestion & ``Stressed'' and ``Tired or sluggish'' & 3 suggestions each; the tapped activity opens directly; back returns to Home & Not run \\ \hline
+TC14 & P1, P3, LR3 & System & Set sleep targets, log a night, close and reopen the app, then delete & Bedtime 23:00, wake 07:00, $\pm$30 min & Targets and log survive restart; saved-on-device note shown; confirmed delete clears them & Not run \\ \hline
+TC15 & F8, LR7 & System & Find safety information starting from Home & Account A, Home screen & Reached in 3 taps or fewer; tells the user to contact a local emergency number or crisis line; no claim to judge safety & Not run \\ \hline
+TC16 & F10, LR3 & System & Download my data, then Delete all data & Account A with sleep log, Values Compass and Support Circle entries & JSON holds all six saved keys (including \texttt{activity-log}); delete clears device, backup and shared trails; 5 interactions or fewer before confirmation (NFR8) & Not run \\ \hline
+TC17 & F1, F10 & System & Back up on phone 1, sign in on phone 2; sign out with ``keep'' and ``remove'' & Account A on Android and iPhone & Newest copy wins per key; ``remove'' clears the device only, backup restores at next sign-in & Not run \\ \hline
+TC18 & All & System & Repeat TC12--TC17 with account C on the phone used by A & Test account C & Same results; none of A's data appears for C & Not run \\ \hline
+TC19 & F7, LR2, LR6 & System & Finish activities, open Progress overview, Mind and Body detail; switch to Demo data; delete the activity history & Fresh install; Breathing Bubble, Joy Explorer, 2 drinks in Hydration Check-in & ``My activity'' shows 2 Mind activities and 1 hydration check-in today; Demo view labelled; no typed text in \texttt{activity-log}; delete empties the page; no overall score & Not run \\ \hline
+TC20 & P1, LR2 & System & Record an indoor trail, pause, resume, save and share & Indoor mode, about 30 steps & Trail drawn, pause keeps the path; shared image shows no name, map or coordinates & Not run \\ \hline
+\end{longtable}
+}
+
+% =====================================================================
+\section{UAT tasks and real-user sessions}
+
+12 real users (10 required + 2 spare) each do one 30-minute moderated session, in two rounds of 6: test on 4 November, fix, then test 6 more on 7--8 November. Two rounds give at least 10 sessions plus before/after-fix evidence (Nielsen, 2000).
+
+\textbf{Participants:} students and young adults aged 18--25 from the real target group who use a smartphone daily. Classmates are not allowed: no one enrolled in 1305493, no one from our own programme and year at ADT, and no team members. Mix: MFU students from other schools and years, recent graduates and working young adults; at least 3 from a non-IT field and at least 3 iPhone users. Recruit through personal networks and other MFU schools. Age group, gender, phone type and wellbeing-app experience are recorded as background (UTAUT2 moderators).
+
+\textbf{Eligibility check:} before booking, each recruit answers three screening questions: ``Are you enrolled in 1305493 SE Case Studies this semester?'', ``Are you an ADT student who entered in 2566 (student ID starting 66)?'' and ``Are you 18 or older?'' A yes to either of the first two, or a no to the third, excludes them. The answers are noted next to their U-code.
+
+\textbf{Consent and data (rule.md):} each participant signs an informed consent form first; photos, audio or video only with separate permission. The form says BetterDays is not a diagnostic or therapy tool and its wording is not yet advisor-reviewed. Participants are asked to type made-up text, never their real feelings or history, and all their data is deleted at the end of the session. Results go under codes U01--U12 into one Excel sheet, one row per user, entered the same day. Names and contact details stay in a separate sheet held by one team member and are deleted after grading. Participants use a team test account unless they accept the backup consent screen with their own email.
+
+\textbf{Session safety:} if a participant becomes upset, the moderator stops the session, offers the support-resource sheet, and does not count the session. No participant's answer is ever interpreted as a wellbeing assessment.
+
+\textbf{Pilot:} one person on 3 November runs the full script to check timing and wording; it does not count toward the 12 sessions.
+
+\subsection{Tasks}
+
+Five scenario tasks from the core workflow, never button instructions, given one at a time in the same order to everyone. T1 and T2 are done first the usual way (before), then with BetterDays (after).
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{0.7cm}|Y|L{3.3cm}|L{2.3cm}|L{1.6cm}|}
+\hline
+\textbf{Task} & \textbf{Scenario read to the participant} & \textbf{Success when} & \textbf{Before measured} & \textbf{Traces to} \\ \hline
+T1 & ``You have an exam tomorrow and feel tense. Find something you can do right now, in about two minutes, to calm down.'' & A calming activity is running (e.g.\ Breathing Bubble, 5-Senses Grounding) & Yes, their usual way (search, video, other app) & F6, P2 \\ \hline
+T2 & ``You keep going to bed at different times. Set the bedtime and wake-up time you want, and note when you slept last night.'' & Targets saved and one night logged & Yes, their usual way (clock, notes) & P1, P3 \\ \hline
+T3 & ``You would hate to lose what you saved if you lost your phone. Set BetterDays up so it is kept safe.'' & Signed in, consent accepted, backup on & No equivalent & F1, F10, LR1 \\ \hline
+T4 & ``A friend is going through a really hard time. Find out where they could get help.'' & Crisis and support guidance is on screen & No equivalent & F8, LR7 \\ \hline
+T5 & ``You no longer want BetterDays to keep anything about you. Keep a copy for yourself, then remove everything.'' & Data downloaded, all data deleted and confirmed & No equivalent & F10, LR3 \\ \hline
+\end{tabularx}
+\end{center}
+
+\subsection{Session script (30 min)}
+
+\begin{enumerate}
+\item Intro and consent (3 min): explain the purpose, say ``we are testing the app, not you'', sign the consent form. Expo Go and the app are loaded before the timer starts.
+\item Old way, baseline (5 min): T1 and T2 using the participant's usual tools, timed.
+\item Tasks with think-aloud (10--15 min): T1--T5 with BetterDays, one task at a time, timed.
+\item Questionnaires (3--6 min): SUS straight after the tasks, then UTAUT2, on Google Forms.
+\item Interview and close (5 min): What did you like? Where did you get stuck? Would you keep using it, and why? Delete the session's data together and hand over the support-resource sheet.
+\end{enumerate}
+
+\textbf{Roles per session:} a moderator gives the tasks and never helps or points; a note-taker records success, time, taps, errors, where the user got stuck and key quotes on the observation sheet.
+
+% =====================================================================
+\section{Metrics}
+
+UAT passes when BetterDays cuts the time to start a helpful action by at least 30\%, at least 80\% of tasks succeed, mean SUS is 68 or higher, and UTAUT2 behavioural intention averages 4.0 out of 5 or higher. Task results are the required measure; SUS and UTAUT2 are added because an easy tool can still show no benefit.
+
+\subsection{Task results (required)}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{3.2cm}|Y|L{2.4cm}|L{4.0cm}|}
+\hline
+\textbf{Metric} & \textbf{How measured} & \textbf{Applies to} & \textbf{Target} \\ \hline
+Time on task (s) & Stopwatch from end of scenario to success & T1--T2 before and after & After at least 30\% lower (median) \\ \hline
+Task success rate (\%) & Completed without any help & T1--T5 & At least 80\% per task \\ \hline
+Errors per user (count) & Wrong tap, dead end, asked for help & T1--T5 & Median 1 or fewer \\ \hline
+Taps to the action (count) & Note-taker tally from Home & T1, T4 & Median 3 or fewer \\ \hline
+Setup time (s) & Start of T3 to backup on & T3 & Median 120 s or less \\ \hline
+Data-rights interactions (count) & Taps from Profile to export and delete, before the final confirmation & T5 & 5 or fewer (NFR8) \\ \hline
+Issues (count by severity 0--4) & Observation sheet, rated by the team & All tasks & No severity 3--4 issue open after round 2 \\ \hline
+\end{tabularx}
+\end{center}
+
+Before vs after (T1--T2) uses the Wilcoxon signed-rank test; round 1 vs round 2 uses the Mann--Whitney U test ($\alpha = 0.05$). Medians and ranges are reported because samples are small.
+
+\subsection{System Usability Scale (SUS)}
+
+\[
+\text{SUS} = 2.5 \times \Big( \sum_{i \in \{1,3,5,7,9\}} (s_i - 1) + \sum_{i \in \{2,4,6,8,10\}} (5 - s_i) \Big)
+\]
+
+Target: mean of 68 or higher (average, grade C); 80.8 or higher is grade A and below 51.7 is grade F (Sauro \& Lewis). Report the overall mean and SD, not item by item; SUS is a score, not a percentage.
+
+The standard 10 items (Brooke, 1996) on a 1--5 scale, given straight after the tasks. Only ``system'' is replaced by ``BetterDays''; no item is dropped or reworded. The Thai version is back-translated into English and compared before use. Score per participant (Excel): \\
+\texttt{=2.5*((B2-1)+(5-C2)+(D2-1)+(5-E2)+(F2-1)+(5-G2)+(H2-1)+(5-I2)+(J2-1)+(5-K2))}
+
+\subsection{Technology acceptance (UTAUT2)}
+
+UTAUT2 (Venkatesh, Thong \& Xu, 2012) is chosen over TAM because BetterDays is a consumer app people choose for themselves. Six constructs are measured; Habit is left out because one session cannot show it, and Price Value because BetterDays is free. Items are adapted from the source paper, changing only the system and task names; 3 per construct, 1--5 scale (strongly disagree to strongly agree), given after the SUS.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{1.0cm}|L{4.0cm}|Y|}
+\hline
+\textbf{Code} & \textbf{Construct} & \textbf{Item} \\ \hline
+PE1 & Performance expectancy & I find BetterDays useful for looking after my everyday wellbeing. \\ \hline
+PE2 & Performance expectancy & Using BetterDays helps me find a small, helpful thing to do more quickly. \\ \hline
+PE3 & Performance expectancy & Using BetterDays means I need fewer separate apps for notes, habits and tips. \\ \hline
+EE1 & Effort expectancy & Learning how to use BetterDays is easy for me. \\ \hline
+EE2 & Effort expectancy & My interaction with BetterDays is clear and understandable. \\ \hline
+EE3 & Effort expectancy & I find BetterDays easy to use. \\ \hline
+SI1 & Social influence & People who are important to me would think I should use BetterDays. \\ \hline
+SI2 & Social influence & People whose opinions I value would like me to use BetterDays. \\ \hline
+SI3 & Social influence & People who influence my behaviour think I should use BetterDays. \\ \hline
+FC1 & Facilitating conditions & I have the resources necessary to use BetterDays. \\ \hline
+FC2 & Facilitating conditions & I have the knowledge necessary to use BetterDays. \\ \hline
+FC3 & Facilitating conditions & BetterDays works with the phone and other tools I already use. \\ \hline
+HM1 & Hedonic motivation & Using BetterDays is fun. \\ \hline
+HM2 & Hedonic motivation & Using BetterDays is enjoyable. \\ \hline
+HM3 & Hedonic motivation & Using BetterDays is entertaining. \\ \hline
+BI1 & Behavioural intention & I intend to continue using BetterDays in the future. \\ \hline
+BI2 & Behavioural intention & I will try to use BetterDays in my daily life. \\ \hline
+BI3 & Behavioural intention & I plan to keep using BetterDays next month. \\ \hline
+\end{tabularx}
+\end{center}
+
+\textbf{Scoring:} each participant's construct score is the mean of its 3 items (Excel AVERAGE); results are reported as mean $\pm$ SD per construct. Targets: PE, EE and BI at 4.0 or higher; SI, FC and HM reported only. The lowest-scoring construct is linked to issues seen in the tasks. With about 12 users no causal paths are claimed (that needs SEM/PLS and a larger sample).
+
+\textbf{Translation:} items are translated into Thai, back-translated into English by someone outside the team, compared, then piloted with 2--3 people before 4 November.
+
+\textbf{Not covered here:} NFR1 (3 users over 2 weeks) and NFR2 (check-in under 2 minutes) need the daily check-in, which is not built; they stay open for the next phase.
+
+% =====================================================================
+\section{Schedule, roles and criteria}
+
+Real users test BetterDays on the class testing day, Wednesday 4 November, and again on 7--8 November after fixes; results are ready for the final presentation on 11 November (teams 1--10) or 18 November (teams 11--20).
+
+\subsection{Schedule}
+
+\begin{center}
+\small
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Activity} & \textbf{Date (2026)} \\ \hline
+Submit test plan & 28 Oct \\ \hline
+Pre-test fixes & 28 Oct -- 1 Nov \\ \hline
+Unit and integration tests & 28 Oct -- 1 Nov \\ \hline
+Guest lecture, no testing & 31 Oct \\ \hline
+System (E2E) tests & 1 -- 2 Nov \\ \hline
+Pilot session (1 user) & 3 Nov \\ \hline
+\textbf{UAT round 1 (6 users)} & \textbf{4 Nov} \\ \hline
+Fix severity 3--4 issues & 5 -- 6 Nov \\ \hline
+UAT round 2 (6 users) & 7 -- 8 Nov \\ \hline
+Analysis and slides & 9 -- 10 Nov \\ \hline
+Final presentation & 11 Nov \\ \hline
+\end{tabular}
+\end{center}
+
+No testing is planned on Saturday 31 October (all-day guest lecture in E4614). The plan assumes the 11 November slot; with the 18 November slot, round 2 and analysis gain a week.
+
+\subsection{Roles}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{5.2cm}|Y|}
+\hline
+\textbf{Member} & \textbf{Responsibility} \\ \hline
+Thira Min Htun (6631503095) & Test lead; unit tests (TC01--TC04) and system tests (TC12--TC18); bug tracking on the GitHub board \\ \hline
+Myint Myat Pyae Sone (6631503073) & Supabase test project and integration tests (TC05--TC11); Progress and Trail tests (TC19--TC20); fixes between rounds \\ \hline
+Min Myat Hein (6631503068) & UAT moderator; Google Forms for SUS and UTAUT2; Thai translation of tasks and items \\ \hline
+Paing Soe Khant (6631503082) & Recruitment, consent forms, session booking; UAT note-taker and timekeeper; data analysis and report \\ \hline
+\end{tabularx}
+\end{center}
+
+\subsection{Entry and exit criteria}
+
+\begin{itemize}
+\item \textbf{Start UAT when:} TC01--TC18 pass, no open severity 3--4 issue, the consent text names Supabase and its region, the support-resource sheet is ready, the Thai questionnaires are back-translated, and the pilot is done.
+\item \textbf{Start round 2 when:} every severity 3--4 issue from round 1 is fixed and retested.
+\item \textbf{Finish UAT when:} at least 10 complete sessions are in the sheet and every severity 3--4 issue is fixed or logged with a reason.
+\item \textbf{Suspend testing if:} Supabase is unavailable for more than 24 h, or a rule.md breach is found (for example one user can read another user's backup, a participant's text reaches the public trail gallery, or wording presents a result as a diagnosis).
+\end{itemize}
+
+\subsection{Risks}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|L{4.5cm}|L{4.1cm}|Y|}
+\hline
+\textbf{Risk} & \textbf{Effect} & \textbf{Fallback} \\ \hline
+Fewer than 6 users show up on 4 Nov & Under 10 sessions in total & Recruit 12; keep 2 backup slots on 8 Nov \\ \hline
+Final slot is 11 Nov & Only 2 days for analysis and slides & Enter results the same day; build charts from the sheet as rounds finish \\ \hline
+Participant's Expo Go does not match SDK 58 & App will not open; session lost & Ask for an Expo Go update when booking; bring 2 team phones (1 Android, 1 iPhone) \\ \hline
+Supabase free tier pauses & Sign-in and backup fail during a session & Open the app and sign in 10 min before each session to wake it \\ \hline
+Sign-up or reset email lands in spam & T3 fails for reasons outside the product & Ask the user to check spam; log as severity 2 \\ \hline
+Participant types real personal feelings & Sensitive data held by the team & Ask for made-up text; delete all data with the participant at the end \\ \hline
+Activity or safety wording upsets someone & Harm to the participant; wording not advisor-reviewed & Stop the session, give the resource sheet, log as severity 3 or 4 \\ \hline
+Indoor motion sensors missing on a phone & TC20 cannot run & Use outdoor mode or a team phone; log the device model \\ \hline
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Evidence and AI use}
+
+Every session must really happen with a real person; no result or quote is invented. Evidence is kept for the instructor to check and feeds the final portfolio.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{|Y|L{5.2cm}|L{1.7cm}|}
+\hline
+\textbf{Evidence} & \textbf{Kept as} & \textbf{Portfolio} \\ \hline
+Participants (U01--U12), dates, group & User Evidence Log table & P3 \\ \hline
+Signed consent forms & Scans in the team drive & P3 \\ \hline
+Raw results: times, taps, success, errors, SUS, UTAUT2 & One Excel sheet, one row per user & P4 \\ \hline
+Before vs after task times, SUS vs 68, construct means & Charts in the final slides & P4 \\ \hline
+Top 3--5 issues with severity and user quotes & Issue table + GitHub issues & P3 \\ \hline
+What was fixed between rounds & Before/after screenshots & P1 \\ \hline
+Photos or video (only with permission) & Team drive & P3 \\ \hline
+\end{tabularx}
+\end{center}
+
+\textbf{AI use:} Claude (Claude Code) drafted this plan's structure, the test cases, the task scenarios and the adapted SUS/UTAUT2 wording from the team's charter, spec, backlog, rule.md and code. The team reviews every case and item before submission:
+
+\begin{itemize}
+\item[$\square$] Every test case (TC01--TC20) checked against the code by its owner
+\item[$\square$] Task scenarios and UTAUT2 items reviewed by the whole team
+\item[$\square$] Roles and dates confirmed by every member
+\end{itemize}
+
+\end{document}

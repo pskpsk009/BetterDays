@@ -1,0 +1,277 @@
+% MyGrowth - project portfolio
+% Compile with: pdflatex portfolio.tex  (or upload to Overleaf)
+% Every screenshot is a placeholder. Replace \shot{...} with
+% \includegraphics[width=2.4cm]{screens/<file>.png} once you have captures.
+% To add another project, copy the \project{...} block and its sections.
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+% ---------- Palette ----------
+\definecolor{teal}{HTML}{247F7B}
+\definecolor{mind}{HTML}{5B5FC7}
+\definecolor{fuel}{HTML}{3A8A4F}
+\definecolor{move}{HTML}{C15F2C}
+\definecolor{night}{HTML}{4B4FA0}
+\definecolor{trail}{HTML}{DD8C43}
+\definecolor{ink}{HTML}{25393B}
+\definecolor{muted}{HTML}{6B7F80}
+\definecolor{soft}{HTML}{EEF6F4}
+% Mind branch colours (from the app)
+\definecolor{selfacc}{HTML}{5E8C61}
+\definecolor{joy}{HTML}{B7791F}
+\definecolor{purpose}{HTML}{3D7F8F}
+\definecolor{livelife}{HTML}{2B8273}
+\definecolor{focus}{HTML}{3F6FC4}
+\definecolor{standup}{HTML}{C2603A}
+\definecolor{aware}{HTML}{7E5DB5}
+\definecolor{control}{HTML}{B5527A}
+\definecolor{social}{HTML}{C9802A}
+
+\color{ink}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlist{itemsep=1pt, topsep=3pt, leftmargin=1.1em}
+
+% ---------- Headings ----------
+\titleformat{\section}{\large\bfseries\color{teal}}{}{0pt}{}[\vspace{-5pt}{\color{teal!30}\rule{\linewidth}{0.6pt}}]
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\small\color{muted}[Your Name] \textperiodcentered{} Portfolio}
+\fancyfoot[R]{\small\color{muted}\thepage}
+
+% ---------- Helpers ----------
+% Small phone-shaped screenshot placeholder: \shot{Caption}
+\newcommand{\shot}[1]{%
+  \begin{tikzpicture}
+    \draw[muted!60, line width=1pt, rounded corners=7pt, fill=soft] (0,0) rectangle (2.4,4.6);
+    \draw[muted!50, line width=0.8pt] (0.95,4.43) -- (1.45,4.43);
+    \draw[muted!50, dashed, rounded corners=3pt] (0.17,0.22) rectangle (2.23,4.27);
+    \node[align=center, text width=1.9cm, font=\tiny\color{muted}] at (1.2,2.25)
+      {\textbf{SCREENSHOT}\\[2pt]#1};
+  \end{tikzpicture}%
+}
+
+% Real screenshot with a rounded frame and caption: \screen{file}{Caption}
+\newcommand{\screen}[2]{%
+  \begin{minipage}[t]{2.4cm}\centering
+    \begin{tikzpicture}
+      \node[inner sep=0pt](img){\includegraphics[width=2.4cm,height=4.6cm,keepaspectratio]{#1}};
+      \draw[muted!50, line width=0.8pt, rounded corners=4pt]
+        (img.south west) rectangle (img.north east);
+    \end{tikzpicture}\par\vspace{2pt}
+    {\tiny\color{muted}#2}
+  \end{minipage}%
+}
+
+% Coloured tag: \pill{colour}{Text}
+\newcommand{\pill}[2]{%
+  \tikz[baseline=(t.base)]\node[fill=#1!15, text=#1!70!black, rounded corners=5pt,
+    inner xsep=5pt, inner ysep=1.5pt, font=\scriptsize\bfseries](t){#2};%
+}
+
+% Mind branch row: \branch{colour}{Time / theme}{Branch}{What you do there}
+\newcommand{\branch}[4]{%
+  \pill{#1}{#2}\,{\bfseries\color{#1!80!black}#3}\par
+  {\small #4}%
+}
+
+% Project banner: \project{colour}{Title}{One-line summary}
+\newcommand{\project}[3]{%
+  \par\noindent
+  \tikz\node[fill=#1, rounded corners=10pt, inner sep=14pt,
+             text width=\dimexpr\linewidth-28pt\relax, align=left, text=white]{%
+    {\scriptsize\bfseries PROJECT}\par\vspace{2pt}
+    {\LARGE\bfseries #2}\par\vspace{3pt}
+    {\small #3}};\par\vspace{6pt}
+}
+
+\begin{document}
+
+% ======================================================================
+% PROJECT: MyGrowth
+% ======================================================================
+\project{teal}{MyGrowth}{A mobile wellbeing companion for students and young adults
+  \textperiodcentered{} Lead Developer \textperiodcentered{} 2026\\
+  \href{https://github.com/pskpsk009/BetterDays}{\texttt{github.com/pskpsk009/BetterDays}}}
+
+MyGrowth turns small wellbeing habits into short, hands-on activities. Users
+tap the head, body, or legs of an interactive figure on the home screen to
+open \textbf{Mind}, \textbf{Body}, or the \textbf{Movement Trail}. Every
+activity is tap-, drag-, or sensor-driven rather than journal-style, and
+nothing is scored.
+
+\pill{teal}{Expo SDK 57} \pill{teal}{React Native} \pill{teal}{TypeScript}
+\pill{teal}{Expo Router} \pill{mind}{Reanimated} \pill{mind}{react-native-svg}
+\pill{trail}{expo-location} \pill{trail}{expo-sensors}
+\pill{trail}{react-native-maps} \pill{fuel}{Supabase}
+
+% ----------------------------------------------------------------------
+\section{Home \& Navigation}
+
+\begin{center}
+\screen{MentalHome.jpg}{Home: interactive body figure}\hfill
+\screen{Mind.jpg}{Mind tab: branch list}\hfill
+\screen{SelfAccept.jpg}{Inside a branch: Self-Acceptance}\hfill
+\screen{LetterToPast.jpg}{An activity: Letter to My Past Self}
+\end{center}
+
+\begin{minipage}[t]{0.48\linewidth}
+\pill{teal}{Home}
+\begin{itemize}
+  \item An \textbf{SVG body figure} with three tap zones:
+        \textbf{Head} opens Mind, \textbf{Body} opens Body Functions, and
+        \textbf{Legs} open the Movement Trail.
+  \item Dashed callout labels point to each zone. Tapping one highlights it
+        in its colour, dims the others, and shows a ``Selected area'' toast
+        for a moment before opening that section.
+  \item A softly \textbf{breathing halo} pulses behind the figure. It stays
+        still when the phone's reduce-motion setting is on.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\pill{teal}{Navigation}
+\begin{itemize}
+  \item \textbf{Expo Router} with the phone's own \textbf{native bottom tabs}:
+        Home, Mind, Body, Trail, and Progress, with platform icons on iOS
+        and Android.
+  \item Mind and Body share one \textbf{branch explorer}: section overview
+        $\rightarrow$ branch $\rightarrow$ activity, with a back button at each
+        level. Mind adds a Mental/Emotional switch at the top.
+  \item Every branch has its own colour and icon, which carry through to
+        its activities so users always know where they are.
+\end{itemize}
+\end{minipage}
+
+\newpage
+% ----------------------------------------------------------------------
+\section{Mind: Mental \& Emotional Wellness}
+
+\begin{center}
+\screen{MentalHealth.jpg}{Mental Wellness overview}\hfill
+\screen{MentalBranch.jpg}{A Mental Wellness branch}\hfill
+\screen{EmotionalHealth.jpg}{Emotional Wellness overview}\hfill
+\screen{EmotinalBranch.jpg}{An Emotional Wellness branch}
+\end{center}
+
+\begin{minipage}[t]{0.48\linewidth}
+\pill{mind}{Mental Wellness}\par\vspace{2pt}
+{\small\color{muted}Grow from the past, enjoy today, look ahead with focus.}
+\begin{itemize}[leftmargin=0pt, label={}]
+  \item \branch{selfacc}{Past}{Self-Acceptance}{Make peace with the past:
+        lessons not labels, and a garden of your strengths.}
+  \item \branch{livelife}{Present}{Live the Life}{Notice the moment with the
+        Breathing Bubble, 5-Senses Grounding, and Watch Your Thoughts.}
+  \item \branch{joy}{Today}{Discover Your Joy}{Explore hobbies and pick one
+        small, new thing to try today.}
+  \item \branch{purpose}{Future}{Purpose in Life}{Choose your values and one
+        manageable step toward a goal.}
+  \item \branch{focus}{Every day}{Find Your Focus}{Train attention with Focus
+        Sprint and the Target Tap game.}
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\pill{night}{Emotional Wellness}\par\vspace{2pt}
+{\small\color{muted}Understand your feelings, bounce back, connect with others.}
+\begin{itemize}[leftmargin=0pt, label={}]
+  \item \branch{standup}{Bounce back}{Stand Up Again}{Turn a setback into one
+        next step, and find a Plan B when plans fall through.}
+  \item \branch{aware}{Understand}{Self-Awareness}{Name a feeling with the
+        Emotion Explorer and sort what you can and can't control.}
+  \item \branch{control}{Steady}{Self-Control}{Stop, notice, breathe, then
+        choose how to respond.}
+  \item \branch{social}{Connect}{Social Creatures}{Practise conversation
+        openers, other points of view, and kind boundaries.}
+\end{itemize}
+\end{minipage}
+
+% ----------------------------------------------------------------------
+\section{Body Functions}
+
+\begin{center}
+\screen{Hydration.jpg}{Hydration Check-in}\hfill
+\screen{BalancedDiet.jpg}{Build a Balanced Plate}\hfill
+\screen{DailyStretch.jpg}{Daily Stretch}\hfill
+\screen{SleepSchedule.jpg}{Sleep Schedule Guidance}
+\end{center}
+
+\begin{itemize}
+  \item \pill{fuel}{Fuel} \textbf{Hydration Check-in}: tap a glass per drink,
+        with an adjustable glass size (150--500\,ml) and a daily target you
+        set yourself (1--4\,L).
+  \item \pill{fuel}{Fuel} \textbf{Build a Balanced Plate}: long-press and drag
+        food groups onto a five-slice SVG plate. The slice under your finger
+        is found from its angle to the centre, and the feedback describes
+        rather than judges.
+  \item \pill{move}{Movement} \textbf{Daily Stretch} and \textbf{Desk Break}:
+        guided move cards with countdown timers (3, 5, or 10-minute stretch
+        routines) and a reminder to stop if anything hurts.
+  \item \pill{night}{Sleep} \textbf{Sleep Schedule Guidance}: pick current
+        and preferred bedtimes on a 24-hour picker and get a gradual
+        night-by-night plan in 15 or 30-minute steps.
+\end{itemize}
+
+\newpage
+% ----------------------------------------------------------------------
+\section{Movement Trail}
+
+\begin{center}
+\screen{Outdoor.jpg}{Outdoor GPS trail}\hspace{1cm}
+\screen{Indoor.jpg}{Indoor 2D drawing}\hspace{1cm}
+\screen{ViewTrail.jpg}{View Trails gallery}
+\end{center}
+
+\begin{itemize}
+  \item \pill{trail}{Outdoor} Live GPS from \texttt{expo-location} drawn on
+        \texttt{react-native-maps}, with haversine distance. Pause and resume
+        start a new segment, so ground covered while paused isn't counted.
+  \item \pill{trail}{Indoor} For places without good GPS: accelerometer peaks
+        detect steps and the magnetometer gives each step a direction. The
+        path is drawn on an SVG canvas that scales to fit and smooths the line.
+  \item \pill{trail}{View Trails} Stopping offers \emph{Save image} or
+        \emph{Discard}. Saved trails are uploaded as SVGs to Supabase Storage
+        and appear in a shared gallery, newest first.
+\end{itemize}
+
+% ----------------------------------------------------------------------
+\section{What I learned \& next steps}
+
+\begin{itemize}
+  \item \textbf{Phone sensors are noisy.} Raw accelerometer data counts too
+        many steps, so a step needs the signal to settle and a short gap first.
+        Compass drift indoors is why the indoor trail is a drawing, not a map.
+  \item \textbf{Layout happens after first render.} SVG backgrounds sized in
+        percentages didn't grow when text wrapped; measuring the real layout
+        fixed overflowing headers.
+  \item \textbf{Keep logic out of screens.} Timing, game rules, plate
+        feedback, and sleep scheduling live in plain TypeScript modules, which
+        made them easier to change.
+  \item \textbf{Next:} background trail tracking, real saved progress (with
+        consent, export, and deletion), automated tests for the logic
+        modules, and moderation for the shared trails gallery.
+\end{itemize}
+
+{\footnotesize\color{muted} MyGrowth is a prototype for everyday habit
+support. It does not diagnose, treat, or replace professional care.}
+
+% ======================================================================
+% NEXT PROJECT: copy the \project{...} line and sections above, e.g.
+% \newpage
+% \project{move}{Project Two}{Short summary \textperiodcentered{} [Role] \textperiodcentered{} [Year]}
+% ======================================================================
+
+\end{document}
