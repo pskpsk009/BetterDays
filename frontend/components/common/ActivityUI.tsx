@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 
+import { useLogCompletion } from "./activityLog";
 import { AppIcon, IconName, isIconName } from "./AppIcon";
 import { COLORS } from "./AppShell";
 import { elapsedFor, formatClock } from "./time";
@@ -443,6 +444,15 @@ export function CompletionScreen({
   secondary?: CompletionAction;
   children?: React.ReactNode;
 }) {
+  // Reaching this screen counts as finishing the activity, once per visit.
+  const logCompletion = useLogCompletion();
+  const logged = useRef(false);
+  useEffect(() => {
+    if (logged.current) return;
+    logged.current = true;
+    logCompletion();
+  }, [logCompletion]);
+
   return (
     <Animated.View
       entering={FadeInRight.duration(240)}

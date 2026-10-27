@@ -4,6 +4,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { useLocalSearchParams } from "expo-router";
 
 import { ActivityCard, ActivityProps, BackPill } from "../components/common/ActivityUI";
+import { ActivityLogProvider } from "../components/common/activityLog";
 import { MobileScreen, ScreenHeader } from "../components/common/AppShell";
 import { BODY_BRANCHES, BodyActivityId } from "../components/body/branches";
 import { BalancedPlate } from "../components/body/fuel/BalancedPlate";
@@ -60,7 +61,9 @@ export default function BodyScreen() {
         {entry && Activity ? (
           <View style={styles.subscreen}>
             <BackPill label="Body" color={entry.branch.color} soft={entry.branch.soft} onPress={back} />
-            <Activity color={entry.branch.color} soft={entry.branch.soft} onExit={back} />
+            <ActivityLogProvider activityId={entry.activity.id}>
+              <Activity color={entry.branch.color} soft={entry.branch.soft} onExit={back} />
+            </ActivityLogProvider>
           </View>
         ) : (
           <>

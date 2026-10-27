@@ -3,12 +3,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, StyleSheet, Text, View, type ScrollViewInstance } from "react-native";
 import Animated, { FadeIn, useReducedMotion } from "react-native-reanimated";
 
+import { SavedOnDeviceNote } from "../components/common/ActivityUI";
+import { EMPTY_LOG } from "../components/common/activityLog";
 import { COLORS, MobileScreen, ScreenHeader } from "../components/common/AppShell";
+import { useStoredState } from "../components/common/localStore";
 import { BodyDetail } from "../components/progress/BodyDetail";
 import { GrowthTree } from "../components/progress/GrowthTree";
 import { MindDetail } from "../components/progress/MindDetail";
 import { countDistinctDays, PeriodId, within } from "../components/progress/progressMath";
-import { buildContext } from "../components/progress/progressSummary";
+import { buildContext, otherIn } from "../components/progress/progressSummary";
 import { ProgressOverview } from "../components/progress/ProgressOverview";
 import {
   AREAS,
@@ -33,8 +36,8 @@ const DETAIL_COPY: Record<ProgressArea, { heading: string; subtitle: string }> =
 
 function areaRecords(data: ProgressDataset, area: ProgressArea): { date: DateKey }[] {
   return area === "mind"
-    ? [...data.mindfulness, ...data.reflections, ...data.focus]
-    : [...data.hydration, ...data.plates, ...data.movement, ...data.sleep, ...data.bedtimeRoutines];
+    ? [...data.mindfulness, ...data.reflections, ...data.focus, ...otherIn(data, "mind")]
+    : [...data.hydration, ...data.plates, ...data.movement, ...data.sleep, ...data.bedtimeRoutines, ...otherIn(data, "body")];
 }
 
 /**
@@ -46,7 +49,7 @@ function areaRecords(data: ProgressDataset, area: ProgressArea): { date: DateKey
 export default function ProgressScreen() {
   const [selectedArea, setSelectedArea] = useState<ProgressArea | null>(null);
   const [period, setPeriod] = useState<PeriodId>("7d");
-  const [dataMode, setDataMode] = useState<DataMode>("demo");
+  const [dataMode, setDataMode] = useState<DataMode>("mine");
   const scrollRef = useRef<ScrollViewInstance>(null);
   const reduceMotion = useReducedMotion();
   // Fade only when switching views; the first render stays static so web
@@ -54,6 +57,7 @@ export default function ProgressScreen() {
   const [hasSwitched, setHasSwitched] = useState(false);
 
   const { data, today } = useProgressData(dataMode);
+  const [, , clearLog] = useStoredState("activity-log", EMPTY_LOG);
   const ctx = useMemo(() => buildContext(data, period, today), [data, period, today]);
 
   // Opening the tab always starts at the overview.
@@ -136,6 +140,7 @@ export default function ProgressScreen() {
             </>
           )}
         </Animated.View>
+        {dataMode === "mine" && <SavedOnDeviceNote what="activity history" onDelete={clearLog} />}
       </View>
     </MobileScreen>
   );

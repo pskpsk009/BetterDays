@@ -51,6 +51,7 @@ export function createDemoDataset(today: Date = new Date()): ProgressDataset {
     movement: [],
     sleep: [],
     bedtimeRoutines: [],
+    other: [],
     assessments: [
       {
         id: "baseline",
@@ -168,10 +169,10 @@ export function createDemoDataset(today: Date = new Date()): ProgressDataset {
   return data;
 }
 
-/** Preview of what a brand-new user sees: no records at all. */
+/** A dataset with no records, filled in by useProgressData. */
 export function createEmptyDataset(): ProgressDataset {
   return {
-    source: "preview",
+    source: "user",
     mindfulness: [],
     reflections: [],
     focus: [],
@@ -180,6 +181,7 @@ export function createEmptyDataset(): ProgressDataset {
     movement: [],
     sleep: [],
     bedtimeRoutines: [],
+    other: [],
     assessments: [],
   };
 }

@@ -14,6 +14,7 @@ import {
   SupportNote,
   toggleItem,
 } from "./ActivityUI";
+import { useLogCompletion } from "./activityLog";
 import { AppIcon } from "./AppIcon";
 import { COLORS } from "./AppShell";
 
@@ -292,6 +293,8 @@ export function ChoiceExplorer(
   const [custom, setCustom] = useState("");
   const [stage, setStage] = useState<"pick" | "result" | "done">("pick");
   const [favourite, setFavourite] = useState<string | null>(null);
+  // With onComplete there is no completion screen, so log the finish here.
+  const logCompletion = useLogCompletion();
 
   function restart() {
     setPicked([]);
@@ -370,7 +373,11 @@ export function ChoiceExplorer(
             flex
             label={completeLabel ?? "Finish"}
             color={color}
-            onPress={() => (onComplete ? onComplete(picked) : setStage("done"))}
+            onPress={() => {
+              if (!onComplete) return setStage("done");
+              logCompletion();
+              onComplete(picked);
+            }}
           />
         </View>
       </Animated.View>

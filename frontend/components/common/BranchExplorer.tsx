@@ -9,6 +9,7 @@ import {
   BranchCard,
   BranchInfo,
 } from "./ActivityUI";
+import { ActivityLogProvider } from "./activityLog";
 import { COLORS, MobileScreen, ScreenHeader } from "./AppShell";
 
 type ExplorerView =
@@ -140,12 +141,14 @@ export function BranchExplorer({
       <View style={styles.subscreen}>
         <BackPill label={branch.title} color={branch.color} soft={branch.soft} onPress={back} />
         {Activity ? (
-          <Activity
-            color={branch.color}
-            soft={branch.soft}
-            onExit={back}
-            openActivity={(activityId) => setView({ screen: "activity", branchId: branch.id, activityId })}
-          />
+          <ActivityLogProvider key={view.activityId} activityId={view.activityId}>
+            <Activity
+              color={branch.color}
+              soft={branch.soft}
+              onExit={back}
+              openActivity={(activityId) => setView({ screen: "activity", branchId: branch.id, activityId })}
+            />
+          </ActivityLogProvider>
         ) : null}
       </View>
     );

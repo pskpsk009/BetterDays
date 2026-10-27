@@ -19,7 +19,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     icon: "cellphone",
     title: "What stays on this phone",
     points: [
-      "Most activities save nothing. When you leave them, what you entered is gone.",
+      "Most activities don't keep what you enter. When you leave them, it's gone.",
+      "When you finish an activity, the app notes which one, the day and roughly how long, so Progress can show your history. Hydration Check-in also keeps the number of drinks and Balanced Plate the food groups. What you type is never included, and entries are kept for up to a year.",
       "My Support Circle, Values Compass, Develop Your Skill and Sleep Schedule Guidance remember what you add so you can come back to it.",
       "Sleep Schedule Guidance keeps your target times and the bed and wake-up times you log, for about six months, to show how closely you follow your schedule.",
       "Your welcome picks are saved so Home can show them first.",

@@ -10,7 +10,7 @@ const PREFIX = "mygrowth:";
 /** When each key last changed on this device (ms), so sync knows which copy is newer. */
 const META_KEY = `${PREFIX}meta`;
 
-export const STORE_KEYS = ["support-circle", "values-compass", "skills", "sleep", "welcome"] as const;
+export const STORE_KEYS = ["support-circle", "values-compass", "skills", "sleep", "welcome", "activity-log"] as const;
 
 export type StoreKey = (typeof STORE_KEYS)[number];
 
@@ -24,6 +24,16 @@ export function onLocalChange(listener: (key: StoreKey) => void) {
   changeListeners.add(listener);
   return () => {
     changeListeners.delete(listener);
+  };
+}
+
+/** Calls `listener` after any saved key changes here, is restored from backup, or is deleted. */
+export function onStoreChange(listener: (key: StoreKey) => void) {
+  changeListeners.add(listener);
+  reloadListeners.add(listener);
+  return () => {
+    changeListeners.delete(listener);
+    reloadListeners.delete(listener);
   };
 }
 
@@ -129,6 +139,12 @@ function save<T>(key: StoreKey, value: T) {
     return;
   }
   changeListeners.forEach((listener) => listener(key));
+}
+
+/** Updates a saved value from outside a component (e.g. the activity log). */
+export function updateSaved<T>(key: StoreKey, fallback: T, next: (previous: T) => T) {
+  save(key, next(load(key, fallback)));
+  reloadListeners.forEach((reload) => reload(key));
 }
 
 /**

@@ -54,6 +54,7 @@ const ACTIVITY_RECORDS = [
   "movement",
   "sleep",
   "bedtimeRoutines",
+  "other",
 ] as const;
 
 export function earliestRecord(data: ProgressDataset): DateKey | null {
@@ -91,13 +92,18 @@ function withTrend(
 
 // ---------- Overview summaries ----------
 
+export function otherIn(data: ProgressDataset, area: ProgressArea) {
+  return data.other.filter((record) => record.area === area);
+}
+
 export function mindSummary(ctx: ProgressContext) {
   const { data } = ctx;
   return {
     activityCount:
       within(data.mindfulness, ctx.window).length +
       within(data.reflections, ctx.window).length +
-      within(data.focus, ctx.window).length,
+      within(data.focus, ctx.window).length +
+      within(otherIn(data, "mind"), ctx.window).length,
     practiceMinutes: withTrend(ctx, (w) => sum(within(data.mindfulness, w).map((s) => s.minutes))),
     awareness: withTrend(ctx, (w) => average(within(data.mindfulness, w).map((s) => s.awarenessAfter))),
     emotionConfidence: withTrend(ctx, (w) =>
@@ -123,6 +129,7 @@ export function bodySummary(ctx: ProgressContext) {
       within(data.hydration, ctx.window).length +
       within(data.plates, ctx.window).length +
       within(data.movement, ctx.window).length +
+      within(otherIn(data, "body"), ctx.window).length +
       (sleepAndRoutines.value ?? 0),
   };
 }
@@ -311,6 +318,7 @@ export function recentActivities(data: ProgressDataset, limit = 5): RecentActivi
       area: "body" as const,
       title: ACTIVITY_TITLES["bedtime-routine"],
     })),
+    ...data.other.map((s) => ({ date: s.date, area: s.area, title: ACTIVITY_TITLES[s.activity] ?? s.activity })),
   ];
   const grouped = new Map<string, RecentActivity>();
   for (const item of items) {

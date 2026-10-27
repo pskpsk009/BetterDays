@@ -81,6 +81,13 @@ export type BedtimeRoutine = {
   stepsTotal: number;
 };
 
+/** Any other finished activity (Joy Explorer, Plan B, ...): counted, no measures. */
+export type OtherActivity = {
+  date: DateKey;
+  activity: string;
+  area: ProgressArea;
+};
+
 /** A repeated check-point questionnaire with the same questions each time. */
 export type Assessment = {
   id: string;
@@ -94,10 +101,10 @@ export type Assessment = {
 
 export type ProgressDataset = {
   /**
-   * "demo" for illustrative mock data, "preview" for the empty new-user view,
-   * and "user" once real records load from Supabase.
+   * "demo" for illustrative mock data, "user" for the activity log saved on
+   * this device (see useProgressData.ts).
    */
-  source: "demo" | "preview" | "user";
+  source: "demo" | "user";
   mindfulness: MindfulnessSession[];
   reflections: ReflectionSession[];
   focus: FocusSession[];
@@ -106,6 +113,7 @@ export type ProgressDataset = {
   movement: MovementSession[];
   sleep: SleepEntry[];
   bedtimeRoutines: BedtimeRoutine[];
+  other: OtherActivity[];
   assessments: Assessment[];
 };
 

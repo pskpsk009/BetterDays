@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { AppIcon } from "../common/AppIcon";
+import { useLogCompletion } from "../common/activityLog";
 import { COLORS } from "../common/AppShell";
 import {
   ActivityHeader,
@@ -65,6 +66,7 @@ export function EmotionExplorer({
   const [intensity, setIntensity] = useState<number | null>(null);
   const [contributors, setContributors] = useState<string[]>([]);
   const [note, setNote] = useState("");
+  const logCompletion = useLogCompletion();
 
   const selected = EMOTIONS.find((item) => item.name === emotion);
   const isSummary = step >= STEP_COUNT;
@@ -110,7 +112,15 @@ export function EmotionExplorer({
         </View>
         <View style={mentalStyles.row}>
           <SecondaryButton flex label="Back" color={color} onPress={back} />
-          <PrimaryButton flex label="Finish" color={color} onPress={onExit} />
+          <PrimaryButton
+            flex
+            label="Finish"
+            color={color}
+            onPress={() => {
+              logCompletion();
+              onExit();
+            }}
+          />
         </View>
         <SecondaryButton subtle label="Start over" color={COLORS.muted} onPress={restart} />
         <SupportNote />

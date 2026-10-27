@@ -18,6 +18,7 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from "../../common/ActivityUI";
+import { useVisitEntry } from "../../common/activityLog";
 import { AppIcon } from "../../common/AppIcon";
 import { COLORS, useScrollLock } from "../../common/AppShell";
 import {
@@ -65,6 +66,12 @@ export function BalancedPlate({ color, soft }: ActivityProps) {
 
   const filled = plate.filter(Boolean).length;
   const feedback = plateFeedback(plate);
+  const visit = useVisitEntry("balanced-plate");
+
+  // Viewing feedback counts as building a plate; Progress keeps which groups it had.
+  useEffect(() => {
+    if (showFeedback && filled > 0) visit.save({ groups: GROUP_ORDER.filter((group) => plate.includes(group)) });
+  }, [showFeedback, filled, plate, visit]);
 
   function assign(index: number, group: FoodGroup | null) {
     setPlate((current) => current.map((value, i) => (i === index ? group : value)));

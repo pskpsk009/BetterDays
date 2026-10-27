@@ -76,13 +76,19 @@ $$;
 
 create table if not exists public.user_data (
   user_id uuid not null references auth.users(id) on delete cascade,
-  key text not null check (key in ('support-circle', 'values-compass', 'skills', 'sleep', 'welcome')),
+  key text not null,
   value jsonb not null,
   -- Set by the device when the value last changed; newest wins on sync.
   updated_at timestamptz not null,
   primary key (user_id, key),
   constraint user_data_size_check check (pg_column_size(value) <= 65536)
 );
+
+-- Allowed keys match STORE_KEYS in frontend/components/common/localStore.ts.
+-- Dropped and re-added so running this file again updates an existing table.
+alter table public.user_data drop constraint if exists user_data_key_check;
+alter table public.user_data add constraint user_data_key_check
+  check (key in ('support-circle', 'values-compass', 'skills', 'sleep', 'welcome', 'activity-log'));
 
 alter table public.user_data enable row level security;
 

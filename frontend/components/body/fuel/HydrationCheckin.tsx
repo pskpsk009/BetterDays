@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { ZoomIn } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
@@ -10,6 +10,7 @@ import {
   SecondaryButton,
   SelectionChip,
 } from "../../common/ActivityUI";
+import { useVisitEntry } from "../../common/activityLog";
 import { AppIcon } from "../../common/AppIcon";
 import { COLORS } from "../../common/AppShell";
 
@@ -28,6 +29,19 @@ export function HydrationCheckin({ color, soft }: ActivityProps) {
   const [sizeMl, setSizeMl] = useState(250);
   const [targetMl, setTargetMl] = useState(2000);
   const [entries, setEntries] = useState<number[]>([]);
+  const visit = useVisitEntry("hydration");
+  const logged = useRef(false);
+
+  // This visit's drinks go to Progress as one check-in; clearing them removes it.
+  useEffect(() => {
+    if (entries.length > 0) {
+      logged.current = true;
+      visit.save({ drinks: entries.length, waterMl: entries.reduce((sum, ml) => sum + ml, 0) });
+    } else if (logged.current) {
+      logged.current = false;
+      visit.remove();
+    }
+  }, [entries, visit]);
 
   const loggedMl = entries.reduce((sum, ml) => sum + ml, 0);
   const remainingMl = Math.max(0, targetMl - loggedMl);
@@ -139,7 +153,7 @@ export function HydrationCheckin({ color, soft }: ActivityProps) {
       <Text style={[mentalStyles.muted, styles.center]}>
         Hydration needs vary with activity, weather, health, and individual
         circumstances. The target is just a reference point you choose, and
-        food and other drinks count too. Nothing here is saved.
+        food and other drinks count too. Only the number of drinks is saved, for your Progress page.
       </Text>
     </View>
   );

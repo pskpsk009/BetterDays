@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useLogCompletion } from "../common/activityLog";
 import { COLORS } from "../common/AppShell";
 import {
   ActivityHeader,
@@ -49,6 +50,12 @@ export function WatchThoughts({
   const [stage, setStage] = useState<Stage>("write");
   const [thought, setThought] = useState("");
   const [category, setCategory] = useState<string | null>(null);
+  const logCompletion = useLogCompletion();
+
+  // Reaching the end counts as one finished practice for Progress.
+  useEffect(() => {
+    if (stage === "done") logCompletion();
+  }, [stage, logCompletion]);
 
   function restart() {
     setThought("");

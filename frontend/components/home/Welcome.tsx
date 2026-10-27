@@ -22,7 +22,8 @@ const AREAS: { icon: IconName; title: string; detail: string; color: string; sof
 ];
 
 const PRIVACY = [
-  "Most activities don't save anything. When you leave, it's gone.",
+  "Most activities don't keep what you enter. When you leave, it's gone.",
+  "Progress keeps a simple list of the activities you finish: which one, when and for how long, never what you wrote.",
   "My Support Circle, Values Compass, Develop Your Skill and Sleep Schedule Guidance remember what you add, so you can pick up where you left off.",
   "That stays on this phone unless you choose to turn on backup to your account.",
   "An account is optional. Backup is off until you turn it on in Profile.",

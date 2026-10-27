@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 
+import { useLogCompletion } from "../common/activityLog";
 import { COLORS } from "../common/AppShell";
 import {
   ActivityHeader,
@@ -77,6 +78,7 @@ export function ControlSort({
   const [draftPart, setDraftPart] = useState("");
   const [action, setAction] = useState("");
   const [customAction, setCustomAction] = useState("");
+  const logCompletion = useLogCompletion();
 
   function begin(title: string, nextParts: Part[]) {
     setSituation(title);
@@ -378,7 +380,15 @@ export function ControlSort({
       </View>
       <View style={mentalStyles.row}>
         <SecondaryButton flex label="Restart" color={color} onPress={restart} />
-        <PrimaryButton flex label="Finish" color={color} onPress={onExit} />
+        <PrimaryButton
+          flex
+          label="Finish"
+          color={color}
+          onPress={() => {
+            logCompletion();
+            onExit();
+          }}
+        />
       </View>
     </View>
   );

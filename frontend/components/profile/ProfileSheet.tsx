@@ -46,11 +46,12 @@ const DELETED_ITEMS = [
   "Your skills in Develop Your Skill",
   "Your sleep schedule and sleep logs",
   "Your welcome picks",
+  "Your activity history in Progress",
   "Any trail drawings you shared",
   "Your account backup, if it's on",
 ];
 
-const BACKED_UP = ["My Support Circle", "Values Compass", "Develop Your Skill", "Sleep schedule and logs", "Your welcome picks"];
+const BACKED_UP = ["My Support Circle", "Values Compass", "Develop Your Skill", "Sleep schedule and logs", "Your welcome picks", "Your activity history"];
 
 const BACKUP_TERMS = [
   "Only you can see it. It's linked to your account and nobody else using MyGrowth can read it.",

@@ -35,31 +35,31 @@ export function DemoNotice({
   mode,
   onChange,
 }: {
-  mode: "demo" | "preview";
-  onChange: (mode: "demo" | "preview") => void;
+  mode: "mine" | "demo";
+  onChange: (mode: "mine" | "demo") => void;
 }) {
   return (
     <View style={styles.notice} accessibilityRole="summary">
       <Text style={styles.noticeTitle}>
-        {mode === "demo" ? "Demo data, not your actual results" : "Preview: a brand-new account"}
+        {mode === "mine" ? "Your activity on this phone" : "Demo data, not your actual results"}
       </Text>
       <Text style={mentalStyles.muted}>
-        {mode === "demo"
-          ? "These figures are sample values that show how this page works. Your own activity isn't saved or shown here yet."
-          : "This is how the page looks before any activities are recorded."}
+        {mode === "mine"
+          ? "Counts the activities you finish, the drinks and plates you log, and your sleep logs. Only which activity, when and for how long is saved, never what you type."
+          : "These figures are sample values that show how this page works when there is more history."}
       </Text>
-      <View style={mentalStyles.chips} accessibilityLabel="Choose what to preview">
+      <View style={mentalStyles.chips} accessibilityLabel="Choose what to show">
+        <SelectionChip
+          label="My activity"
+          color={COLORS.teal}
+          selected={mode === "mine"}
+          onPress={() => onChange("mine")}
+        />
         <SelectionChip
           label="Demo data"
           color={COLORS.teal}
           selected={mode === "demo"}
           onPress={() => onChange("demo")}
-        />
-        <SelectionChip
-          label="Empty view"
-          color={COLORS.teal}
-          selected={mode === "preview"}
-          onPress={() => onChange("preview")}
         />
       </View>
     </View>
