@@ -32,6 +32,7 @@ export function BranchExplorer({
   renderIcon,
   renderHero,
   headerExtra,
+  initialActivity,
 }: {
   title: string;
   subtitle: string;
@@ -45,8 +46,12 @@ export function BranchExplorer({
   renderHero?: (branch: BranchInfo) => React.ReactNode | null;
   /** Optional content under the header on the branch list, e.g. a section switch. */
   headerExtra?: React.ReactNode;
+  /** Opens straight into this activity, e.g. from the Home finder. */
+  initialActivity?: { branchId: string; activityId: string };
 }) {
-  const [view, setView] = useState<ExplorerView>({ screen: "main" });
+  const [view, setView] = useState<ExplorerView>(() =>
+    initialActivity ? { screen: "activity", ...initialActivity } : { screen: "main" },
+  );
 
   useEffect(() => {
     if (view.screen === "main") return;
@@ -134,7 +139,14 @@ export function BranchExplorer({
     content = (
       <View style={styles.subscreen}>
         <BackPill label={branch.title} color={branch.color} soft={branch.soft} onPress={back} />
-        {Activity ? <Activity color={branch.color} soft={branch.soft} onExit={back} /> : null}
+        {Activity ? (
+          <Activity
+            color={branch.color}
+            soft={branch.soft}
+            onExit={back}
+            openActivity={(activityId) => setView({ screen: "activity", branchId: branch.id, activityId })}
+          />
+        ) : null}
       </View>
     );
   }

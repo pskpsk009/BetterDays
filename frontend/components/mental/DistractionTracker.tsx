@@ -1,219 +1,308 @@
-import { useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn, FadeInRight } from "react-native-reanimated";
 
 import { COLORS } from "../common/AppShell";
 import {
   ActivityHeader,
+  ActivityProps,
+  CompletionScreen,
   mentalStyles,
   PrimaryButton,
+  QuestionCard,
   SecondaryButton,
-  toggleItem,
+  SelectionChip,
 } from "../common/ActivityUI";
+import {
+  DISRUPTORS,
+  DisruptorId,
+  FocusFix,
+  getDisruptor,
+  setFocusPlan,
+  SprintResult,
+  takeSprintResult,
+} from "./focusPlan";
 
-const CATEGORIES = [
-  {
-    name: "Phone or notifications",
-    icon: "📱",
-    tip: "Try silencing notifications or putting your phone out of reach during your next focus session.",
-  },
-  {
-    name: "Random thoughts",
-    icon: "💭",
-    tip: "Jot the thought on a scrap of paper to come back to later, then return to your task.",
-  },
-  {
-    name: "Noise around me",
-    icon: "🔊",
-    tip: "Headphones, quiet background sound, or a quieter spot might help next time.",
-  },
-  {
-    name: "Tiredness",
-    icon: "😴",
-    tip: "A short break, some water, or a few minutes of movement can help you reset.",
-  },
-  {
-    name: "Other tasks",
-    icon: "📋",
-    tip: "Write the other task down so it's not forgotten, and pick one thing to do first.",
-  },
-  {
-    name: "People interrupting me",
-    icon: "🗣️",
-    tip: "If you can, let people know when you're focusing, or find a spot with fewer interruptions.",
-  },
-  {
-    name: "Other",
-    icon: "✳️",
-    tip: "Noticing a distraction is already a step. Gently bring your attention back when you're ready.",
-  },
-];
+// Distraction Tracker: look back at a focus or study session, spot what
+// disrupted it, and build a small plan to try in the next Focus Sprint.
 
-type Entry = { id: number; categories: string[]; note: string; at: Date };
+const BRANCH = "Find Your Focus";
+const MAX_DISRUPTORS = 3;
 
-export function DistractionTracker({
-  color,
-  soft,
-  onExit,
-}: {
-  color: string;
-  soft: string;
-  onExit: () => void;
-}) {
-  const [selected, setSelected] = useState<string[]>([]);
-  const [note, setNote] = useState("");
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [confirmClear, setConfirmClear] = useState(false);
-  const nextId = useRef(1);
+const SESSIONS = ["A Focus Sprint", "Studying", "Homework", "Reading", "Work or a project", "Something else"];
 
-  // Tips follow the current selection, or the most recent entry once added.
-  const tipSource = selected.length > 0 ? selected : (entries[0]?.categories ?? []);
-  const tips = CATEGORIES.filter((category) => tipSource.includes(category.name));
+const OUTCOMES = [
+  { id: "on-track", icon: "🎯", label: "Mostly on track" },
+  { id: "drifted", icon: "🌊", label: "Drifted a few times" },
+  { id: "pulled", icon: "🌪️", label: "Kept getting pulled away" },
+] as const;
 
-  function add() {
-    if (selected.length === 0) return;
-    const entry = { id: nextId.current, categories: selected, note: note.trim(), at: new Date() };
-    nextId.current += 1;
-    setEntries((current) => [entry, ...current]);
-    setSelected([]);
-    setNote("");
-    setConfirmClear(false);
+type Outcome = (typeof OUTCOMES)[number]["id"];
+type Stage = "session" | "disruptors" | "fixes" | "plan" | "clear";
+
+export function DistractionTracker({ color, soft, onExit, openActivity }: ActivityProps) {
+  // Opened from a finished sprint: start from what that sprint noted.
+  const [fromSprint] = useState<SprintResult | null>(() => takeSprintResult());
+  const [stage, setStage] = useState<Stage>(fromSprint ? "disruptors" : "session");
+  const [session, setSession] = useState<string | null>(fromSprint ? "A Focus Sprint" : null);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [picked, setPicked] = useState<DisruptorId[]>(() =>
+    fromSprint ? [...new Set(fromSprint.disruptors)].slice(0, MAX_DISRUPTORS) : [],
+  );
+  const [fixIndex, setFixIndex] = useState(0);
+  const [fixes, setFixes] = useState<FocusFix[]>([]);
+
+  const header = <ActivityHeader eyebrow={BRANCH} title="Distraction Tracker" color={color} />;
+  const exit = <SecondaryButton subtle label={`Back to ${BRANCH}`} color={COLORS.muted} onPress={onExit} />;
+
+  function restart() {
+    setStage("session");
+    setSession(null);
+    setOutcome(null);
+    setPicked([]);
+    setFixIndex(0);
+    setFixes([]);
   }
 
-  function clearAll() {
-    if (!confirmClear) {
-      setConfirmClear(true);
-      return;
-    }
-    setEntries([]);
-    setConfirmClear(false);
+  function togglePick(id: DisruptorId) {
+    if (picked.includes(id)) setPicked(picked.filter((item) => item !== id));
+    else if (picked.length < MAX_DISRUPTORS) setPicked([...picked, id]);
+  }
+
+  function chooseFix(fix: string) {
+    const disruptor = picked[fixIndex];
+    const next = [...fixes.filter((item) => item.disruptor !== disruptor), { disruptor, fix }];
+    setFixes(next);
+    if (fixIndex + 1 < picked.length) setFixIndex(fixIndex + 1);
+    else setStage("plan");
+  }
+
+  if (stage === "clear") {
+    return (
+      <View style={mentalStyles.screen}>
+        {header}
+        <CompletionScreen
+          badge="🎯"
+          title="Nothing got in the way"
+          message="Nice. Whatever you did that session (the place, the time, the task size) is worth repeating."
+          color={color}
+          soft={soft}
+          primary={{ label: "Look at another session", onPress: restart }}
+          secondary={{ label: `Back to ${BRANCH}`, onPress: onExit }}
+        />
+      </View>
+    );
+  }
+
+  if (stage === "plan") {
+    return (
+      <View style={mentalStyles.screen}>
+        {header}
+        <Animated.View entering={FadeIn.duration(240)} style={[styles.plan, { backgroundColor: soft }]}>
+          <Text style={[mentalStyles.label, { color }]}>MY FOCUS PLAN</Text>
+          {fixes.map((item) => {
+            const disruptor = getDisruptor(item.disruptor);
+            return (
+              <View key={item.disruptor} style={styles.planRow}>
+                <Text style={styles.planIcon}>{disruptor.icon}</Text>
+                <View style={styles.planCopy}>
+                  <Text style={mentalStyles.muted}>If {disruptor.label.toLowerCase()} gets in the way</Text>
+                  <Text style={styles.planFix}>{item.fix}</Text>
+                </View>
+              </View>
+            );
+          })}
+        </Animated.View>
+        <Text style={mentalStyles.body}>
+          Try one session with this plan and see what changes. You can always swap a fix.
+        </Text>
+        {openActivity && (
+          <PrimaryButton
+            label="Try it in a Focus Sprint"
+            color={color}
+            onPress={() => {
+              setFocusPlan(fixes);
+              openActivity("focus-sprint");
+            }}
+          />
+        )}
+        <View style={mentalStyles.row}>
+          <SecondaryButton
+            flex
+            label="Change fixes"
+            color={color}
+            onPress={() => {
+              setFixIndex(0);
+              setStage("fixes");
+            }}
+          />
+          <SecondaryButton flex label="Start over" color={color} onPress={restart} />
+        </View>
+        {exit}
+      </View>
+    );
+  }
+
+  if (stage === "fixes") {
+    const disruptor = getDisruptor(picked[fixIndex]);
+    const chosen = fixes.find((item) => item.disruptor === disruptor.id)?.fix;
+    return (
+      <View style={mentalStyles.screen}>
+        {header}
+        <View style={styles.progressRow}>
+          {picked.map((id, index) => (
+            <View
+              key={id}
+              style={[styles.progressDot, { borderColor: color }, index <= fixIndex && { backgroundColor: color }]}
+            />
+          ))}
+        </View>
+        <Animated.View key={disruptor.id} entering={FadeInRight.duration(260)} style={[mentalStyles.card, styles.fixCard]}>
+          <Text style={styles.fixIcon}>{disruptor.icon}</Text>
+          <Text style={mentalStyles.label}>
+            DISRUPTION {fixIndex + 1} OF {picked.length}
+          </Text>
+          <Text style={styles.fixTitle}>{disruptor.label}</Text>
+          <Text style={mentalStyles.muted}>Pick the fix you&apos;d most like to try.</Text>
+          <View style={styles.fixList}>
+            {disruptor.fixes.map((fix) => (
+              <Pressable
+                key={fix}
+                accessibilityRole="button"
+                accessibilityState={{ selected: chosen === fix }}
+                onPress={() => chooseFix(fix)}
+                style={({ pressed }) => [
+                  styles.fixOption,
+                  chosen === fix && { borderColor: color, backgroundColor: soft },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={[styles.fixOptionText, chosen === fix && { color }]}>{fix}</Text>
+                <Text style={[styles.chevron, { color }]}>›</Text>
+              </Pressable>
+            ))}
+          </View>
+        </Animated.View>
+        <SecondaryButton
+          label="Back"
+          color={color}
+          onPress={() => (fixIndex > 0 ? setFixIndex(fixIndex - 1) : setStage("disruptors"))}
+        />
+      </View>
+    );
+  }
+
+  if (stage === "disruptors") {
+    return (
+      <View style={mentalStyles.screen}>
+        {header}
+        {fromSprint && (
+          <View style={[styles.banner, { backgroundColor: soft }]}>
+            <Text style={[mentalStyles.label, { color }]}>FROM YOUR FOCUS SPRINT</Text>
+            <Text style={mentalStyles.body}>
+              {fromSprint.task} · {fromSprint.minutes} min · {fromSprint.finished ? "finished" : "ended early"}
+              {fromSprint.disruptors.length > 0 ? ` · pulled away ${fromSprint.disruptors.length}×` : ""}
+            </Text>
+          </View>
+        )}
+        <QuestionCard
+          stepKey="disruptors"
+          label={fromSprint ? "Step 1 of 2" : "Step 2 of 3"}
+          question="What disrupted your focus?"
+          hint={`Pick up to ${MAX_DISRUPTORS}, the ones that pulled you away the most.`}
+          color={color}
+        >
+          <View style={styles.grid}>
+            {DISRUPTORS.map((item) => {
+              const selected = picked.includes(item.id);
+              const full = !selected && picked.length >= MAX_DISRUPTORS;
+              return (
+                <Pressable
+                  key={item.id}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: selected, disabled: full }}
+                  accessibilityLabel={item.label}
+                  onPress={() => togglePick(item.id)}
+                  style={({ pressed }) => [
+                    styles.category,
+                    selected && { borderColor: color, backgroundColor: soft },
+                    full && styles.dim,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text style={styles.categoryIcon}>{item.icon}</Text>
+                  <Text style={[styles.categoryName, selected && { color }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </QuestionCard>
+        <PrimaryButton
+          label="Find fixes"
+          color={color}
+          disabled={picked.length === 0}
+          onPress={() => {
+            setFixIndex(0);
+            setStage("fixes");
+          }}
+        />
+        <View style={mentalStyles.row}>
+          {!fromSprint && <SecondaryButton flex label="Back" color={color} onPress={() => setStage("session")} />}
+          <SecondaryButton flex label="Nothing disrupted it" color={color} onPress={() => setStage("clear")} />
+        </View>
+        {exit}
+      </View>
+    );
   }
 
   return (
     <View style={mentalStyles.screen}>
-      <ActivityHeader eyebrow="Find Your Focus" title="Distraction Tracker" color={color} />
+      {header}
       <Text style={mentalStyles.body}>
-        Lost focus? Note what pulled you away. Spotting the pattern can make it
-        easier to plan around next time.
+        Think about your last focus or study session. Spotting what got in the way makes it easier to plan around next time.
       </Text>
-
-      <View style={[mentalStyles.card, styles.panel]}>
-        <Text style={mentalStyles.label}>WHAT DISTRACTED YOU?</Text>
-        <View style={styles.grid}>
-          {CATEGORIES.map((category) => {
-            const isSelected = selected.includes(category.name);
-            return (
-              <Pressable
-                key={category.name}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: isSelected }}
-                accessibilityLabel={category.name}
-                onPress={() => setSelected((current) => toggleItem(current, category.name))}
-                style={({ pressed }) => [
-                  styles.category,
-                  isSelected && { borderColor: color, backgroundColor: soft },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
-                <Text style={[styles.categoryName, isSelected && { color }]}>
-                  {category.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <TextInput
-          accessibilityLabel="Optional note"
-          maxLength={100}
-          onChangeText={setNote}
-          placeholder="Optional note, e.g. group chat buzzing"
-          placeholderTextColor={COLORS.muted}
-          returnKeyType="done"
-          style={[mentalStyles.input, styles.noteInput]}
-          value={note}
-        />
-        <PrimaryButton
-          label="Add distraction"
-          color={color}
-          disabled={selected.length === 0}
-          onPress={add}
-        />
-      </View>
-
-      {tips.length > 0 && (
-        <Animated.View
-          key={tipSource.join("|")}
-          entering={FadeIn.duration(220)}
-          accessibilityLiveRegion="polite"
-          style={[styles.tips, { backgroundColor: soft }]}
-        >
-          <Text style={[mentalStyles.label, { color }]}>A TIP TO TRY</Text>
-          {tips.map((tip) => (
-            <Text key={tip.name} style={mentalStyles.body}>
-              {tip.icon} {tip.tip}
-            </Text>
+      <QuestionCard stepKey="session" label="Step 1 of 3" question="What kind of session was it?" color={color}>
+        <View style={mentalStyles.chips}>
+          {SESSIONS.map((option) => (
+            <SelectionChip key={option} label={option} color={color} selected={session === option} onPress={() => setSession(option)} />
           ))}
-        </Animated.View>
-      )}
-
-      <View style={styles.listHeader}>
-        <Text style={mentalStyles.label}>THIS SESSION ({entries.length})</Text>
-        {entries.length > 0 && (
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={clearAll}>
-            <Text style={[styles.clear, { color: confirmClear ? "#C9483F" : color }]}>
-              {confirmClear ? "Tap again to clear" : "Clear list"}
-            </Text>
-          </Pressable>
-        )}
-      </View>
-
-      {entries.length === 0 ? (
-        <Text style={[mentalStyles.muted, styles.empty]}>
-          Nothing noted yet. Distractions you add will show here.
-        </Text>
-      ) : (
-        <View style={styles.list}>
-          {entries.map((entry) => (
-            <Animated.View
-              key={entry.id}
-              entering={FadeInDown.duration(220)}
-              exiting={FadeOut.duration(160)}
-              style={styles.entry}
+        </View>
+        <Text style={[mentalStyles.label, styles.spaced]}>HOW DID IT GO?</Text>
+        <View style={styles.outcomes}>
+          {OUTCOMES.map((option) => (
+            <Pressable
+              key={option.id}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: outcome === option.id }}
+              onPress={() => setOutcome(option.id)}
+              style={({ pressed }) => [
+                styles.outcome,
+                outcome === option.id && { borderColor: color, backgroundColor: soft },
+                pressed && styles.pressed,
+              ]}
             >
-              <View style={styles.entryCopy}>
-                <Text style={styles.entryTitle}>{entry.categories.join(", ")}</Text>
-                {entry.note ? <Text style={mentalStyles.muted}>{entry.note}</Text> : null}
-                <Text style={mentalStyles.muted}>
-                  {entry.at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-                </Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${entry.categories.join(", ")}`}
-                hitSlop={10}
-                onPress={() => setEntries((current) => current.filter((item) => item.id !== entry.id))}
-                style={({ pressed }) => [styles.remove, pressed && styles.pressed]}
-              >
-                <Text style={styles.removeText}>✕</Text>
-              </Pressable>
-            </Animated.View>
+              <Text style={styles.outcomeIcon}>{option.icon}</Text>
+              <Text style={[styles.outcomeText, outcome === option.id && { color }]}>{option.label}</Text>
+            </Pressable>
           ))}
         </View>
-      )}
-
-      <Text style={[mentalStyles.muted, styles.center]}>
-        This list is temporary. It clears when you leave this activity.
-      </Text>
-      <SecondaryButton label="Back to Find Your Focus" color={color} onPress={onExit} />
+      </QuestionCard>
+      <PrimaryButton
+        label="Next"
+        color={color}
+        disabled={!session || !outcome}
+        onPress={() => setStage("disruptors")}
+      />
+      {exit}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { textAlign: "center" },
   pressed: { opacity: 0.78 },
-  panel: { gap: 12 },
+  dim: { opacity: 0.45 },
+  spaced: { marginTop: 8 },
+  banner: { padding: 14, borderRadius: 16, gap: 4 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   category: {
     width: "48%",
@@ -231,31 +320,43 @@ const styles = StyleSheet.create({
   },
   categoryIcon: { fontSize: 20 },
   categoryName: { flex: 1, color: COLORS.ink, fontSize: 13, fontWeight: "700", lineHeight: 17 },
-  noteInput: { minHeight: 48 },
-  tips: { padding: 16, borderRadius: 16, gap: 8 },
-  listHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  clear: { fontSize: 13, fontWeight: "800" },
-  empty: { fontStyle: "italic" },
-  list: { gap: 8 },
-  entry: {
+  outcomes: { gap: 8 },
+  outcome: {
+    minHeight: 54,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    padding: 14,
+    gap: 12,
+    paddingHorizontal: 14,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: COLORS.border,
     backgroundColor: COLORS.white,
   },
-  entryCopy: { flex: 1, gap: 3 },
-  entryTitle: { color: COLORS.ink, fontSize: 14, fontWeight: "700" },
-  remove: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  outcomeIcon: { fontSize: 22 },
+  outcomeText: { color: COLORS.ink, fontSize: 15, fontWeight: "700" },
+  progressRow: { flexDirection: "row", justifyContent: "center", gap: 8 },
+  progressDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2 },
+  fixCard: { gap: 8, alignItems: "stretch" },
+  fixIcon: { fontSize: 40, textAlign: "center" },
+  fixTitle: { color: COLORS.ink, fontSize: 21, fontWeight: "800" },
+  fixList: { gap: 8, marginTop: 6 },
+  fixOption: {
+    minHeight: 54,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.background,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.white,
   },
-  removeText: { color: COLORS.muted, fontSize: 15, fontWeight: "800" },
+  fixOptionText: { flex: 1, color: COLORS.ink, fontSize: 14, fontWeight: "700", lineHeight: 19 },
+  chevron: { fontSize: 24, fontWeight: "500" },
+  plan: { padding: 18, borderRadius: 18, gap: 12 },
+  planRow: { flexDirection: "row", gap: 12, alignItems: "center" },
+  planIcon: { fontSize: 26 },
+  planCopy: { flex: 1, gap: 2 },
+  planFix: { color: COLORS.ink, fontSize: 16, fontWeight: "800", lineHeight: 22 },
 });

@@ -25,7 +25,13 @@ export type BranchInfo = {
 };
 
 /** Props every activity screen receives from the branch explorer. */
-export type ActivityProps = { color: string; soft: string; onExit: () => void };
+export type ActivityProps = {
+  color: string;
+  soft: string;
+  onExit: () => void;
+  /** Opens another activity in the same branch, e.g. Focus Sprint -> Distraction Tracker. */
+  openActivity?: (activityId: string) => void;
+};
 
 export function BranchCard({
   branch,

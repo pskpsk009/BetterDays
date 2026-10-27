@@ -23,7 +23,13 @@ import Svg, {
   Text as SvgText,
 } from "react-native-svg";
 
+import { useAuth } from "../components/auth/AuthProvider";
+import { ProfileSheet } from "../components/profile/ProfileSheet";
 import { COLORS, MobileScreen } from "../components/common/AppShell";
+import { DayKey, todayKey, useStoredState } from "../components/common/localStore";
+import { NeedId } from "../components/home/needs";
+import { NeedFinder } from "../components/home/NeedFinder";
+import { Welcome, WELCOME_NOTICE_VERSION } from "../components/home/Welcome";
 
 type Zone = "head" | "body" | "legs";
 
@@ -36,7 +42,10 @@ const zones: Record<
   legs: { label: "Movement Trail", route: "/trail", color: COLORS.movement },
 };
 
-export function HomeHeader() {
+export function HomeHeader({ onProfile }: { onProfile: () => void }) {
+  const { user } = useAuth();
+  const initial = user?.email?.[0]?.toUpperCase();
+
   return (
     <View style={styles.homeHeader}>
       <View style={styles.brand}>
@@ -46,12 +55,23 @@ export function HomeHeader() {
         <Text style={styles.brandText}>MyGrowth</Text>
       </View>
       <Pressable
-        accessibilityLabel="Profile and settings"
-        style={styles.profile}
+        accessibilityRole="button"
+        accessibilityLabel={user ? `Profile, signed in as ${user.email}` : "Profile"}
+        onPress={onProfile}
+        style={({ pressed }) => [styles.profile, user && styles.profileSignedIn, pressed && styles.pressed]}
       >
-        <Text style={styles.profileText}>o</Text>
+        {initial ? <Text style={styles.avatarText}>{initial}</Text> : <PersonIcon />}
       </Pressable>
     </View>
+  );
+}
+
+function PersonIcon() {
+  return (
+    <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COLORS.teal} strokeWidth="2" strokeLinecap="round">
+      <Circle cx="12" cy="8" r="4" />
+      <Path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+    </Svg>
   );
 }
 
@@ -303,10 +323,32 @@ export function HumanFigure() {
   );
 }
 
+type WelcomeRecord = { seenOn: DayKey; noticeVersion: number; focus: NeedId[] };
+
+// Lets the animated splash finish before the first-open welcome appears.
+const WELCOME_DELAY_MS = 900;
+
 export default function HomeScreen() {
+  const [welcome, setWelcome] = useStoredState<WelcomeRecord | null>("welcome", null);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+
+  // Also covers "Delete all data", which clears the welcome record: wait until
+  // Profile has closed, since iOS can't present two full-screen modals at once.
+  useEffect(() => {
+    if (welcome || showProfile) return;
+    const timer = setTimeout(() => setShowWelcome(true), WELCOME_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [welcome, showProfile]);
+
   return (
     <MobileScreen>
-      <HomeHeader />
+      <HomeHeader onProfile={() => setShowProfile(true)} />
+      <ProfileSheet
+        visible={showProfile}
+        onClose={() => setShowProfile(false)}
+        onShowWelcome={() => setTimeout(() => setShowWelcome(true), WELCOME_DELAY_MS)}
+      />
       <View style={styles.intro}>
         <Text style={styles.heroTitle}>
           Your Development{"\n"}
@@ -316,6 +358,17 @@ export default function HomeScreen() {
           A healthier mind. A stronger body. A more active you.
         </Text>
       </View>
+      <NeedFinder focus={welcome?.focus ?? []} />
+      <Welcome
+        // Remounts after "Delete all data" so old picks aren't pre-selected.
+        key={welcome ? "seen" : "new"}
+        visible={showWelcome}
+        initialFocus={welcome?.focus ?? []}
+        onFinish={(focus) => {
+          setWelcome({ seenOn: todayKey(), noticeVersion: WELCOME_NOTICE_VERSION, focus });
+          setShowWelcome(false);
+        }}
+      />
       <HumanFigure />
       <Text style={styles.hint}>Tap the head, body or legs to begin</Text>
     </MobileScreen>
@@ -351,7 +404,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  profileText: { color: COLORS.muted, fontSize: 22 },
+  profileSignedIn: { backgroundColor: COLORS.tealSoft, borderWidth: 1.5, borderColor: COLORS.teal },
+  avatarText: { color: COLORS.teal, fontSize: 17, fontWeight: "800" },
+  pressed: { opacity: 0.78 },
   intro: { paddingHorizontal: 4 },
   heroTitle: {
     color: "#1C4C55",

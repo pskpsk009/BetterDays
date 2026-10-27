@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BackHandler, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
+import { useLocalSearchParams } from "expo-router";
 
 import { ActivityCard, ActivityProps, BackPill } from "../components/common/ActivityUI";
 import { MobileScreen, ScreenHeader } from "../components/common/AppShell";
@@ -28,7 +29,16 @@ const ENTRIES = BODY_BRANCHES.flatMap((branch) =>
 
 /** Body tab: a single list of activities, each opening in place. */
 export default function BodyScreen() {
+  // The Home finder links here with ?open=<activityId>&t=<timestamp>.
+  const { open, t } = useLocalSearchParams<{ open?: string; t?: string }>();
   const [activityId, setActivityId] = useState<BodyActivityId | null>(null);
+  const [handledAt, setHandledAt] = useState<string | undefined>(undefined);
+
+  // Each new link request opens its activity once.
+  if (open && t && t !== handledAt) {
+    setHandledAt(t);
+    if (open in ACTIVITIES) setActivityId(open as BodyActivityId);
+  }
 
   useEffect(() => {
     if (!activityId) return;

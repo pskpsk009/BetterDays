@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { ActivityProps, BranchInfo } from "../components/common/ActivityUI";
 import { COLORS } from "../components/common/AppShell";
@@ -9,7 +10,8 @@ import { ControlSort } from "../components/emotional/ControlSort";
 import { EmotionalBranchIcon } from "../components/emotional/EmotionalBranchIcon";
 import { EmotionExplorer } from "../components/emotional/EmotionExplorer";
 import { ReflectionDetective } from "../components/emotional/ReflectionDetective";
-import { CalmDownToolkit, ChooseYourResponse, PauseBeforeReacting } from "../components/emotional/selfControl";
+import { PauseBeforeReacting } from "../components/emotional/PauseBeforeReacting";
+import { CalmDownToolkit, ChooseYourResponse } from "../components/emotional/selfControl";
 import { ConversationBuilder, HealthyBoundaries, WalkInTheirShoes } from "../components/emotional/socialCreatures";
 import { PlanB } from "../components/emotional/PlanB";
 import { MyNextStep } from "../components/emotional/standUpAgain";
@@ -155,14 +157,41 @@ function SectionSwitch({ value, onChange }: { value: SectionId; onChange: (secti
   );
 }
 
+type OpenRequest = { branchId: string; activityId: string; requestedAt: string };
+
+function findInSections(activityId: string) {
+  for (const id of SECTION_ORDER) {
+    const branch = SECTIONS[id].branches.find((item) =>
+      item.activities.some((activity) => activity.id === activityId),
+    );
+    if (branch) return { sectionId: id, branchId: branch.id };
+  }
+  return null;
+}
+
 export default function MentalScreen() {
+  // The Home finder links here with ?open=<activityId>&t=<timestamp>.
+  const { open, t } = useLocalSearchParams<{ open?: string; t?: string }>();
   const [sectionId, setSectionId] = useState<SectionId>("mental");
+  const [request, setRequest] = useState<OpenRequest | null>(null);
+  const [handledAt, setHandledAt] = useState<string | undefined>(undefined);
   const section = SECTIONS[sectionId];
+
+  // Each new link request jumps to its section and activity once.
+  if (open && t && t !== handledAt) {
+    setHandledAt(t);
+    const found = findInSections(open);
+    if (found) {
+      setSectionId(found.sectionId);
+      setRequest({ branchId: found.branchId, activityId: open, requestedAt: t });
+    }
+  }
 
   return (
     <BranchExplorer
-      // Keyed so switching sections starts fresh at that section's branch list.
-      key={sectionId}
+      // Keyed so switching sections, or a new link from Home, starts fresh.
+      key={`${sectionId}:${request?.requestedAt ?? ""}`}
+      initialActivity={request ?? undefined}
       title={section.title}
       subtitle={section.subtitle}
       eyebrow={section.eyebrow}
@@ -171,7 +200,15 @@ export default function MentalScreen() {
       branches={section.branches}
       activities={section.activities}
       renderIcon={section.renderIcon}
-      headerExtra={<SectionSwitch value={sectionId} onChange={setSectionId} />}
+      headerExtra={
+        <SectionSwitch
+          value={sectionId}
+          onChange={(id) => {
+            setSectionId(id);
+            setRequest(null);
+          }}
+        />
+      }
     />
   );
 }

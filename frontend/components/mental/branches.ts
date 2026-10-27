@@ -175,7 +175,7 @@ export const MENTAL_BRANCHES: MentalBranch[] = [
       {
         id: "distraction-tracker",
         title: "Distraction Tracker",
-        detail: "Note what pulls you away, and get a tip.",
+        detail: "Spot what disrupted your focus session and plan a fix.",
         glyph: "↺",
       },
     ],

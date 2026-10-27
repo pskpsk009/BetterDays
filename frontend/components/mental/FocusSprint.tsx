@@ -6,6 +6,7 @@ import { COLORS } from "../common/AppShell";
 import { formatClock } from "../common/time";
 import {
   ActivityHeader,
+  ActivityProps,
   CompletionScreen,
   mentalStyles,
   PrimaryButton,
@@ -14,6 +15,7 @@ import {
   SessionTimer,
   useSessionTimer,
 } from "../common/ActivityUI";
+import { DISRUPTORS, DisruptorId, getDisruptor, getFocusPlan, setSprintResult } from "./focusPlan";
 
 const DURATIONS = [5, 10, 15, 25];
 const TASK_IDEAS = ["Studying", "Reading", "Coding", "Writing"];
@@ -22,24 +24,21 @@ const REFOCUS_PROMPTS = [
   "Distractions happen. Take one breath and return to",
   "No problem. Set it aside for now and pick up",
 ];
-const PROMPT_MS = 7000;
+// Long enough to tap what pulled you away.
+const PROMPT_MS = 15000;
 
 type Status = "setup" | "running" | "paused" | "finished" | "ended";
 
-export function FocusSprint({
-  color,
-  soft,
-  onExit,
-}: {
-  color: string;
-  soft: string;
-  onExit: () => void;
-}) {
+export function FocusSprint({ color, soft, onExit, openActivity }: ActivityProps) {
   const [minutes, setMinutes] = useState(10);
   const [task, setTask] = useState("");
   const [status, setStatus] = useState<Status>("setup");
   const [prompt, setPrompt] = useState<string | null>(null);
   const [promptCount, setPromptCount] = useState(0);
+  // What pulled the user away this sprint, tapped from the refocus prompt.
+  const [disruptors, setDisruptors] = useState<DisruptorId[]>([]);
+  // A plan made in Distraction Tracker, shown as reminders.
+  const [plan] = useState(() => getFocusPlan());
   const { elapsedMs, remainingMs, reset } = useSessionTimer(
     minutes * 60 * 1000,
     status === "running",
@@ -59,6 +58,7 @@ export function FocusSprint({
   function start() {
     reset();
     setPrompt(null);
+    setDisruptors([]);
     setStatus("running");
   }
 
@@ -67,9 +67,15 @@ export function FocusSprint({
     setPromptCount((count) => count + 1);
   }
 
+  function noteDisruptor(id: DisruptorId) {
+    setDisruptors((current) => [...current, id]);
+    setPrompt(null);
+  }
+
   function newSession() {
     reset();
     setPrompt(null);
+    setDisruptors([]);
     setStatus("setup");
   }
 
@@ -93,6 +99,24 @@ export function FocusSprint({
           primary={{ label: "Start another sprint", onPress: newSession }}
           secondary={{ label: "Back to Find Your Focus", onPress: onExit }}
         />
+        {disruptors.length > 0 && (
+          <View style={[styles.pulled, { backgroundColor: soft }]}>
+            <Text style={[mentalStyles.label, { color }]}>PULLED AWAY {disruptors.length}×</Text>
+            <Text style={mentalStyles.body}>
+              {[...new Set(disruptors)].map((id) => `${getDisruptor(id).icon} ${getDisruptor(id).label}`).join("  ·  ")}
+            </Text>
+          </View>
+        )}
+        {openActivity && (
+          <SecondaryButton
+            label="Fix what disrupted me"
+            color={color}
+            onPress={() => {
+              setSprintResult({ task: task.trim() || "Focus time", minutes, finished, disruptors });
+              openActivity("distraction-tracker");
+            }}
+          />
+        )}
       </View>
     );
   }
@@ -120,6 +144,8 @@ export function FocusSprint({
           </View>
         </View>
 
+        {plan.length > 0 && <PlanReminder plan={plan} color={color} soft={soft} />}
+
         {prompt ? (
           <Animated.View
             key={promptCount}
@@ -131,6 +157,18 @@ export function FocusSprint({
             <Text style={mentalStyles.body}>
               {prompt} <Text style={styles.promptTask}>{taskLabel}</Text>.
             </Text>
+            <Text style={[mentalStyles.label, styles.spaced]}>WHAT PULLED YOU AWAY? (OPTIONAL)</Text>
+            <View style={styles.disruptorChips}>
+              {DISRUPTORS.map((item) => (
+                <SelectionChip
+                  key={item.id}
+                  label={`${item.icon} ${item.label}`}
+                  color={color}
+                  selected={false}
+                  onPress={() => noteDisruptor(item.id)}
+                />
+              ))}
+            </View>
             <SecondaryButton subtle label="Back to it" color={color} onPress={() => setPrompt(null)} />
           </Animated.View>
         ) : (
@@ -189,7 +227,21 @@ export function FocusSprint({
           ))}
         </View>
       </View>
+      {plan.length > 0 && <PlanReminder plan={plan} color={color} soft={soft} />}
       <PrimaryButton label={`Start ${minutes}-minute sprint`} color={color} onPress={start} />
+    </View>
+  );
+}
+
+function PlanReminder({ plan, color, soft }: { plan: ReturnType<typeof getFocusPlan>; color: string; soft: string }) {
+  return (
+    <View style={[styles.pulled, { backgroundColor: soft }]}>
+      <Text style={[mentalStyles.label, { color }]}>YOUR FOCUS PLAN</Text>
+      {plan.map((item) => (
+        <Text key={item.disruptor} style={mentalStyles.body}>
+          {getDisruptor(item.disruptor).icon} {item.fix}
+        </Text>
+      ))}
     </View>
   );
 }
@@ -208,4 +260,6 @@ const styles = StyleSheet.create({
   timerWrap: { alignItems: "center", paddingVertical: 34, gap: 4 },
   prompt: { padding: 16, borderRadius: 16, borderWidth: 1, gap: 4 },
   promptTask: { fontWeight: "800" },
+  disruptorChips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  pulled: { padding: 14, borderRadius: 16, gap: 6 },
 });

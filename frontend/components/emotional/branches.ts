@@ -100,7 +100,7 @@ export const EMOTIONAL_BRANCHES: EmotionalBranch[] = [
       {
         id: "pause-before-reacting",
         title: "Pause Before Reacting",
-        detail: "Practise a short pause when something frustrates you.",
+        detail: "Look back at a tough moment and plan your pause for next time.",
         glyph: "‖",
       },
       {

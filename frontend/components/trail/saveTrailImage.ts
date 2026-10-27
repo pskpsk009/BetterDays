@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-const TRAIL_BUCKET = "public-trails";
+export const TRAIL_BUCKET = "public-trails";
 
 export async function uploadTrailImage(
   source: string,
@@ -45,6 +45,10 @@ export async function uploadTrailImage(
     .select("id")
     .single();
 
-  if (record.error) throw record.error;
+  if (record.error) {
+    // Don't leave an image in storage that no gallery row points to.
+    await supabase.storage.from(TRAIL_BUCKET).remove([path]);
+    throw record.error;
+  }
   return { path, userId: user.id, trailId: record.data.id };
 }
