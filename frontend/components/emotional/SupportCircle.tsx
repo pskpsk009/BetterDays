@@ -12,6 +12,7 @@ import {
   SelectionChip,
   toggleItem,
 } from "../common/ActivityUI";
+import { AppIcon } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 import { ChoiceGroup, ChoiceExplorer, ChoiceOption } from "../common/GuidedActivities";
 import { pickForDay, useStoredState } from "../common/localStore";
@@ -42,32 +43,39 @@ const GROUPS: (ChoiceGroup & { id: GroupId })[] = [
     id: "people",
     title: "People",
     options: [
-      { label: "A friend", icon: "🧑‍🤝‍🧑", note: "Someone to talk to, or just spend time with." },
-      { label: "A family member", icon: "🏡", note: "Someone at home or further away who cares about you." },
-      { label: "A teacher or mentor", icon: "🎓", note: "Can help with school or work worries, and point you to support." },
-      { label: "A coach or club leader", icon: "🏅", note: "Someone from an activity you're part of." },
-      { label: "A classmate or colleague", icon: "👋", note: "Can help with shared tasks and everyday stress." },
+      { label: "A friend", icon: "account-multiple-outline", note: "Someone to talk to, or just spend time with." },
+      { label: "A family member", icon: "home-heart", note: "Someone at home or further away who cares about you." },
+      { label: "A teacher or mentor", icon: "school-outline", note: "Can help with school or work worries, and point you to support." },
+      { label: "A coach or club leader", icon: "whistle-outline", note: "Someone from an activity you're part of." },
+      { label: "A classmate or colleague", icon: "hand-wave-outline", note: "Can help with shared tasks and everyday stress." },
     ],
   },
   {
     id: "professional",
     title: "Professional support",
     options: [
-      { label: "School or campus counsellor", icon: "💬", note: "Trained to listen and help you work through difficulties." },
-      { label: "Doctor or nurse", icon: "🩺", note: "For health concerns, including how you're feeling." },
-      { label: "A support line", icon: "📞", note: "Confidential support by phone or chat in many places." },
+      { label: "School or campus counsellor", icon: "chat-outline", note: "Trained to listen and help you work through difficulties." },
+      { label: "Doctor or nurse", icon: "stethoscope", note: "For health concerns, including how you're feeling." },
+      { label: "A support line", icon: "phone-outline", note: "Confidential support by phone or chat in many places." },
     ],
   },
   {
     id: "things",
     title: "Things that help me",
     options: [
-      { label: "A calming place", icon: "🌳", note: "Somewhere you feel settled and safe." },
-      { label: "An online community", icon: "💻", note: "A safe, moderated group with shared interests." },
-      { label: "A pet", icon: "🐾", note: "Companionship and comfort." },
+      { label: "A calming place", icon: "tree-outline", note: "Somewhere you feel settled and safe." },
+      { label: "An online community", icon: "laptop", note: "A safe, moderated group with shared interests." },
+      { label: "A pet", icon: "paw", note: "Companionship and comfort." },
     ],
   },
 ];
+
+// Members saved by an older version may still hold an emoji, so look the icon up by label.
+const ICON_BY_LABEL = new Map(GROUPS.flatMap((group) => group.options.map((option) => [option.label, option.icon])));
+
+function iconOf(member: { label: string; icon: string }) {
+  return ICON_BY_LABEL.get(member.label) ?? member.icon;
+}
 
 const RINGS: { id: Ring; label: string; radius: number }[] = [
   { id: "close", label: "Closest", radius: 60 },
@@ -76,10 +84,10 @@ const RINGS: { id: Ring; label: string; radius: number }[] = [
 ];
 
 const NEEDS: { id: NeedTag; label: string; icon: string }[] = [
-  { id: "talk", label: "Someone to talk to", icon: "💬" },
-  { id: "school", label: "Help with schoolwork", icon: "📚" },
-  { id: "laugh", label: "A laugh", icon: "😄" },
-  { id: "advice", label: "Advice", icon: "🧭" },
+  { id: "talk", label: "Someone to talk to", icon: "chat-outline" },
+  { id: "school", label: "Help with schoolwork", icon: "bookshelf" },
+  { id: "laugh", label: "A laugh", icon: "emoticon-lol-outline" },
+  { id: "advice", label: "Advice", icon: "compass-outline" },
 ];
 
 const SAFETY =
@@ -118,7 +126,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
         intro="Nobody has to handle everything alone. Pick the people and places you could turn to. You can add names next."
         pickLabel="My circle"
         groups={GROUPS}
-        initialPicks={members?.map(({ label, icon }) => ({ label, icon, note: "" }))}
+        initialPicks={members?.map((member) => ({ label: member.label, icon: iconOf(member), note: "" }))}
         customPlaceholder="Add someone or something else…"
         customNote="Part of your support circle."
         resultTitle="Your support circle"
@@ -144,7 +152,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
           );
           setStage("details");
         }}
-        completion={{ badge: "◍", title: "Circle mapped", message: "" }}
+        completion={{ badge: "account-group-outline", title: "Circle mapped", message: "" }}
       />
     );
   }
@@ -161,7 +169,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
         {draft.map((member) => (
           <View key={member.id} style={[mentalStyles.card, styles.detail]}>
             <Text style={styles.detailTitle}>
-              {member.icon} {member.label}
+              <AppIcon name={iconOf(member)} size={16} color={color} /> {member.label}
             </Text>
             {member.group !== "professional" && (
               <TextInput
@@ -201,7 +209,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
           />
         </View>
         <Text style={[mentalStyles.muted, styles.center]}>
-          🔒 Saved on this phone only. It isn&apos;t sent anywhere, and you can delete it at any time.
+          <AppIcon name="lock-outline" size={14} color={COLORS.muted} /> Saved on this phone only. It isn&apos;t sent anywhere, and you can delete it at any time.
         </Text>
       </View>
     );
@@ -225,7 +233,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
       {nudge && !hideNudge && (
         <View style={[styles.nudge, { backgroundColor: soft }]}>
           <Text style={mentalStyles.body}>
-            👋 Send {displayName(nudge)} a quick hello today? Even &quot;Thinking of you&quot; counts.
+            <AppIcon name="hand-wave-outline" size={16} color={color} /> Send {displayName(nudge)} a quick hello today? Even &quot;Thinking of you&quot; counts.
           </Text>
           <SecondaryButton label="Maybe another day" color={color} onPress={() => setHideNudge(true)} />
         </View>
@@ -266,7 +274,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
                   style={[styles.bubbleSlot, { left: x - 36, top: y - BUBBLE / 2 }]}
                 >
                   <View style={[styles.bubble, { borderColor: isActive ? color : COLORS.border }]}>
-                    <Text style={styles.bubbleIcon}>{member.icon}</Text>
+                    <AppIcon name={iconOf(member)} size={22} color={isActive ? color : COLORS.ink} />
                   </View>
                   <Text numberOfLines={1} style={styles.bubbleLabel}>
                     {displayName(member)}
@@ -282,7 +290,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
       {active && (
         <View style={[mentalStyles.card, styles.detail]}>
           <Text style={styles.detailTitle}>
-            {active.icon} {displayName(active)}
+            <AppIcon name={iconOf(active)} size={16} color={color} /> {displayName(active)}
           </Text>
           {active.name.trim() ? <Text style={mentalStyles.muted}>{active.label}</Text> : null}
           <Text style={mentalStyles.label}>GOOD FOR</Text>
@@ -290,7 +298,8 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
             {NEEDS.map((item) => (
               <SelectionChip
                 key={item.id}
-                label={`${item.icon} ${item.label}`}
+                icon={item.icon}
+                label={item.label}
                 color={color}
                 selected={active.goodFor.includes(item.id)}
                 onPress={() => change(active.id, { goodFor: toggleItem(active.goodFor, item.id) })}
@@ -322,7 +331,8 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
           {NEEDS.map((item) => (
             <SelectionChip
               key={item.id}
-              label={`${item.icon} ${item.label}`}
+              icon={item.icon}
+              label={item.label}
               color={color}
               selected={need === item.id}
               onPress={() => setNeed(need === item.id ? null : item.id)}
@@ -333,7 +343,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
           (matches.length ? (
             matches.map((member) => (
               <Text key={member.id} style={mentalStyles.body}>
-                {member.icon} {displayName(member)}
+                <AppIcon name={iconOf(member)} size={16} color={color} /> {displayName(member)}
               </Text>
             ))
           ) : (
@@ -352,7 +362,7 @@ export function SupportCircle({ color, soft, onExit }: ActivityProps) {
             onPress={() => setSelected(member.id === selected ? null : member.id)}
           >
             <Text style={mentalStyles.body}>
-              {member.icon} {member.label}
+              <AppIcon name={iconOf(member)} size={16} color={color} /> {member.label}
             </Text>
           </Pressable>
         ))}
@@ -398,7 +408,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  bubbleIcon: { fontSize: 20 },
   bubbleLabel: { marginTop: 2, color: COLORS.ink, fontSize: 10, fontWeight: "700" },
   pinned: { padding: 16, borderRadius: 18, borderWidth: 1.5, gap: 8, backgroundColor: COLORS.white },
 });

@@ -14,6 +14,7 @@ import {
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppIcon, IconName } from "../common/AppIcon";
 import { useAuth } from "../auth/AuthProvider";
 import { AuthSheet } from "../auth/AuthSheet";
 import { mentalStyles, PrimaryButton, SecondaryButton } from "../common/ActivityUI";
@@ -194,7 +195,7 @@ export function ProfileSheet({
         {PRIVACY_SECTIONS.map((section) => (
           <View key={section.title} style={[mentalStyles.card, styles.section]}>
             <Text style={styles.sectionTitle}>
-              {section.icon} {section.title}
+              <AppIcon name={section.icon} size={17} color={COLORS.teal} /> {section.title}
             </Text>
             {section.points.map((point) => (
               <View key={point} style={styles.point}>
@@ -215,7 +216,7 @@ export function ProfileSheet({
         {on ? (
           <>
             <View style={[mentalStyles.card, styles.section]}>
-              <Text style={styles.sectionTitle}>☁️ Backup is on</Text>
+              <Text style={styles.sectionTitle}><AppIcon name="cloud-outline" size={17} color={COLORS.teal} /> Backup is on</Text>
               <Text style={mentalStyles.body}>{backupStatusText(backup.status, backup.lastSynced)}</Text>
             </View>
             <Text style={mentalStyles.body}>
@@ -294,7 +295,7 @@ export function ProfileSheet({
           onPress={() => signOut(true)}
           style={({ pressed }) => [mentalStyles.card, styles.choice, pressed && styles.rowPressed, busy && styles.disabled]}
         >
-          <Text style={styles.choiceIcon}>🧹</Text>
+          <AppIcon name="broom" size={26} color={COLORS.ink} />
           <View style={styles.rowCopy}>
             <Text style={styles.rowTitle}>Remove my data from this phone</Text>
             <Text style={mentalStyles.muted}>
@@ -310,7 +311,7 @@ export function ProfileSheet({
           onPress={() => signOut(false)}
           style={({ pressed }) => [mentalStyles.card, styles.choice, pressed && styles.rowPressed, busy && styles.disabled]}
         >
-          <Text style={styles.choiceIcon}>📱</Text>
+          <AppIcon name="cellphone" size={26} color={COLORS.ink} />
           <View style={styles.rowCopy}>
             <Text style={styles.rowTitle}>Keep it on this phone</Text>
             <Text style={mentalStyles.muted}>Best if this is your own phone. You can keep using everything without signing in.</Text>
@@ -393,27 +394,27 @@ export function ProfileSheet({
         {auth.user && (
           <View style={styles.group}>
             <Row
-              icon="☁️"
+              icon="cloud-outline"
               title="Back up to my account"
               detail={backup.status === "off" ? "Off" : backupStatusText(backup.status, backup.lastSynced)}
               onPress={() => go("backup")}
             />
-            <Row icon="🔑" title="Change password" onPress={() => go("password")} />
-            <Row icon="↪" title="Sign out" onPress={() => go("signOut")} disabled={busy} />
+            <Row icon="key-outline" title="Change password" onPress={() => go("password")} />
+            <Row icon="logout" title="Sign out" onPress={() => go("signOut")} disabled={busy} />
           </View>
         )}
 
         <View style={styles.group}>
-          <Row icon="🔒" title="Privacy rules" detail="How your data is handled" onPress={() => go("privacy")} />
+          <Row icon="lock-outline" title="Privacy rules" detail="How your data is handled" onPress={() => go("privacy")} />
           <Row
-            icon="📤"
+            icon="export-variant"
             title="Download my data"
             detail="A copy of everything saved on this phone"
             disabled={busy}
             onPress={() => run(async () => (await exportData(auth.user?.email ?? null, auth.user?.id ?? null)).error)}
           />
           <Row
-            icon="👋"
+            icon="hand-wave-outline"
             title="Show the welcome again"
             detail="And change what shows first on Home"
             onPress={() => {
@@ -425,14 +426,14 @@ export function ProfileSheet({
 
         <View style={styles.group}>
           <Row
-            icon="🗑"
+            icon="trash-can-outline"
             title="Delete all data"
             detail="Everything on this phone, your backup, and any shared trails"
             danger
             onPress={() => go("delete")}
           />
           {auth.user && (
-            <Row icon="⚠️" title="Delete account" detail="Your account and all of its data" danger onPress={() => go("deleteAccount")} />
+            <Row icon="alert-outline" title="Delete account" detail="Your account and all of its data" danger onPress={() => go("deleteAccount")} />
           )}
         </View>
       </>
@@ -486,7 +487,7 @@ function Row({
   disabled,
   onPress,
 }: {
-  icon: string;
+  icon: IconName;
   title: string;
   detail?: string;
   danger?: boolean;
@@ -501,7 +502,7 @@ function Row({
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed, disabled && styles.disabled]}
     >
-      <Text style={styles.rowIcon}>{icon}</Text>
+      <AppIcon name={icon} size={20} color={danger ? DANGER : COLORS.teal} style={styles.rowIcon} />
       <View style={styles.rowCopy}>
         <Text style={[styles.rowTitle, danger && { color: DANGER }]}>{title}</Text>
         {detail ? <Text style={mentalStyles.muted}>{detail}</Text> : null}
@@ -556,7 +557,7 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   rowPressed: { backgroundColor: COLORS.tealSoft },
-  rowIcon: { width: 26, fontSize: 19, textAlign: "center" },
+  rowIcon: { width: 26, textAlign: "center" },
   rowCopy: { flex: 1, gap: 2 },
   rowTitle: { color: COLORS.ink, fontSize: 15, fontWeight: "800" },
   chevron: { color: COLORS.muted, fontSize: 26, fontWeight: "500" },
@@ -579,7 +580,6 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.4 },
   pressed: { opacity: 0.78 },
   choice: { flexDirection: "row", alignItems: "center", gap: 14 },
-  choiceIcon: { fontSize: 26 },
   warning: { padding: 14, borderRadius: 14, backgroundColor: "#FBEAE5" },
   warningText: { color: DANGER, fontSize: 13, lineHeight: 19, fontWeight: "700" },
   error: { color: DANGER, fontSize: 14, lineHeight: 20, fontWeight: "600" },

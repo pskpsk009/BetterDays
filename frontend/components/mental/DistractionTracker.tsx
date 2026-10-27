@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeInRight } from "react-native-reanimated";
 
+import { AppIcon } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 import {
   ActivityHeader,
@@ -32,9 +33,9 @@ const MAX_DISRUPTORS = 3;
 const SESSIONS = ["A Focus Sprint", "Studying", "Homework", "Reading", "Work or a project", "Something else"];
 
 const OUTCOMES = [
-  { id: "on-track", icon: "🎯", label: "Mostly on track" },
-  { id: "drifted", icon: "🌊", label: "Drifted a few times" },
-  { id: "pulled", icon: "🌪️", label: "Kept getting pulled away" },
+  { id: "on-track", icon: "target", label: "Mostly on track" },
+  { id: "drifted", icon: "waves", label: "Drifted a few times" },
+  { id: "pulled", icon: "weather-tornado", label: "Kept getting pulled away" },
 ] as const;
 
 type Outcome = (typeof OUTCOMES)[number]["id"];
@@ -82,7 +83,7 @@ export function DistractionTracker({ color, soft, onExit, openActivity }: Activi
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="🎯"
+          badge="target"
           title="Nothing got in the way"
           message="Nice. Whatever you did that session (the place, the time, the task size) is worth repeating."
           color={color}
@@ -104,7 +105,7 @@ export function DistractionTracker({ color, soft, onExit, openActivity }: Activi
             const disruptor = getDisruptor(item.disruptor);
             return (
               <View key={item.disruptor} style={styles.planRow}>
-                <Text style={styles.planIcon}>{disruptor.icon}</Text>
+                <AppIcon name={disruptor.icon} size={26} color={color} />
                 <View style={styles.planCopy}>
                   <Text style={mentalStyles.muted}>If {disruptor.label.toLowerCase()} gets in the way</Text>
                   <Text style={styles.planFix}>{item.fix}</Text>
@@ -158,7 +159,7 @@ export function DistractionTracker({ color, soft, onExit, openActivity }: Activi
           ))}
         </View>
         <Animated.View key={disruptor.id} entering={FadeInRight.duration(260)} style={[mentalStyles.card, styles.fixCard]}>
-          <Text style={styles.fixIcon}>{disruptor.icon}</Text>
+          <AppIcon name={disruptor.icon} size={40} color={color} style={styles.fixIcon} />
           <Text style={mentalStyles.label}>
             DISRUPTION {fixIndex + 1} OF {picked.length}
           </Text>
@@ -230,7 +231,7 @@ export function DistractionTracker({ color, soft, onExit, openActivity }: Activi
                     pressed && styles.pressed,
                   ]}
                 >
-                  <Text style={styles.categoryIcon}>{item.icon}</Text>
+                  <AppIcon name={item.icon} size={20} color={selected ? color : COLORS.ink} />
                   <Text style={[styles.categoryName, selected && { color }]}>{item.label}</Text>
                 </Pressable>
               );
@@ -281,7 +282,7 @@ export function DistractionTracker({ color, soft, onExit, openActivity }: Activi
                 pressed && styles.pressed,
               ]}
             >
-              <Text style={styles.outcomeIcon}>{option.icon}</Text>
+              <AppIcon name={option.icon} size={22} color={outcome === option.id ? color : COLORS.ink} />
               <Text style={[styles.outcomeText, outcome === option.id && { color }]}>{option.label}</Text>
             </Pressable>
           ))}
@@ -318,7 +319,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.white,
   },
-  categoryIcon: { fontSize: 20 },
   categoryName: { flex: 1, color: COLORS.ink, fontSize: 13, fontWeight: "700", lineHeight: 17 },
   outcomes: { gap: 8 },
   outcome: {
@@ -332,12 +332,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.white,
   },
-  outcomeIcon: { fontSize: 22 },
   outcomeText: { color: COLORS.ink, fontSize: 15, fontWeight: "700" },
   progressRow: { flexDirection: "row", justifyContent: "center", gap: 8 },
   progressDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2 },
   fixCard: { gap: 8, alignItems: "stretch" },
-  fixIcon: { fontSize: 40, textAlign: "center" },
+  fixIcon: { alignSelf: "center" },
   fixTitle: { color: COLORS.ink, fontSize: 21, fontWeight: "800" },
   fixList: { gap: 8, marginTop: 6 },
   fixOption: {
@@ -356,7 +355,6 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 24, fontWeight: "500" },
   plan: { padding: 18, borderRadius: 18, gap: 12 },
   planRow: { flexDirection: "row", gap: 12, alignItems: "center" },
-  planIcon: { fontSize: 26 },
   planCopy: { flex: 1, gap: 2 },
   planFix: { color: COLORS.ink, fontSize: 16, fontWeight: "800", lineHeight: 22 },
 });

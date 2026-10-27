@@ -10,6 +10,7 @@ import {
   SecondaryButton,
   SelectionChip,
 } from "../../common/ActivityUI";
+import { AppIcon, IconName } from "../../common/AppIcon";
 import { daysBetween, todayKey, useStoredState } from "../../common/localStore";
 import { NIGHT, NightBanner } from "./NightBanner";
 import { ClockTime, formatDuration, formatTime, gradualSchedule, shortestShift } from "./sleepMath";
@@ -161,11 +162,11 @@ function Planner({
               {formatDuration(Math.abs(shift))} {shift < 0 ? "earlier" : "later"} in total ·{" "}
               {steps.length} step{steps.length === 1 ? "" : "s"}
             </Text>
-            <TimelineRow icon="🌙" label="Current bedtime" time={current} first />
+            <TimelineRow icon="weather-night" label="Current bedtime" time={current} first />
             {shown.map((step, index) => (
               <TimelineRow
                 key={`${formatTime(step)}-${index}`}
-                icon={index === steps.length - 1 ? "⭐" : "✦"}
+                icon={index === steps.length - 1 ? "star-outline" : "circle-small"}
                 label={index === steps.length - 1 ? "Preferred bedtime" : index === 0 ? "Initial target" : "Next target"}
                 time={step}
               />
@@ -261,8 +262,8 @@ function MySchedule({
           MY SCHEDULE · {windowLabel}
           {steps.length > 1 ? ` · step ${Math.min(plan.step, steps.length - 1) + 1} of ${steps.length}` : ""}
         </Text>
-        <TimelineRow icon="🌙" label="Tonight's bedtime" time={targetBed} first />
-        <TimelineRow icon="☀️" label="Wake-up time" time={plan.wake} />
+        <TimelineRow icon="weather-night" label="Tonight's bedtime" time={targetBed} first />
+        <TimelineRow icon="white-balance-sunny" label="Wake-up time" time={plan.wake} />
         {!isLastStep(plan) && (
           <Text style={styles.nightMuted}>Working toward {formatTime(plan.bedtime)}, one step at a time.</Text>
         )}
@@ -286,7 +287,7 @@ function MySchedule({
         <Animated.View entering={FadeIn.duration(240)} style={[mentalStyles.card, styles.logged]}>
           <Text style={mentalStyles.label}>LAST NIGHT</Text>
           <Text style={styles.loggedTitle}>
-            {nightOnSchedule(todays) ? "🌙 On schedule" : "Logged"}
+            {nightOnSchedule(todays) ? "On schedule" : "Logged"}
           </Text>
           <Text style={mentalStyles.body}>
             Bed {formatTime(todays.bed)} · {describe(offBy(todays.targetBed, todays.bed), bedOnSchedule(todays))}
@@ -390,7 +391,7 @@ function TimelineRow({
   time,
   first = false,
 }: {
-  icon: string;
+  icon: IconName;
   label: string;
   time: ClockTime;
   first?: boolean;
@@ -399,7 +400,7 @@ function TimelineRow({
     <View style={styles.row}>
       <View style={styles.rail}>
         {!first && <View style={styles.railLine} />}
-        <Text style={styles.railIcon}>{icon}</Text>
+        <AppIcon name={icon} size={18} color="#F6EFC8" />
       </View>
       <View style={styles.rowCopy}>
         <Text style={styles.nightMuted}>{label}</Text>
@@ -424,7 +425,6 @@ const styles = StyleSheet.create({
     backgroundColor: NIGHT.lavender,
     opacity: 0.6,
   },
-  railIcon: { color: "#F6EFC8", fontSize: 18 },
   rowCopy: { flex: 1 },
   rowTime: { color: NIGHT.text, fontSize: 18, fontWeight: "800", fontVariant: ["tabular-nums"] },
   card: { padding: 16, borderRadius: 18, gap: 8 },

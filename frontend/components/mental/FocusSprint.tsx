@@ -87,7 +87,7 @@ export function FocusSprint({ color, soft, onExit, openActivity }: ActivityProps
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge={finished ? "✓" : "»"}
+          badge={finished ? "check-circle-outline" : "timer-outline"}
           title={finished ? "Sprint complete" : "Sprint ended"}
           message={
             finished
@@ -162,7 +162,8 @@ export function FocusSprint({ color, soft, onExit, openActivity }: ActivityProps
               {DISRUPTORS.map((item) => (
                 <SelectionChip
                   key={item.id}
-                  label={`${item.icon} ${item.label}`}
+                  icon={item.icon}
+                  label={item.label}
                   color={color}
                   selected={false}
                   onPress={() => noteDisruptor(item.id)}

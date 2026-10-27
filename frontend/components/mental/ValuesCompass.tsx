@@ -12,6 +12,7 @@ import {
   SelectionChip,
   toggleItem,
 } from "../common/ActivityUI";
+import { AppIcon, IconName } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 import { ChoiceExplorer, ChoiceGroup, ChoiceOption } from "../common/GuidedActivities";
 import { DayKey, daysBetween, monthName, todayKey, useStoredState } from "../common/localStore";
@@ -33,30 +34,30 @@ const VALUE_GROUPS: ChoiceGroup[] = [
   {
     title: "Connection",
     options: [
-      { label: "Family", icon: "🏡", note: "Being there for the people closest to you." },
-      { label: "Friendship", icon: "🤝", note: "Building and keeping meaningful friendships." },
-      { label: "Kindness", icon: "💛", note: "Treating others and yourself with care." },
-      { label: "Community", icon: "🌍", note: "Being part of something bigger than yourself." },
+      { label: "Family", icon: "home-heart", note: "Being there for the people closest to you." },
+      { label: "Friendship", icon: "handshake-outline", note: "Building and keeping meaningful friendships." },
+      { label: "Kindness", icon: "heart-outline", note: "Treating others and yourself with care." },
+      { label: "Community", icon: "earth", note: "Being part of something bigger than yourself." },
     ],
   },
   {
     title: "Growth",
     options: [
-      { label: "Learning", icon: "📖", note: "Staying curious and building knowledge." },
-      { label: "Creativity", icon: "🎨", note: "Expressing yourself and making new things." },
-      { label: "Achievement", icon: "🏅", note: "Working toward goals you care about." },
-      { label: "Adventure", icon: "🧭", note: "Trying new experiences." },
+      { label: "Learning", icon: "book-open-variant", note: "Staying curious and building knowledge." },
+      { label: "Creativity", icon: "palette-outline", note: "Expressing yourself and making new things." },
+      { label: "Achievement", icon: "medal-outline", note: "Working toward goals you care about." },
+      { label: "Adventure", icon: "compass-outline", note: "Trying new experiences." },
     ],
   },
   {
     title: "Way of living",
     options: [
-      { label: "Health", icon: "🌿", note: "Looking after your body and mind." },
-      { label: "Honesty", icon: "🔍", note: "Being truthful with yourself and others." },
-      { label: "Independence", icon: "🦋", note: "Making your own choices." },
-      { label: "Fun", icon: "🎈", note: "Making room for play and enjoyment." },
-      { label: "Fairness", icon: "⚖️", note: "Standing up for what's right." },
-      { label: "Calm", icon: "🌊", note: "Peace and balance in daily life." },
+      { label: "Health", icon: "leaf", note: "Looking after your body and mind." },
+      { label: "Honesty", icon: "eye-check-outline", note: "Being truthful with yourself and others." },
+      { label: "Independence", icon: "butterfly-outline", note: "Making your own choices." },
+      { label: "Fun", icon: "balloon", note: "Making room for play and enjoyment." },
+      { label: "Fairness", icon: "scale-balance", note: "Standing up for what's right." },
+      { label: "Calm", icon: "waves", note: "Peace and balance in daily life." },
     ],
   },
 ];
@@ -94,7 +95,7 @@ export function ValuesCompass({ color, soft, onExit }: ActivityProps) {
         pickLabel="Your values"
         maxPicks={5}
         groups={VALUE_GROUPS}
-        initialPicks={compass?.values}
+        initialPicks={compass?.values.map((value) => ({ ...value, icon: iconOf(value) }))}
         customPlaceholder="Add a value of your own…"
         customNote="A value that's personal to you."
         resultTitle="Your compass"
@@ -104,7 +105,7 @@ export function ValuesCompass({ color, soft, onExit }: ActivityProps) {
           setCompass({ values, chosenOn: today, checkins: compass?.checkins ?? {} });
           setStage("compass");
         }}
-        completion={{ badge: "✦", title: "Compass set", message: "" }}
+        completion={{ badge: "compass-outline", title: "Compass set", message: "" }}
       />
     );
   }
@@ -189,7 +190,7 @@ export function ValuesCompass({ color, soft, onExit }: ActivityProps) {
                   ]}
                 >
                   <View style={[StyleSheet.absoluteFill, styles.pointFill, { backgroundColor: color, opacity: level * 0.35 }]} />
-                  <Text style={styles.pointIcon}>{value.icon}</Text>
+                  <AppIcon name={iconOf(value)} size={22} color={COLORS.ink} />
                 </View>
                 <Text numberOfLines={1} style={styles.pointLabel}>
                   {value.label}
@@ -210,7 +211,8 @@ export function ValuesCompass({ color, soft, onExit }: ActivityProps) {
           {compass.values.map((value) => (
             <SelectionChip
               key={value.label}
-              label={`${value.icon} ${value.label}`}
+              icon={iconOf(value)}
+              label={value.label}
               color={color}
               selected={todays.includes(value.label)}
               onPress={() => toggleToday(value.label)}
@@ -224,7 +226,7 @@ export function ValuesCompass({ color, soft, onExit }: ActivityProps) {
         onPress={() => setStage("decide")}
         style={({ pressed }) => [mentalStyles.card, styles.decide, pressed && styles.pressed]}
       >
-        <Text style={styles.decideIcon}>⚖️</Text>
+        <AppIcon name="scale-balance" size={28} color={color} />
         <View style={styles.decideCopy}>
           <Text style={[styles.panelTitle, { color }]}>Stuck on a choice?</Text>
           <Text style={mentalStyles.muted}>Compare two options against your values.</Text>
@@ -245,10 +247,17 @@ export function ValuesCompass({ color, soft, onExit }: ActivityProps) {
   );
 }
 
-const FITS: { id: Fit; icon: string; label: string }[] = [
-  { id: "good", icon: "👍", label: "fits well" },
-  { id: "neutral", icon: "–", label: "neutral" },
-  { id: "poor", icon: "👎", label: "doesn't fit" },
+// Values saved by an older version may still hold an emoji, so look the icon up by label.
+const ICON_BY_LABEL = new Map(VALUE_GROUPS.flatMap((group) => group.options.map((option) => [option.label, option.icon])));
+
+function iconOf(value: ChoiceOption) {
+  return ICON_BY_LABEL.get(value.label) ?? value.icon;
+}
+
+const FITS: { id: Fit; icon: IconName; label: string }[] = [
+  { id: "good", icon: "thumb-up-outline", label: "fits well" },
+  { id: "neutral", icon: "minus", label: "neutral" },
+  { id: "poor", icon: "thumb-down-outline", label: "doesn't fit" },
 ];
 
 function DecisionHelper({
@@ -292,7 +301,7 @@ function DecisionHelper({
         values.map((value) => (
           <View key={value.label} style={[mentalStyles.card, styles.panel]}>
             <Text style={styles.panelTitle}>
-              {value.icon} {value.label}
+              <AppIcon name={iconOf(value)} size={17} color={color} /> {value.label}
             </Text>
             {[0, 1].map((side) => (
               <View key={side} style={styles.fitRow}>
@@ -312,7 +321,7 @@ function DecisionHelper({
                         onPress={() => setFits({ ...fits, [key]: fit.id })}
                         style={[styles.fit, selected && { backgroundColor: soft, borderColor: color }]}
                       >
-                        <Text style={styles.fitIcon}>{fit.icon}</Text>
+                        <AppIcon name={fit.icon} size={18} color={selected ? color : COLORS.ink} />
                       </Pressable>
                     );
                   })}
@@ -330,7 +339,7 @@ function DecisionHelper({
                 <Text numberOfLines={2} style={styles.panelTitle}>
                   {names[side]}
                 </Text>
-                <Text style={mentalStyles.body}>👍 {count(side, "good")} · 👎 {count(side, "poor")}</Text>
+                <Text style={mentalStyles.body}><AppIcon name="thumb-up-outline" size={15} color={color} /> {count(side, "good")} · <AppIcon name="thumb-down-outline" size={15} color={color} /> {count(side, "poor")}</Text>
               </View>
             ))}
           </View>
@@ -362,12 +371,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   pointFill: { borderRadius: POINT / 2 },
-  pointIcon: { fontSize: 22 },
   pointLabel: { marginTop: 3, color: COLORS.ink, fontSize: 11, fontWeight: "800" },
   panel: { gap: 10 },
   panelTitle: { color: COLORS.ink, fontSize: 15, fontWeight: "800" },
   decide: { flexDirection: "row", alignItems: "center", gap: 14 },
-  decideIcon: { fontSize: 28 },
   decideCopy: { flex: 1, gap: 4 },
   chevron: { fontSize: 28, fontWeight: "500" },
   fitRow: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -383,7 +390,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: COLORS.white,
   },
-  fitIcon: { fontSize: 17, color: COLORS.ink, fontWeight: "800" },
   summaryRow: { flexDirection: "row", gap: 12 },
   summaryCol: { flex: 1, gap: 4 },
 });

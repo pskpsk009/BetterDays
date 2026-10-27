@@ -78,7 +78,7 @@ export function ConversationBuilder(props: ActivityProps) {
         },
       ]}
       completion={{
-        badge: "❝",
+        badge: "chat-outline",
         title: "Openers practised",
         message: "Conversation skills grow with practice, and small chats count.",
       }}
@@ -156,7 +156,7 @@ export function WalkInTheirShoes(props: ActivityProps) {
         },
       ]}
       completion={{
-        badge: "⇆",
+        badge: "shoe-sneaker",
         title: "Perspectives explored",
         message: "Imagining another point of view builds empathy, and it helps with your own relationships too.",
       }}
@@ -235,7 +235,7 @@ export function HealthyBoundaries(props: ActivityProps) {
         },
       ]}
       completion={{
-        badge: "▢",
+        badge: "shield-outline",
         title: "Boundaries practised",
         message: "Healthy boundaries help relationships feel respectful and safe for everyone.",
       }}

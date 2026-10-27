@@ -15,6 +15,7 @@ import {
   SupportNote,
   toggleItem,
 } from "../common/ActivityUI";
+import { AppIcon, IconName } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 import { Scenario, ScenarioPractice } from "../common/GuidedActivities";
 
@@ -33,44 +34,44 @@ const SETBACKS = [
   "An event got called off",
 ];
 
-type Need = { id: string; label: string; icon: string; ideas: string[] };
+type Need = { id: string; label: string; icon: IconName; ideas: string[] };
 
 // What people often wanted from a plan, and other ways to get some of it.
 const NEEDS: Need[] = [
   {
     id: "fun",
     label: "Fun or excitement",
-    icon: "🎉",
+    icon: "party-popper",
     ideas: ["Plan a smaller fun thing this week", "Try something new nearby", "Have a games or movie night", "Put a new date in the calendar"],
   },
   {
     id: "people",
     label: "Time with someone",
-    icon: "🤝",
+    icon: "handshake-outline",
     ideas: ["Suggest another day to meet", "Call or video chat instead", "Invite them to something simpler", "Spend time with someone else I like"],
   },
   {
     id: "progress",
     label: "Progress toward a goal",
-    icon: "📈",
+    icon: "chart-line",
     ideas: ["Look for another route to the same goal", "Ask someone what else I could try", "Apply or try again next round", "Work on one skill that helps for next time"],
   },
   {
     id: "rest",
     label: "Rest or a break",
-    icon: "🛋️",
+    icon: "sofa-outline",
     ideas: ["Take a slow day at home", "Do something relaxing I enjoy", "Get outside for a short walk", "Book a small break for later"],
   },
   {
     id: "change",
     label: "A change of scene",
-    icon: "🗺️",
+    icon: "map-outline",
     ideas: ["Explore a part of town I don't know", "Take a day trip closer to home", "Rearrange or refresh my space", "Visit a park, museum, or library"],
   },
   {
     id: "proud",
     label: "Feeling proud",
-    icon: "🏅",
+    icon: "medal-outline",
     ideas: ["Finish a smaller challenge", "Share what I did manage", "Set a new, reachable goal", "Write down what I learned"],
   },
 ];
@@ -141,7 +142,7 @@ const SCENARIOS: Scenario[] = [
 ];
 
 const COMPLETION = {
-  badge: "⇄",
+  badge: "swap-horizontal",
   title: "Plan B practised",
   message: "Being able to adjust when plans change is a skill that grows with practice.",
 };
@@ -184,7 +185,7 @@ export function PlanB(props: ActivityProps) {
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="⇄"
+          badge="swap-horizontal"
           title="Plan B ready"
           message="Plans falling through is disappointing. Finding another way forward, even a small one, keeps a door open."
           color={color}
@@ -205,7 +206,7 @@ export function PlanB(props: ActivityProps) {
         </Text>
         <Text style={mentalStyles.label}>HOW WOULD YOU LIKE TO START?</Text>
         <ModeCard
-          icon="💡"
+          icon="lightbulb-on-outline"
           title="Something fell through for me"
           detail="Work through a real plan that didn't happen and find a Plan B."
           color={color}
@@ -213,7 +214,7 @@ export function PlanB(props: ActivityProps) {
           onPress={() => setStage("setback")}
         />
         <ModeCard
-          icon="📚"
+          icon="bookshelf"
           title="Practise with an example"
           detail="Try three everyday situations and see different ways forward."
           color={color}
@@ -277,7 +278,8 @@ export function PlanB(props: ActivityProps) {
             {NEEDS.map((need) => (
               <SelectionChip
                 key={need.id}
-                label={`${need.icon} ${need.label}`}
+                icon={need.icon}
+                label={need.label}
                 color={color}
                 selected={wanted.includes(need.id)}
                 onPress={() => setWanted(toggleItem(wanted, need.id))}
@@ -302,7 +304,7 @@ export function PlanB(props: ActivityProps) {
         {wantedNeeds.map((need) => (
           <View key={need.id} style={styles.group}>
             <Text style={styles.groupTitle}>
-              {need.icon} {need.label}
+              <AppIcon name={need.icon} size={16} color={color} /> {need.label}
             </Text>
             <View style={mentalStyles.chips}>
               {need.ideas.map((option) => (

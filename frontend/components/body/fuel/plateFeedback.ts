@@ -1,3 +1,5 @@
+import { IconName } from "../../common/AppIcon";
+
 // Pure, non-judgemental feedback for the Build a Balanced Plate activity.
 // The plate has five equal slices of 20%; each holds one food group or is empty.
 
@@ -10,12 +12,12 @@ export const SLICE_PERCENT = 100 / SLICE_COUNT;
 
 export const FOOD_GROUPS: Record<
   FoodGroup,
-  { name: string; short: string; icon: string; color: string; examples: string; provides: string }
+  { name: string; short: string; icon: IconName; color: string; examples: string; provides: string }
 > = {
   vegetables: {
     name: "Vegetables",
     short: "Vegetables",
-    icon: "🥦",
+    icon: "carrot",
     color: "#7BBF6A",
     examples: "e.g. leafy greens, carrots, broccoli, peppers",
     provides: "Vegetables contribute fibre, vitamins, and minerals.",
@@ -23,7 +25,7 @@ export const FOOD_GROUPS: Record<
   fruits: {
     name: "Fruits",
     short: "Fruits",
-    icon: "🍎",
+    icon: "food-apple-outline",
     color: "#E07A8F",
     examples: "e.g. berries, apples, bananas, oranges",
     provides: "Fruits add fibre, vitamins, and natural sweetness.",
@@ -31,7 +33,7 @@ export const FOOD_GROUPS: Record<
   protein: {
     name: "Protein",
     short: "Protein",
-    icon: "🍳",
+    icon: "egg-fried",
     color: "#E39A6B",
     examples: "e.g. beans, lentils, eggs, fish, tofu, chicken",
     provides: "Protein supports growth and the repair of body tissues.",
@@ -39,7 +41,7 @@ export const FOOD_GROUPS: Record<
   carbs: {
     name: "Carbohydrates and whole grains",
     short: "Carbs & grains",
-    icon: "🍚",
+    icon: "rice",
     color: "#E2C26A",
     examples: "e.g. rice, oats, wholegrain bread, potatoes, pasta",
     provides: "Carbohydrates are an important source of energy, and whole grains add fibre.",
@@ -47,7 +49,7 @@ export const FOOD_GROUPS: Record<
   fats: {
     name: "Healthy fats",
     short: "Healthy fats",
-    icon: "🥑",
+    icon: "peanut-outline",
     color: "#9C8FD0",
     examples: "e.g. avocado, nuts, seeds, olive oil",
     provides: "Healthy fats help your body absorb some vitamins and add flavour and fullness.",

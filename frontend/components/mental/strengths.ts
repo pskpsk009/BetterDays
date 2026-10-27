@@ -7,28 +7,28 @@ export const STRENGTH_GROUPS: ChoiceGroup[] = [
   {
     title: "Heart",
     options: [
-      { label: "Kind", icon: "🌷", note: "You notice what others need and care about them." },
-      { label: "Loyal", icon: "🌻", note: "People can count on you to stick around." },
-      { label: "Good listener", icon: "🌼", note: "You help people feel heard." },
-      { label: "Fair", icon: "🌸", note: "You try to treat people equally." },
+      { label: "Kind", icon: "flower-tulip-outline", note: "You notice what others need and care about them." },
+      { label: "Loyal", icon: "flower", note: "People can count on you to stick around." },
+      { label: "Good listener", icon: "flower-poppy", note: "You help people feel heard." },
+      { label: "Fair", icon: "flower-outline", note: "You try to treat people equally." },
     ],
   },
   {
     title: "Mind",
     options: [
-      { label: "Curious", icon: "🌱", note: "You like to learn and ask questions." },
-      { label: "Creative", icon: "🌺", note: "You come up with new ideas and ways of doing things." },
-      { label: "Problem-solver", icon: "🌿", note: "You look for ways through challenges." },
-      { label: "Thoughtful", icon: "🍀", note: "You take time to think things through." },
+      { label: "Curious", icon: "sprout-outline", note: "You like to learn and ask questions." },
+      { label: "Creative", icon: "flower-tulip", note: "You come up with new ideas and ways of doing things." },
+      { label: "Problem-solver", icon: "leaf", note: "You look for ways through challenges." },
+      { label: "Thoughtful", icon: "clover", note: "You take time to think things through." },
     ],
   },
   {
     title: "Spirit",
     options: [
-      { label: "Determined", icon: "🌳", note: "You keep going when things get hard." },
-      { label: "Funny", icon: "🌼", note: "You bring lightness and laughter." },
-      { label: "Brave", icon: "🌻", note: "You try things even when you're nervous." },
-      { label: "Patient", icon: "🌾", note: "You can wait and stay steady." },
+      { label: "Determined", icon: "tree-outline", note: "You keep going when things get hard." },
+      { label: "Funny", icon: "flower-poppy", note: "You bring lightness and laughter." },
+      { label: "Brave", icon: "flower", note: "You try things even when you're nervous." },
+      { label: "Patient", icon: "barley", note: "You can wait and stay steady." },
     ],
   },
 ];

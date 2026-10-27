@@ -44,7 +44,7 @@ export function MyNextStep(props: ActivityProps) {
         "Asking for help is a strong step, not a weak one.",
       ]}
       completion={{
-        badge: "↑",
+        badge: "shoe-print",
         title: "Next step found",
         message: "One step at a time is how hard things get easier. Be kind to yourself along the way.",
       }}

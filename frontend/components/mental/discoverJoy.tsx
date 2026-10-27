@@ -33,7 +33,7 @@ export function LittleMoments(props: ActivityProps) {
         ],
       }}
       completion={{
-        badge: "❋",
+        badge: "star-four-points-outline",
         title: "Moment captured",
         message: "Noticing small good moments can help them stand out more over time. You can come back to add another.",
       }}

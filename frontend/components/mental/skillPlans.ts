@@ -1,3 +1,5 @@
+import { IconName } from "../common/AppIcon";
+
 // Content and plan builders for Develop Your Skill. Advice is general,
 // practical, and optional: a starting point, not a programme to follow.
 
@@ -12,7 +14,7 @@ export type SkillStep = {
 export type SkillArea = {
   id: string;
   label: string;
-  icon: string;
+  icon: IconName;
   examples: string;
   tips: string[];
 };
@@ -21,7 +23,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "creative",
     label: "Art & design",
-    icon: "🎨",
+    icon: "palette-outline",
     examples: "Drawing, painting, photography, design",
     tips: [
       "Copy work you admire to learn how it was made, then try your own version.",
@@ -32,7 +34,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "music",
     label: "Music",
-    icon: "🎵",
+    icon: "music-note",
     examples: "An instrument, singing, producing",
     tips: [
       "Practise slowly first. Speed comes after accuracy.",
@@ -43,7 +45,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "sport",
     label: "Sport & movement",
-    icon: "⚽",
+    icon: "soccer",
     examples: "A sport, dance, fitness, martial arts",
     tips: [
       "Warm up, and build intensity gradually to avoid injury.",
@@ -54,7 +56,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "tech",
     label: "Tech & coding",
-    icon: "💻",
+    icon: "laptop",
     examples: "Coding, editing video, 3D, spreadsheets",
     tips: [
       "Build a tiny project instead of only watching tutorials.",
@@ -65,7 +67,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "language",
     label: "Languages & writing",
-    icon: "🗣️",
+    icon: "account-voice",
     examples: "A new language, writing, public speaking",
     tips: [
       "Use it a little every day: five minutes beats one long session a week.",
@@ -76,7 +78,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "practical",
     label: "Practical skills",
-    icon: "🍳",
+    icon: "egg-fried",
     examples: "Cooking, sewing, fixing things, gardening",
     tips: [
       "Repeat the same recipe or project until it feels easy, then change one thing.",
@@ -87,7 +89,7 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     id: "other",
     label: "Something else",
-    icon: "✨",
+    icon: "star-shooting-outline",
     examples: "Anything you'd like to improve",
     tips: [
       "Find one person who does it well and notice what they do differently.",
@@ -194,7 +196,7 @@ export function polishSteps(skill: string, level: SkillLevel, area?: SkillArea):
 export type Interest = {
   id: string;
   label: string;
-  icon: string;
+  icon: IconName;
   skills: { name: string; why: string }[];
 };
 
@@ -202,7 +204,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "making",
     label: "Making things",
-    icon: "🛠️",
+    icon: "tools",
     skills: [
       { name: "Drawing", why: "Needs only paper and a pen to start." },
       { name: "Crafts or sewing", why: "You end up with something you made." },
@@ -212,7 +214,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "music",
     label: "Music & sound",
-    icon: "🎧",
+    icon: "headphones",
     skills: [
       { name: "Playing an instrument", why: "Free apps and videos make the first steps easy." },
       { name: "Singing", why: "You can practise anywhere." },
@@ -222,7 +224,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "moving",
     label: "Moving & being active",
-    icon: "🏃",
+    icon: "run",
     skills: [
       { name: "Dance", why: "One song is enough for a practice session." },
       { name: "A new sport", why: "A good way to meet people too." },
@@ -232,7 +234,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "words",
     label: "Words & stories",
-    icon: "📖",
+    icon: "book-open-variant",
     skills: [
       { name: "Creative writing", why: "Start with a few lines a day." },
       { name: "A new language", why: "Five minutes a day adds up quickly." },
@@ -242,7 +244,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "puzzles",
     label: "Solving problems",
-    icon: "🧩",
+    icon: "puzzle-outline",
     skills: [
       { name: "Coding", why: "Lots of free beginner courses exist." },
       { name: "Chess or strategy games", why: "Easy to learn, endless to master." },
@@ -252,7 +254,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "people",
     label: "Helping & connecting",
-    icon: "🤝",
+    icon: "handshake-outline",
     skills: [
       { name: "Listening and conversation", why: "Makes every relationship easier." },
       { name: "Teaching or tutoring", why: "Explaining things helps you learn them too." },
@@ -262,7 +264,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "visual",
     label: "Visuals & tech",
-    icon: "📷",
+    icon: "camera-outline",
     skills: [
       { name: "Photography", why: "Your phone camera is enough to start." },
       { name: "Video editing", why: "Free editors run on most phones." },
@@ -272,7 +274,7 @@ export const INTERESTS: Interest[] = [
   {
     id: "nature",
     label: "Nature & outdoors",
-    icon: "🌱",
+    icon: "sprout-outline",
     skills: [
       { name: "Gardening", why: "Even one pot plant is a start." },
       { name: "Hiking and navigation", why: "Gets you outside and exploring." },

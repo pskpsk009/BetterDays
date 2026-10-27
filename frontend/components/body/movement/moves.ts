@@ -1,10 +1,12 @@
+import { IconName } from "../../common/AppIcon";
+
 // Gentle, equipment-free movements used by the Daily Stretch routines.
 // Everything can be done seated or standing near a desk.
 
 export type Move = {
   id: string;
   name: string;
-  icon: string;
+  icon: IconName;
   start: string;
   steps: string[];
 };
@@ -13,7 +15,7 @@ export const MOVES = {
   neck: {
     id: "neck",
     name: "Gentle neck tilt",
-    icon: "🙆",
+    icon: "human-handsup",
     start: "Sit or stand tall with your shoulders relaxed.",
     steps: [
       "Slowly tilt your right ear toward your right shoulder.",
@@ -24,7 +26,7 @@ export const MOVES = {
   shoulders: {
     id: "shoulders",
     name: "Shoulder rolls",
-    icon: "🤷",
+    icon: "rotate-left",
     start: "Sit or stand with your arms hanging loosely.",
     steps: [
       "Lift your shoulders toward your ears.",
@@ -35,7 +37,7 @@ export const MOVES = {
   reach: {
     id: "reach",
     name: "Overhead reach",
-    icon: "🙋",
+    icon: "hand-wave-outline",
     start: "Sit or stand tall with your feet steady.",
     steps: [
       "Reach both arms up, as high as feels comfortable.",
@@ -46,7 +48,7 @@ export const MOVES = {
   sideBend: {
     id: "sideBend",
     name: "Side bend",
-    icon: "🧍",
+    icon: "human",
     start: "Sit or stand tall, one hand resting on your hip.",
     steps: [
       "Reach the other arm up and gently lean away from it.",
@@ -57,7 +59,7 @@ export const MOVES = {
   chest: {
     id: "chest",
     name: "Chest opener",
-    icon: "👐",
+    icon: "arrow-expand-horizontal",
     start: "Sit near the front of your chair or stand.",
     steps: [
       "Place your hands on your lower back.",
@@ -68,7 +70,7 @@ export const MOVES = {
   hug: {
     id: "hug",
     name: "Upper back hug",
-    icon: "🤗",
+    icon: "account-heart-outline",
     start: "Sit or stand comfortably.",
     steps: [
       "Wrap your arms around yourself in a loose hug.",
@@ -79,7 +81,7 @@ export const MOVES = {
   twist: {
     id: "twist",
     name: "Seated twist",
-    icon: "🔄",
+    icon: "rotate-right",
     start: "Sit tall with both feet flat on the floor.",
     steps: [
       "Place your right hand on your left knee.",
@@ -90,7 +92,7 @@ export const MOVES = {
   wrists: {
     id: "wrists",
     name: "Wrist and finger stretch",
-    icon: "✋",
+    icon: "hand-back-left-outline",
     start: "Hold your arms in front of you, elbows soft.",
     steps: [
       "Make slow circles with your wrists in each direction.",
@@ -101,7 +103,7 @@ export const MOVES = {
   hamstring: {
     id: "hamstring",
     name: "Seated leg reach",
-    icon: "🦵",
+    icon: "seat-legroom-extra",
     start: "Sit near the front of your chair.",
     steps: [
       "Stretch one leg out with the heel on the floor.",
@@ -112,7 +114,7 @@ export const MOVES = {
   ankles: {
     id: "ankles",
     name: "Ankle circles",
-    icon: "🦶",
+    icon: "foot-print",
     start: "Sit with one foot lifted slightly off the floor.",
     steps: [
       "Draw slow circles with your foot.",
@@ -123,7 +125,7 @@ export const MOVES = {
   breaths: {
     id: "breaths",
     name: "Relaxed breaths",
-    icon: "🌬️",
+    icon: "weather-windy",
     start: "Sit or stand comfortably and let your shoulders drop.",
     steps: [
       "Breathe in gently through your nose.",

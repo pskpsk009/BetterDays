@@ -3,6 +3,7 @@ import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppIcon, IconName } from "../common/AppIcon";
 import { mentalStyles, PrimaryButton, SecondaryButton, SelectionChip, toggleItem } from "../common/ActivityUI";
 import { COLORS } from "../common/AppShell";
 import { NeedId, NEEDS } from "./needs";
@@ -14,10 +15,10 @@ import { NeedId, NEEDS } from "./needs";
 export const WELCOME_NOTICE_VERSION = 4;
 const MAX_FOCUS = 3;
 
-const AREAS = [
-  { icon: "🧠", title: "Mind", detail: "Short activities for your thoughts, feelings and relationships.", color: COLORS.mind, soft: COLORS.mindSoft },
-  { icon: "💚", title: "Body", detail: "Water, food, stretching and sleep, one small habit at a time.", color: COLORS.teal, soft: COLORS.tealSoft },
-  { icon: "👟", title: "Trail", detail: "Go for a walk and see your trail.", color: COLORS.movement, soft: COLORS.movementSoft },
+const AREAS: { icon: IconName; title: string; detail: string; color: string; soft: string }[] = [
+  { icon: "brain", title: "Mind", detail: "Short activities for your thoughts, feelings and relationships.", color: COLORS.mind, soft: COLORS.mindSoft },
+  { icon: "human", title: "Body", detail: "Water, food, stretching and sleep, one small habit at a time.", color: COLORS.teal, soft: COLORS.tealSoft },
+  { icon: "shoe-sneaker", title: "Trail", detail: "Go for a walk and see your trail.", color: COLORS.movement, soft: COLORS.movementSoft },
 ];
 
 const PRIVACY = [
@@ -66,7 +67,7 @@ export function Welcome({
                 {AREAS.map((area) => (
                   <View key={area.title} style={[mentalStyles.card, styles.area]}>
                     <View style={[styles.areaIcon, { backgroundColor: area.soft }]}>
-                      <Text style={styles.areaIconText}>{area.icon}</Text>
+                      <AppIcon name={area.icon} size={26} color={area.color} />
                     </View>
                     <View style={styles.areaCopy}>
                       <Text style={[styles.areaTitle, { color: area.color }]}>{area.title}</Text>
@@ -85,7 +86,7 @@ export function Welcome({
                 <Text accessibilityRole="header" style={styles.title}>Your data stays with you</Text>
                 {PRIVACY.map((line) => (
                   <View key={line} style={styles.bullet}>
-                    <Text style={styles.bulletMark}>🔒</Text>
+                    <AppIcon name="lock-outline" size={18} color={COLORS.teal} style={styles.bulletMark} />
                     <Text style={[mentalStyles.body, styles.bulletText]}>{line}</Text>
                   </View>
                 ))}
@@ -102,7 +103,8 @@ export function Welcome({
                   {NEEDS.map((need) => (
                     <SelectionChip
                       key={need.id}
-                      label={`${need.icon} ${need.label}`}
+                      icon={need.icon}
+                      label={need.label}
                       color={COLORS.teal}
                       selected={focus.includes(need.id)}
                       onPress={() => {
@@ -153,11 +155,10 @@ const styles = StyleSheet.create({
   title: { color: "#1C4C55", fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.8 },
   area: { flexDirection: "row", alignItems: "center", gap: 14 },
   areaIcon: { width: 48, height: 48, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  areaIconText: { fontSize: 24 },
   areaCopy: { flex: 1, gap: 4 },
   areaTitle: { fontSize: 16, fontWeight: "800" },
   bullet: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
-  bulletMark: { fontSize: 16, lineHeight: 21 },
+  bulletMark: { lineHeight: 21 },
   bulletText: { flex: 1 },
   actions: { gap: 4 },
 });

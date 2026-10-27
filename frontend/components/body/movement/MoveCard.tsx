@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 
+import { AppIcon } from "../../common/AppIcon";
 import { mentalStyles } from "../../common/ActivityUI";
 import { COLORS } from "../../common/AppShell";
 import { Move, PAIN_REMINDER } from "./moves";
@@ -36,9 +37,7 @@ export function MoveCard({
         {extra && <Text style={mentalStyles.muted}>{extra}</Text>}
       </View>
       <View style={[styles.illustration, { backgroundColor: soft }]}>
-        <Text style={styles.icon} accessibilityElementsHidden importantForAccessibility="no">
-          {move.icon}
-        </Text>
+        <AppIcon name={move.icon} size={56} color={color} />
       </View>
       <Text accessibilityRole="header" style={styles.name}>
         {move.name}
@@ -61,7 +60,7 @@ export function MoveCard({
 export function PainReminder() {
   return (
     <View style={styles.reminder}>
-      <Text style={styles.reminderText}>⚠️ {PAIN_REMINDER}</Text>
+      <Text style={styles.reminderText}><AppIcon name="alert-outline" size={13} color="#6B4A00" /> {PAIN_REMINDER}</Text>
     </View>
   );
 }
@@ -79,7 +78,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  icon: { fontSize: 54 },
   name: { color: COLORS.ink, fontSize: 21, fontWeight: "800", textAlign: "center" },
   start: { borderLeftWidth: 3, paddingLeft: 12, gap: 3 },
   stepRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },

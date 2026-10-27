@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 
+import { AppIcon } from "../common/AppIcon";
 import { ActivityCard, mentalStyles } from "../common/ActivityUI";
 import { COLORS } from "../common/AppShell";
 import { findSuggestion, NeedId, orderNeeds } from "./needs";
@@ -44,7 +45,7 @@ export function NeedFinder({ focus }: { focus: NeedId[] }) {
               style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && styles.pressed]}
             >
               <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                {item.icon} {item.label}
+                <AppIcon name={item.icon} size={15} color={active ? COLORS.white : COLORS.teal} /> {item.label}
               </Text>
             </Pressable>
           );

@@ -59,7 +59,7 @@ export function LetterToPastSelf(props: ActivityProps) {
           ],
         }}
         completion={{
-          badge: "✉",
+          badge: "email-outline",
           title: "Letter written",
           message: "Speaking to yourself with kindness is a skill, and you just practised it. Your words stay with you, not in the app.",
         }}
@@ -143,7 +143,7 @@ export function LessonsNotLabels(props: ActivityProps) {
         ],
       }}
       completion={{
-        badge: "✎",
+        badge: "pencil-outline",
         title: "Label turned into a lesson",
         message: "Mistakes are how everyone learns. Noticing the lesson, without the label, is a real act of self-acceptance.",
       }}

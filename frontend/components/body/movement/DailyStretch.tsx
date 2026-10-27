@@ -12,6 +12,7 @@ import {
   SessionTimer,
   useSessionTimer,
 } from "../../common/ActivityUI";
+import { AppIcon } from "../../common/AppIcon";
 import { COLORS } from "../../common/AppShell";
 import { MoveCard, PainReminder } from "./MoveCard";
 import { STRETCH_ROUTINES } from "./moves";
@@ -55,7 +56,7 @@ export function DailyStretch({ color, soft, onExit }: ActivityProps) {
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="🙆"
+          badge="human-handsup"
           title="Routine complete"
           message="Nice work taking a few minutes for yourself. Notice how your body feels now."
           color={color}
@@ -93,7 +94,7 @@ export function DailyStretch({ color, soft, onExit }: ActivityProps) {
           </Text>
           {routine.moves.map((item, index) => (
             <Text key={`${item.id}-${index}`} style={mentalStyles.body}>
-              {item.icon}  {item.name}
+              <AppIcon name={item.icon} size={16} color={color} />  {item.name}
             </Text>
           ))}
         </View>

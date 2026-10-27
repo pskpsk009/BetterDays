@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AppIcon } from "../common/AppIcon";
 import { mentalStyles, SelectionChip } from "../common/ActivityUI";
 import { COLORS } from "../common/AppShell";
 import { formatNumber, PeriodId, PERIODS, relativeDay, Trend } from "./progressMath";
@@ -235,7 +236,7 @@ export function EmptyState({
 }) {
   return (
     <View style={[styles.empty, compact && styles.emptyCompact]} accessible accessibilityLabel={`${title}. ${message}`}>
-      <Text style={styles.emptyIcon}>🌱</Text>
+      <AppIcon name="sprout-outline" size={24} color={COLORS.teal} />
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={[mentalStyles.muted, styles.center]}>{message}</Text>
     </View>
@@ -396,7 +397,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   emptyCompact: { paddingVertical: 14 },
-  emptyIcon: { fontSize: 22 },
   emptyTitle: { color: COLORS.ink, fontSize: 14, fontWeight: "800" },
   barRow: { gap: 5 },
   barLabels: { flexDirection: "row", justifyContent: "space-between", gap: 8 },

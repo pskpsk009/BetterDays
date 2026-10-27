@@ -52,7 +52,7 @@ export function StrengthsGarden(props: ActivityProps) {
           `Look for one small chance to use “${label}” this week. "Grow a strength" can give you a daily challenge for it.`
         }
         completion={{
-          badge: "✿",
+          badge: "flower-outline",
           title: "Garden planted",
           message: "You named real strengths. On harder days, it can help to come back and remember them.",
         }}
@@ -70,9 +70,9 @@ export function StrengthsGarden(props: ActivityProps) {
         Everyone has strengths. Plant yours, grow one a little more, or notice them in the people around you.
       </Text>
       <Text style={mentalStyles.label}>WHAT WOULD YOU LIKE TO DO?</Text>
-      <ModeCard icon="🌱" title="Plant my garden" detail="Pick the strengths you see in yourself." color={color} soft={soft} onPress={() => setMode("plant")} />
-      <ModeCard icon="💪" title="Grow a strength" detail="Get a small challenge for a strength you'd like more of." color={color} soft={soft} onPress={() => setMode("grow")} />
-      <ModeCard icon="👀" title="Spot it in others" detail="Notice who showed a strength today." color={color} soft={soft} onPress={() => setMode("spot")} />
+      <ModeCard icon="sprout-outline" title="Plant my garden" detail="Pick the strengths you see in yourself." color={color} soft={soft} onPress={() => setMode("plant")} />
+      <ModeCard icon="arm-flex-outline" title="Grow a strength" detail="Get a small challenge for a strength you'd like more of." color={color} soft={soft} onPress={() => setMode("grow")} />
+      <ModeCard icon="eye-outline" title="Spot it in others" detail="Notice who showed a strength today." color={color} soft={soft} onPress={() => setMode("spot")} />
       <SecondaryButton subtle label={`Back to ${BRANCH}`} color={COLORS.muted} onPress={onExit} />
     </View>
   );
@@ -92,7 +92,7 @@ function GrowStrength({ color, soft, onBack, onExit }: SubProps) {
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="💪"
+          badge="arm-flex-outline"
           title="Challenge accepted"
           message={`Every time you use “${strength}”, it grows a little. Come back tomorrow for a new challenge.`}
           color={color}
@@ -113,7 +113,8 @@ function GrowStrength({ color, soft, onBack, onExit }: SubProps) {
             {STRENGTHS.map((item) => (
               <SelectionChip
                 key={item.label}
-                label={`${item.icon} ${item.label}`}
+                icon={item.icon}
+                label={item.label}
                 color={color}
                 selected={false}
                 onPress={() => {
@@ -170,7 +171,7 @@ function SpotStrength({ color, soft, onBack, onExit }: SubProps) {
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="👀"
+          badge="eye-outline"
           title="Strength spotted"
           message={
             who === "Me"
@@ -192,7 +193,7 @@ function SpotStrength({ color, soft, onBack, onExit }: SubProps) {
       <QuestionCard
         stepKey={`spot-${offset}`}
         label={offset === 0 ? "Today's strength" : "Another strength"}
-        question={`Who showed ${strength.icon} ${strength.label.toLowerCase()} today?`}
+        question={`Who showed ${strength.label.toLowerCase()} today?`}
         hint={strength.note}
         color={color}
       >

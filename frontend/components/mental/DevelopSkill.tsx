@@ -14,6 +14,7 @@ import {
   SelectionChip,
   toggleItem,
 } from "../common/ActivityUI";
+import { AppIcon, IconName } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 import { DayKey, daysBetween, pickForDay, todayKey, useStoredState } from "../common/localStore";
 import {
@@ -70,10 +71,10 @@ type View_ =
   | { screen: "skill"; id: string };
 
 const MINUTES = [10, 20, 30, 45];
-const FEELS: { id: Feel; label: string }[] = [
-  { id: "easy", label: "😌 Easy" },
-  { id: "okay", label: "🙂 Okay" },
-  { id: "hard", label: "😤 Hard" },
+const FEELS: { id: Feel; label: string; icon: IconName }[] = [
+  { id: "easy", label: "Easy", icon: "emoticon-outline" },
+  { id: "okay", label: "Okay", icon: "emoticon-happy-outline" },
+  { id: "hard", label: "Hard", icon: "emoticon-frown-outline" },
 ];
 
 function stepsFor(skill: Pick<SavedSkill, "name" | "mode" | "level" | "areaId">): SkillStep[] {
@@ -159,7 +160,7 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
           return (
             <PathCard
               key={item.id}
-              icon={item.mode === "polish" ? "🎯" : "🌱"}
+              icon={item.mode === "polish" ? "target" : "sprout-outline"}
               title={item.name}
               detail={`${item.mode === "polish" ? "Polishing" : "Starting"} · Step ${Math.min(item.step + 1, total)} of ${total} · ${item.sessions} session${item.sessions === 1 ? "" : "s"}`}
               color={color}
@@ -226,7 +227,7 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
         </Text>
         <Text style={mentalStyles.label}>DO YOU HAVE A SKILL IN MIND?</Text>
         <PathCard
-          icon="🎯"
+          icon="target"
           title="Yes, I have a skill to polish"
           detail="Get a step-by-step plan to get better at it."
           color={color}
@@ -237,7 +238,7 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
           }}
         />
         <PathCard
-          icon="🧭"
+          icon="compass-outline"
           title="Not yet, help me find one"
           detail="Explore what you enjoy and pick a skill to start."
           color={color}
@@ -264,7 +265,8 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
             {SKILL_AREAS.map((item) => (
               <SelectionChip
                 key={item.id}
-                label={`${item.icon} ${item.label}`}
+                icon={item.icon}
+                label={item.label}
                 color={color}
                 selected={area?.id === item.id}
                 onPress={() => setArea(area?.id === item.id ? null : item)}
@@ -324,7 +326,8 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
             {INTERESTS.map((item) => (
               <SelectionChip
                 key={item.id}
-                label={`${item.icon} ${item.label}`}
+                icon={item.icon}
+                label={item.label}
                 color={color}
                 selected={interests.includes(item.id)}
                 onPress={() => setInterests(toggleItem(interests, item.id))}
@@ -359,7 +362,7 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
             />
           ))}
           <PathCard
-            icon="✏️"
+            icon="pencil-outline"
             title="Something else"
             detail="Type a skill you'd like to start."
             color={color}
@@ -393,7 +396,7 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge={mode === "polish" ? "🎯" : "🌱"}
+          badge={mode === "polish" ? "target" : "sprout-outline"}
           title={mode === "polish" ? "Your plan is ready" : "Ready to start"}
           message={`Save ${skill} to get a practice idea each day, log your sessions, and move through the steps at your own pace.`}
           color={color}
@@ -416,7 +419,7 @@ export function DevelopSkill({ color, soft, onExit }: ActivityProps) {
           </View>
         </CompletionScreen>
         <Text style={[mentalStyles.muted, styles.center]}>
-          🔒 Saved skills stay on this phone only. You can delete them at any time.
+          <AppIcon name="lock-outline" size={14} color={COLORS.muted} /> Saved skills stay on this phone only. You can delete them at any time.
         </Text>
       </View>
     );
@@ -574,7 +577,7 @@ function SkillPage({
         <Animated.View entering={FadeIn.duration(220)} style={[mentalStyles.card, styles.panel]}>
           {isLastStep ? (
             <>
-              <Text style={styles.panelTitle}>Round complete 🎉</Text>
+              <Text style={styles.panelTitle}>Round complete <AppIcon name="party-popper" size={18} color={color} /></Text>
               <Text style={mentalStyles.body}>
                 You&apos;ve worked through every step. Start a new round with a fresh focus?
               </Text>
@@ -623,6 +626,7 @@ function SkillPage({
             {FEELS.map((item) => (
               <SelectionChip
                 key={item.id}
+                icon={item.icon}
                 label={item.label}
                 color={color}
                 selected={feel === item.id}
@@ -694,7 +698,7 @@ function PathCard({
   selected = false,
   onPress,
 }: {
-  icon?: string;
+  icon?: IconName;
   title: string;
   detail: string;
   color: string;
@@ -715,7 +719,7 @@ function PathCard({
     >
       {icon && (
         <View style={[styles.pathIcon, { backgroundColor: soft }]}>
-          <Text style={styles.pathIconText}>{icon}</Text>
+          <AppIcon name={icon} size={24} color={color} />
         </View>
       )}
       <View style={styles.pathCopy}>
@@ -740,7 +744,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   pathIcon: { width: 48, height: 48, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  pathIconText: { fontSize: 24 },
   pathCopy: { flex: 1, gap: 4 },
   pathTitle: { color: COLORS.ink, fontSize: 16, fontWeight: "800" },
   skillBadge: { alignSelf: "flex-start", paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },

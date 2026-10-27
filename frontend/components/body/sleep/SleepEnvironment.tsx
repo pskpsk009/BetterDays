@@ -1,43 +1,44 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AppIcon } from "../../common/AppIcon";
 import { mentalStyles, toggleItem } from "../../common/ActivityUI";
 import { COLORS } from "../../common/AppShell";
 
 const TIPS = [
   {
     id: "dark",
-    icon: "🌑",
+    icon: "lightbulb-off-outline",
     tip: "Keep the bedroom dark",
     why: "Darkness helps your body recognise it's night. Curtains, blinds, or an eye mask can block out light.",
   },
   {
     id: "quiet",
-    icon: "🤫",
+    icon: "volume-off",
     tip: "Reduce noise and distractions",
     why: "Sudden sounds can disturb rest. Earplugs, a fan, or soft steady background sound may help.",
   },
   {
     id: "cool",
-    icon: "❄️",
+    icon: "snowflake",
     tip: "Keep the room comfortably cool",
     why: "Many people sleep better in a slightly cool room. Light layers make it easy to adjust.",
   },
   {
     id: "bedding",
-    icon: "🛏️",
+    icon: "bed-outline",
     tip: "Use comfortable bedding",
     why: "A pillow, mattress, and blankets that feel comfortable to you make it easier to settle.",
   },
   {
     id: "screens",
-    icon: "📵",
+    icon: "cellphone-off",
     tip: "Reduce notifications and screens before bed",
     why: "Silencing notifications and putting screens away a little earlier lowers late-night stimulation.",
   },
   {
     id: "consistent",
-    icon: "🔁",
+    icon: "repeat",
     tip: "Keep your sleep space consistent",
     why: "When your bed and room feel familiar each night, your body learns that this is where you rest.",
   },
@@ -61,7 +62,7 @@ export function SleepEnvironmentTips({ color, soft }: { color: string; soft: str
           <View key={item.id} style={[mentalStyles.card, styles.card, isTrying && { borderColor: color }]}>
             <View style={styles.top}>
               <View style={[styles.icon, { backgroundColor: soft }]}>
-                <Text style={styles.iconText}>{item.icon}</Text>
+                <AppIcon name={item.icon} size={22} color={color} />
               </View>
               <Text style={styles.tip}>{item.tip}</Text>
             </View>
@@ -109,7 +110,6 @@ const styles = StyleSheet.create({
   card: { gap: 10 },
   top: { flexDirection: "row", alignItems: "center", gap: 12 },
   icon: { width: 46, height: 46, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  iconText: { fontSize: 22 },
   tip: { flex: 1, color: COLORS.ink, fontSize: 16, fontWeight: "800", lineHeight: 22 },
   tryButton: {
     alignSelf: "flex-start",

@@ -14,6 +14,7 @@ import {
   SupportNote,
   toggleItem,
 } from "../common/ActivityUI";
+import { AppIcon } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 
 // Pause Before Reacting: nobody opens an app mid-argument, so this looks back
@@ -36,11 +37,11 @@ const MOMENTS = [
 const FEELINGS = ["Annoyed", "Frustrated", "Angry", "Hurt", "Disappointed", "Embarrassed", "Stressed"];
 
 const LEVELS = [
-  { icon: "🙂", label: "A little" },
-  { icon: "😕", label: "Some" },
-  { icon: "😠", label: "A lot" },
-  { icon: "😤", label: "Very strong" },
-  { icon: "🌋", label: "Boiling" },
+  { icon: "emoticon-happy-outline", label: "A little" },
+  { icon: "emoticon-neutral-outline", label: "Some" },
+  { icon: "emoticon-angry-outline", label: "A lot" },
+  { icon: "fire", label: "Very strong" },
+  { icon: "volcano-outline", label: "Boiling" },
 ];
 
 // `pause: true` marks reactions that already include a pause.
@@ -58,18 +59,18 @@ const REACTIONS = [
 ];
 
 const OUTCOMES = [
-  { id: "better", icon: "🌤", label: "Better than I expected" },
-  { id: "okay", icon: "⛅", label: "Okay" },
-  { id: "worse", icon: "🌧", label: "Worse than I wanted" },
+  { id: "better", icon: "weather-sunny", label: "Better than I expected" },
+  { id: "okay", icon: "weather-partly-cloudy", label: "Okay" },
+  { id: "worse", icon: "weather-pouring", label: "Worse than I wanted" },
 ] as const;
 
 const PAUSES = [
-  { icon: "🌬️", label: "Take 3 slow breaths" },
-  { icon: "🚶", label: "Step away for 5 minutes" },
-  { icon: "⏳", label: "Count to 10 before replying" },
-  { icon: "💧", label: "Get a drink of water" },
-  { icon: "🎧", label: "Listen to one song" },
-  { icon: "💬", label: "Talk to someone first" },
+  { icon: "weather-windy", label: "Take 3 slow breaths" },
+  { icon: "walk", label: "Step away for 5 minutes" },
+  { icon: "timer-sand", label: "Count to 10 before replying" },
+  { icon: "water-outline", label: "Get a drink of water" },
+  { icon: "headphones", label: "Listen to one song" },
+  { icon: "chat-outline", label: "Talk to someone first" },
 ];
 
 const RESPONSES = [
@@ -122,7 +123,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="‖"
+          badge="pause-circle-outline"
           title="Pause planned"
           message="Looking back is how the pause gets easier. Next time it might come a little more naturally."
           color={color}
@@ -137,9 +138,9 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
   // Replay: the same moment, with the pause in it.
   if (step === 5) {
     const nodes = [
-      { label: "WHEN", text: what ?? "", icon: "⚡" },
+      { label: "WHEN", text: what ?? "", icon: "lightning-bolt-outline" },
       { label: "I'LL PAUSE", text: pause ?? "", icon: PAUSES.find((item) => item.label === pause)?.icon ?? "‖" },
-      { label: "THEN I'LL", text: response ?? "", icon: "➜" },
+      { label: "THEN I'LL", text: response ?? "", icon: "arrow-right" },
     ];
     return (
       <View style={mentalStyles.screen}>
@@ -150,7 +151,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
             <Animated.View key={node.label} entering={FadeInDown.delay(index * 350).duration(300)} style={styles.nodeRow}>
               <View style={styles.nodeRail}>
                 <View style={[styles.nodeDot, { backgroundColor: index === 1 ? color : soft, borderColor: color }]}>
-                  <Text style={styles.nodeIcon}>{node.icon}</Text>
+                  <AppIcon name={node.icon} size={19} color={index === 1 ? COLORS.white : color} />
                 </View>
                 {index < nodes.length - 1 && <View style={[styles.nodeLine, { backgroundColor: color }]} />}
               </View>
@@ -181,7 +182,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
         <Animated.View entering={FadeIn.duration(260)} style={[styles.feedback, { backgroundColor: soft }]}>
           {pausesTaken.length > 0 ? (
             <>
-              <Text style={styles.feedbackTitle}>🎉 You paused</Text>
+              <Text style={styles.feedbackTitle}><AppIcon name="party-popper" size={19} color={color} /> You paused</Text>
               <Text style={mentalStyles.body}>
                 You {pausesTaken.map((item) => item.label.toLowerCase()).join(" and ")}. That&apos;s exactly the skill, even when the feeling was {LEVELS[level ?? 0].label.toLowerCase()}.
                 {outcome === "better" ? " And it turned out better than you expected." : ""}
@@ -189,7 +190,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
             </>
           ) : (
             <>
-              <Text style={styles.feedbackTitle}>⏪ Let&apos;s rewind</Text>
+              <Text style={styles.feedbackTitle}><AppIcon name="rewind" size={19} color={color} /> Let&apos;s rewind</Text>
               <Text style={mentalStyles.body}>
                 Reacting fast is really common when something hits hard. It doesn&apos;t mean anything is wrong with you. Let&apos;s find a pause that could fit.
               </Text>
@@ -215,7 +216,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={styles.pauseIcon}>{item.icon}</Text>
+                <AppIcon name={item.icon} size={24} color={pause === item.label ? color : COLORS.ink} />
                 <Text style={[styles.pauseText, pause === item.label && { color }]}>{item.label}</Text>
               </Pressable>
             ))}
@@ -255,7 +256,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={styles.outcomeIcon}>{option.icon}</Text>
+                <AppIcon name={option.icon} size={22} color={outcome === option.id ? color : COLORS.ink} />
                 <Text style={[styles.outcomeText, outcome === option.id && { color }]}>{option.label}</Text>
               </Pressable>
             ))}
@@ -320,7 +321,7 @@ export function PauseBeforeReacting({ color, soft, onExit }: ActivityProps) {
                       filled && { backgroundColor: color, opacity: 0.35 + index * 0.16 },
                     ]}
                   />
-                  <Text style={styles.meterIcon}>{item.icon}</Text>
+                  <AppIcon name={item.icon} size={20} color={level === index ? color : COLORS.ink} />
                   <Text style={[styles.meterLabel, level === index && { color }]}>{item.label}</Text>
                 </Pressable>
               );
@@ -396,7 +397,6 @@ const styles = StyleSheet.create({
   meter: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 6, paddingTop: 6 },
   meterStep: { flex: 1, alignItems: "center", gap: 4 },
   meterBar: { width: "100%", borderRadius: 10, borderWidth: 1.5 },
-  meterIcon: { fontSize: 20 },
   meterLabel: { color: COLORS.muted, fontSize: 11, fontWeight: "700", textAlign: "center" },
   outcomes: { gap: 8 },
   outcome: {
@@ -410,7 +410,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.white,
   },
-  outcomeIcon: { fontSize: 22 },
   outcomeText: { color: COLORS.ink, fontSize: 15, fontWeight: "700" },
   feedback: { padding: 18, borderRadius: 18, gap: 8 },
   feedbackTitle: { color: COLORS.ink, fontSize: 19, fontWeight: "800" },
@@ -426,14 +425,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.white,
   },
-  pauseIcon: { fontSize: 24 },
   pauseText: { color: COLORS.ink, fontSize: 13, fontWeight: "700", lineHeight: 18 },
   after: { gap: 8, marginTop: 6 },
   timeline: { gap: 0 },
   nodeRow: { flexDirection: "row", gap: 12 },
   nodeRail: { alignItems: "center", width: 44 },
   nodeDot: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  nodeIcon: { fontSize: 19 },
   nodeLine: { width: 3, flex: 1, minHeight: 18, opacity: 0.4 },
   nodeCard: {
     flex: 1,

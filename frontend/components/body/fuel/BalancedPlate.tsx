@@ -18,6 +18,7 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from "../../common/ActivityUI";
+import { AppIcon } from "../../common/AppIcon";
 import { COLORS, useScrollLock } from "../../common/AppShell";
 import {
   describeComposition,
@@ -376,7 +377,7 @@ function DraggableFoodCard({
       ]}
     >
       <View style={[styles.swatch, { backgroundColor: info.color }]}>
-        <Text style={styles.foodIcon}>{info.icon}</Text>
+        <AppIcon name={info.icon} size={22} color={COLORS.white} />
       </View>
       <View style={styles.foodCopy}>
         <Text style={[styles.foodName, selected && { color }]}>{info.name}</Text>
@@ -415,7 +416,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
   },
   swatch: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  foodIcon: { fontSize: 22 },
   foodCopy: { flex: 1, gap: 2 },
   foodName: { color: COLORS.ink, fontSize: 15, fontWeight: "800" },
   feedback: { gap: 10 },

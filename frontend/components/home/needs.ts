@@ -1,3 +1,5 @@
+import { IconName } from "../common/AppIcon";
+
 import type { ActivityInfo, BranchInfo } from "../common/ActivityUI";
 import { BODY_BRANCHES, BodyActivityId } from "../body/branches";
 import { EMOTIONAL_BRANCHES, EmotionalActivityId } from "../emotional/branches";
@@ -13,20 +15,20 @@ type ActivityId = MentalActivityId | EmotionalActivityId | BodyActivityId;
 
 export type Need = {
   id: NeedId;
-  icon: string;
+  icon: IconName;
   label: string;
   picks: [ActivityId, ActivityId, ActivityId];
 };
 
 export const NEEDS: Need[] = [
-  { id: "stressed", icon: "😣", label: "Stressed", picks: ["breathing-bubble", "calm-down-toolkit", "senses-grounding"] },
-  { id: "low", icon: "😔", label: "Feeling low", picks: ["little-moments", "strengths-garden", "support-circle"] },
-  { id: "focus", icon: "😵", label: "Can't focus", picks: ["focus-sprint", "distraction-tracker", "target-tap"] },
-  { id: "setback", icon: "🌧", label: "Something went wrong", picks: ["plan-b", "my-next-step", "lessons-not-labels"] },
-  { id: "choice", icon: "🤔", label: "Facing a choice", picks: ["values-compass", "what-can-i-control", "one-small-step"] },
-  { id: "people", icon: "💬", label: "People stuff", picks: ["conversation-builder", "healthy-boundaries", "walk-in-their-shoes"] },
-  { id: "grow", icon: "🌱", label: "Want to grow", picks: ["develop-your-skill", "joy-explorer", "future-me"] },
-  { id: "energy", icon: "😴", label: "Tired or sluggish", picks: ["schedule-guidance", "hydration", "daily-stretch"] },
+  { id: "stressed", icon: "emoticon-frown-outline", label: "Stressed", picks: ["breathing-bubble", "calm-down-toolkit", "senses-grounding"] },
+  { id: "low", icon: "emoticon-sad-outline", label: "Feeling low", picks: ["little-moments", "strengths-garden", "support-circle"] },
+  { id: "focus", icon: "emoticon-confused-outline", label: "Can't focus", picks: ["focus-sprint", "distraction-tracker", "target-tap"] },
+  { id: "setback", icon: "weather-pouring", label: "Something went wrong", picks: ["plan-b", "my-next-step", "lessons-not-labels"] },
+  { id: "choice", icon: "head-question-outline", label: "Facing a choice", picks: ["values-compass", "what-can-i-control", "one-small-step"] },
+  { id: "people", icon: "chat-outline", label: "People stuff", picks: ["conversation-builder", "healthy-boundaries", "walk-in-their-shoes"] },
+  { id: "grow", icon: "sprout-outline", label: "Want to grow", picks: ["develop-your-skill", "joy-explorer", "future-me"] },
+  { id: "energy", icon: "sleep", label: "Tired or sluggish", picks: ["schedule-guidance", "hydration", "daily-stretch"] },
 ];
 
 export type Suggestion = { tab: "mental" | "body"; activity: ActivityInfo; branch: BranchInfo };

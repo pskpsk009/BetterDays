@@ -19,25 +19,25 @@ export function CalmDownToolkit(props: ActivityProps) {
         {
           title: "Breathe and ground",
           options: [
-            { label: "Slow breathing", icon: "🌬️", note: "Breathe in for 4, out for 6. Repeat a few times." },
-            { label: "5-4-3-2-1 grounding", icon: "🖐️", note: "Name 5 things you see, 4 you hear, 3 you can touch, 2 you smell, 1 you taste." },
-            { label: "Cold water", icon: "💧", note: "Splash cool water on your face or hold something cold." },
+            { label: "Slow breathing", icon: "weather-windy", note: "Breathe in for 4, out for 6. Repeat a few times." },
+            { label: "5-4-3-2-1 grounding", icon: "hand-back-left-outline", note: "Name 5 things you see, 4 you hear, 3 you can touch, 2 you smell, 1 you taste." },
+            { label: "Cold water", icon: "water-outline", note: "Splash cool water on your face or hold something cold." },
           ],
         },
         {
           title: "Take a break",
           options: [
-            { label: "Step away", icon: "🚪", note: "Leave the situation for a few minutes and come back when ready." },
-            { label: "Move my body", icon: "🚶", note: "A short walk or stretch can release tension." },
-            { label: "Listen to music", icon: "🎧", note: "Put on a song that helps you settle." },
+            { label: "Step away", icon: "door-open", note: "Leave the situation for a few minutes and come back when ready." },
+            { label: "Move my body", icon: "walk", note: "A short walk or stretch can release tension." },
+            { label: "Listen to music", icon: "headphones", note: "Put on a song that helps you settle." },
           ],
         },
         {
           title: "Connect and express",
           options: [
-            { label: "Talk to someone", icon: "💬", note: "Share how you feel with someone you trust." },
-            { label: "Write it out", icon: "📝", note: "Put your thoughts on paper, then decide what to do next." },
-            { label: "Name the feeling", icon: "🏷️", note: "Saying “I feel frustrated” can make it feel more manageable." },
+            { label: "Talk to someone", icon: "chat-outline", note: "Share how you feel with someone you trust." },
+            { label: "Write it out", icon: "note-edit-outline", note: "Put your thoughts on paper, then decide what to do next." },
+            { label: "Name the feeling", icon: "tag-outline", note: "Saying “I feel frustrated” can make it feel more manageable." },
           ],
         },
       ]}
@@ -50,7 +50,7 @@ export function CalmDownToolkit(props: ActivityProps) {
         `Next time feelings run high, try “${label}”. If it doesn't help, another tool from your kit might.`
       }
       completion={{
-        badge: "❖",
+        badge: "toolbox-outline",
         title: "Toolkit ready",
         message: "Calming down isn't about stopping feelings; it's about giving yourself space to respond well.",
       }}
@@ -128,7 +128,7 @@ export function ChooseYourResponse(props: ActivityProps) {
         },
       ]}
       completion={{
-        badge: "⑂",
+        badge: "source-fork",
         title: "Responses explored",
         message: "There's rarely one perfect response. Knowing your options helps you choose in the moment.",
       }}

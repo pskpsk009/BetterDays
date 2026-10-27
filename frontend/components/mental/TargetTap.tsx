@@ -129,7 +129,7 @@ export function TargetTap({
       <View style={mentalStyles.screen}>
         {header}
         <CompletionScreen
-          badge="◎"
+          badge="target"
           title="Round over"
           message={`${level.name} level. Nice work keeping your eyes on the targets.`}
           color={color}

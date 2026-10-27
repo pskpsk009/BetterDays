@@ -14,6 +14,7 @@ import {
   SupportNote,
   toggleItem,
 } from "./ActivityUI";
+import { AppIcon } from "./AppIcon";
 import { COLORS } from "./AppShell";
 
 // Reusable, content-driven activity templates for the Mental and Emotional
@@ -310,7 +311,7 @@ export function ChoiceExplorer(
   function addCustom() {
     const label = custom.trim();
     if (!label || isPicked(label) || full) return;
-    setPicked([...picked, { label, icon: "✦", note: customNote ?? "Something that matters to you." }]);
+    setPicked([...picked, { label, icon: "star-four-points-outline", note: customNote ?? "Something that matters to you." }]);
     setCustom("");
   }
 
@@ -327,7 +328,7 @@ export function ChoiceExplorer(
           <Text style={mentalStyles.body}>{resultIntro}</Text>
           {picked.map((item) => (
             <View key={item.label} style={styles.resultRow}>
-              <Text style={styles.resultIcon}>{item.icon}</Text>
+              <AppIcon name={item.icon} size={22} color={color} style={styles.resultIcon} />
               <View style={styles.optionCopy}>
                 <Text style={styles.optionLabel}>{item.label}</Text>
                 <Text style={mentalStyles.muted}>{item.note}</Text>
@@ -342,7 +343,8 @@ export function ChoiceExplorer(
               {picked.map((item) => (
                 <SelectionChip
                   key={item.label}
-                  label={`${item.icon} ${item.label}`}
+                  icon={item.icon}
+                  label={item.label}
                   color={color}
                   selected={favourite === item.label}
                   onPress={() => setFavourite(favourite === item.label ? null : item.label)}
@@ -390,7 +392,8 @@ export function ChoiceExplorer(
             {group.options.map((option) => (
               <SelectionChip
                 key={option.label}
-                label={`${option.icon} ${option.label}`}
+                icon={option.icon}
+                label={option.label}
                 color={color}
                 selected={isPicked(option.label)}
                 onPress={() => toggle(option)}
@@ -402,7 +405,7 @@ export function ChoiceExplorer(
       {picked
         .filter((item) => !groups.some((group) => group.options.some((option) => option.label === item.label)))
         .map((item) => (
-          <SelectionChip key={item.label} label={`✦ ${item.label}`} color={color} selected onPress={() => toggle(item)} />
+          <SelectionChip key={item.label} icon="star-four-points-outline" label={item.label} color={color} selected onPress={() => toggle(item)} />
         ))}
       {customPlaceholder && (
         <View style={styles.customRow}>
@@ -749,7 +752,7 @@ const styles = StyleSheet.create({
   customInput: { flex: 1, minHeight: 48 },
   resultCard: { gap: 10, padding: 16, borderRadius: 18 },
   resultRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
-  resultIcon: { fontSize: 22, width: 30, textAlign: "center" },
+  resultIcon: { width: 30, textAlign: "center" },
   bigStep: { color: COLORS.ink, fontSize: 19, fontWeight: "800", lineHeight: 25 },
   scenarioQuestion: { fontWeight: "700" },
   takeaway: { fontStyle: "italic" },

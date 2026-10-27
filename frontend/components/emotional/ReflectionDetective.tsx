@@ -141,7 +141,7 @@ export function ReflectionDetective({
       <View style={mentalStyles.screen}>
         <ActivityHeader eyebrow="Self-Awareness" title="Reflection Detective" color={color} />
         <CompletionScreen
-          badge="🔍"
+          badge="magnify"
           title="Case notes complete"
           message="Looking at a moment from a few angles takes practice. You did the detective work. Come back whenever another case comes up."
           color={color}

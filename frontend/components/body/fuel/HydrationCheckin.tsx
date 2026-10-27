@@ -10,6 +10,7 @@ import {
   SecondaryButton,
   SelectionChip,
 } from "../../common/ActivityUI";
+import { AppIcon } from "../../common/AppIcon";
 import { COLORS } from "../../common/AppShell";
 
 const SIZES = [150, 250, 350, 500];
@@ -132,7 +133,7 @@ export function HydrationCheckin({ color, soft }: ActivityProps) {
       </View>
 
       <View style={[styles.message, { backgroundColor: soft }]}>
-        <Text style={mentalStyles.body}>💧 {message}</Text>
+        <Text style={mentalStyles.body}><AppIcon name="water-outline" size={16} color={color} /> {message}</Text>
       </View>
 
       <Text style={[mentalStyles.muted, styles.center]}>

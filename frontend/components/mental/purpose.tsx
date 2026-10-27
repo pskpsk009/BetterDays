@@ -50,7 +50,7 @@ export function FutureMe(props: ActivityProps) {
         ],
       }}
       completion={{
-        badge: "→",
+        badge: "arrow-right-circle-outline",
         title: "A glimpse of Future Me",
         message: "Hopes can change as you grow. Imagining what matters is a great place to start.",
       }}
@@ -92,7 +92,7 @@ export function OneSmallStep(props: ActivityProps) {
         "Progress isn't always a straight line. Coming back to a goal is part of it.",
       ]}
       completion={{
-        badge: "↗",
+        badge: "stairs-up",
         title: "Step chosen",
         message: "Every meaningful journey is made of small steps like this one.",
       }}

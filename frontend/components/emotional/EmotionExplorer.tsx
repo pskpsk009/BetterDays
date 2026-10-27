@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { AppIcon } from "../common/AppIcon";
 import { COLORS } from "../common/AppShell";
 import {
   ActivityHeader,
@@ -15,14 +16,14 @@ import {
 } from "../common/ActivityUI";
 
 const EMOTIONS = [
-  { name: "Happy", face: "😊", feelings: ["Content", "Grateful", "Proud", "Relieved", "Cheerful"] },
-  { name: "Sad", face: "😢", feelings: ["Lonely", "Disappointed", "Down", "Hurt", "Homesick"] },
-  { name: "Angry", face: "😠", feelings: ["Irritated", "Annoyed", "Resentful", "Offended", "Heated"] },
-  { name: "Anxious", face: "😟", feelings: ["Worried", "Nervous", "Uneasy", "Overwhelmed", "Tense"] },
-  { name: "Calm", face: "😌", feelings: ["Relaxed", "Peaceful", "Settled", "At ease", "Steady"] },
-  { name: "Confused", face: "😕", feelings: ["Unsure", "Torn", "Lost", "Puzzled", "Mixed-up"] },
-  { name: "Excited", face: "🤩", feelings: ["Eager", "Hopeful", "Energised", "Inspired", "Curious"] },
-  { name: "Frustrated", face: "😤", feelings: ["Stuck", "Impatient", "Fed up", "Restless", "Blocked"] },
+  { name: "Happy", face: "emoticon-happy-outline", feelings: ["Content", "Grateful", "Proud", "Relieved", "Cheerful"] },
+  { name: "Sad", face: "emoticon-cry-outline", feelings: ["Lonely", "Disappointed", "Down", "Hurt", "Homesick"] },
+  { name: "Angry", face: "emoticon-angry-outline", feelings: ["Irritated", "Annoyed", "Resentful", "Offended", "Heated"] },
+  { name: "Anxious", face: "emoticon-sad-outline", feelings: ["Worried", "Nervous", "Uneasy", "Overwhelmed", "Tense"] },
+  { name: "Calm", face: "emoticon-outline", feelings: ["Relaxed", "Peaceful", "Settled", "At ease", "Steady"] },
+  { name: "Confused", face: "emoticon-confused-outline", feelings: ["Unsure", "Torn", "Lost", "Puzzled", "Mixed-up"] },
+  { name: "Excited", face: "emoticon-excited-outline", feelings: ["Eager", "Hopeful", "Energised", "Inspired", "Curious"] },
+  { name: "Frustrated", face: "emoticon-frown-outline", feelings: ["Stuck", "Impatient", "Fed up", "Restless", "Blocked"] },
 ];
 
 const INTENSITY_LABELS = ["A little", "Some", "Moderate", "Strong", "Very strong"];
@@ -126,7 +127,7 @@ export function EmotionExplorer({
         aside={step >= 3 ? "Optional" : undefined}
         question={
           step === 1 && selected
-            ? `${selected.face} ${selected.name}. Can you get more specific?`
+            ? `${selected.name}. Can you get more specific?`
             : QUESTIONS[step].question
         }
         hint={QUESTIONS[step].hint}
@@ -149,7 +150,7 @@ export function EmotionExplorer({
                     pressed && styles.pressed,
                   ]}
                 >
-                  <Text style={styles.emotionFace}>{item.face}</Text>
+                  <AppIcon name={item.face} size={32} color={isSelected ? color : COLORS.ink} />
                   <Text style={[styles.emotionName, isSelected && { color }]}>
                     {item.name}
                   </Text>
@@ -267,7 +268,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.white,
   },
-  emotionFace: { fontSize: 30 },
   emotionName: { color: COLORS.ink, fontSize: 14, fontWeight: "700" },
   summaryHero: { alignItems: "center", gap: 4, paddingVertical: 6 },
   summaryFace: { fontSize: 44 },

@@ -85,7 +85,7 @@ export function BreathingBubble({
       <View style={mentalStyles.screen}>
         <ActivityHeader eyebrow="Live the Life" title="Breathing Bubble" color={color} />
         <CompletionScreen
-          badge="○"
+          badge="lungs"
           title="Nicely done"
           message={`You gave yourself ${formatClock(elapsedMs / 1000)} of slow breathing. Take a moment to notice how you feel before moving on.`}
           color={color}

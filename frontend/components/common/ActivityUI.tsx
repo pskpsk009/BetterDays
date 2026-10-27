@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 
+import { AppIcon, IconName, isIconName } from "./AppIcon";
 import { COLORS } from "./AppShell";
 import { elapsedFor, formatClock } from "./time";
 
@@ -11,7 +12,7 @@ export type ActivityInfo = {
   id: string;
   title: string;
   detail: string;
-  glyph: string;
+  glyph: IconName;
 };
 
 export type BranchInfo = {
@@ -86,9 +87,7 @@ export function ActivityCard({
       ]}
     >
       <View style={[styles.activityGlyph, { backgroundColor: branch.soft }]}>
-        <Text style={[styles.activityGlyphText, { color: branch.color }]}>
-          {activity.glyph}
-        </Text>
+        <AppIcon name={activity.glyph} size={24} color={branch.color} />
       </View>
       <View style={styles.cardCopy}>
         <Text style={styles.activityTitle}>{activity.title}</Text>
@@ -217,11 +216,13 @@ export function SecondaryButton({
 
 export function SelectionChip({
   label,
+  icon,
   color,
   selected,
   onPress,
 }: {
   label: string;
+  icon?: IconName | (string & {});
   color: string;
   selected: boolean;
   onPress: () => void;
@@ -237,6 +238,7 @@ export function SelectionChip({
         pressed && styles.pressed,
       ]}
     >
+      {icon && <AppIcon name={icon} size={16} color={selected ? COLORS.white : color} />}
       <Text style={[styles.chipText, selected && { color: COLORS.white }]}>
         {label}
       </Text>
@@ -447,7 +449,11 @@ export function CompletionScreen({
       style={[mentalStyles.card, styles.completion]}
     >
       <View style={[styles.completionBadge, { backgroundColor: soft }]}>
-        <Text style={[styles.completionBadgeText, { color }]}>{badge}</Text>
+        {isIconName(badge) ? (
+          <AppIcon name={badge} size={30} color={color} />
+        ) : (
+          <Text style={[styles.completionBadgeText, { color }]}>{badge}</Text>
+        )}
       </View>
       <Text accessibilityRole="header" style={styles.completionTitle}>
         {title}
@@ -490,7 +496,7 @@ export function ModeCard({
   soft,
   onPress,
 }: {
-  icon: string;
+  icon: IconName;
   title: string;
   detail: string;
   color: string;
@@ -504,7 +510,7 @@ export function ModeCard({
       style={({ pressed }) => [mentalStyles.card, styles.modeCard, pressed && styles.cardPressed]}
     >
       <View style={[styles.modeIcon, { backgroundColor: soft }]}>
-        <Text style={styles.modeIconText}>{icon}</Text>
+        <AppIcon name={icon} size={26} color={color} />
       </View>
       <View style={styles.modeCopy}>
         <Text style={[styles.modeTitle, { color }]}>{title}</Text>
@@ -528,7 +534,7 @@ export function SavedOnDeviceNote({ what, onDelete }: { what: string; onDelete: 
   return (
     <View style={styles.savedNote}>
       <Text style={[mentalStyles.muted, styles.center]}>
-        🔒 Your {what} is saved on this phone only. It isn&apos;t sent anywhere, and you can delete it at any time.
+        <AppIcon name="lock-outline" size={14} color={COLORS.muted} /> Your {what} is saved on this phone only. It isn&apos;t sent anywhere, and you can delete it at any time.
       </Text>
       <SecondaryButton subtle label={`Delete my ${what}`} color={COLORS.muted} onPress={confirmDelete} />
     </View>
@@ -581,7 +587,6 @@ const styles = StyleSheet.create({
   savedNote: { gap: 4 },
   modeCard: { flexDirection: "row", alignItems: "center", gap: 14 },
   modeIcon: { width: 48, height: 48, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  modeIconText: { fontSize: 24 },
   modeCopy: { flex: 1, gap: 4 },
   modeTitle: { fontSize: 16, fontWeight: "800" },
   flex: { flex: 1 },
@@ -628,7 +633,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  activityGlyphText: { fontSize: 22, fontWeight: "800" },
   activityTitle: { color: COLORS.ink, fontSize: 16, fontWeight: "800" },
   backPill: {
     minHeight: 40,
@@ -659,7 +663,10 @@ const styles = StyleSheet.create({
   chip: {
     minHeight: 40,
     paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
+    gap: 6,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: COLORS.border,

@@ -1,11 +1,13 @@
+import { IconName } from "../common/AppIcon";
+
 // Plain-language summary of rule.md for users. Keep it in step with what the
 // app really does today: no claims of certification or professional approval (LR8).
 
-export type PrivacySection = { icon: string; title: string; points: string[] };
+export type PrivacySection = { icon: IconName; title: string; points: string[] };
 
 export const PRIVACY_SECTIONS: PrivacySection[] = [
   {
-    icon: "🌱",
+    icon: "sprout-outline",
     title: "What MyGrowth is",
     points: [
       "A tool for small, everyday wellbeing habits and reflection.",
@@ -14,7 +16,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     ],
   },
   {
-    icon: "📱",
+    icon: "cellphone",
     title: "What stays on this phone",
     points: [
       "Most activities save nothing. When you leave them, what you entered is gone.",
@@ -25,7 +27,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     ],
   },
   {
-    icon: "☁️",
+    icon: "cloud-lock-outline",
     title: "What goes to our server",
     points: [
       "If you make an account: your email and a secure version of your password.",
@@ -35,7 +37,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     ],
   },
   {
-    icon: "🚫",
+    icon: "cancel",
     title: "What we never do",
     points: [
       "We don't use your data for ads, sell it, or use it to profile you.",
@@ -44,7 +46,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     ],
   },
   {
-    icon: "🗑",
+    icon: "trash-can-outline",
     title: "Your choices",
     points: [
       "Delete all data in Profile removes everything on this phone, your backup, and any trails you shared.",
@@ -55,7 +57,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     ],
   },
   {
-    icon: "💛",
+    icon: "heart-outline",
     title: "If you need support",
     points: [
       "If you are in immediate danger, contact local emergency services or someone you trust right away.",
