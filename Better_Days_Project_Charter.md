@@ -37,7 +37,7 @@ As a result, users may feel overwhelmed, lose motivation, or fail to recognize g
 | Project Owner and Frontend Developer | Thura Min Tun | Product vision, requirements, scope, priorities, and timeline; mobile app screens and navigation (Expo, React Native) |
 | QA / Tester | Paing Soe Khant | Scoring, safety, requirements, test plan, and acceptance testing |
 | Backend Developer | Myint Myat Pyae Sone | Supabase database, accounts, backup, security, and data deletion |
-| Designer | Min Myat Hein | Accessible, calm, understandable user experience |
+| Documentation and Research | Min Myat Hein | User research, project documents, design documents, diagrams, and traceability from research to requirements |
 | Target Users | Students and young adults | Complete check-ins, review recommendations, track habits, and read stories |
 
 ## 5. Scope and Key Features
@@ -132,7 +132,7 @@ Profiles must use multiple focus areas, not only one total score. Safety concern
 | Product scope, priorities, timeline | Project Owner, after team discussion |
 | App screens and frontend code | Frontend Developer |
 | Database, accounts, security | Backend Developer |
-| UX and visual design | Designer |
+| Research findings and documentation | Documentation and Research |
 | Testing, acceptance, release readiness | QA / Tester |
 | Anything affecting privacy or safety | Whole team; `rule.md` always wins |
 

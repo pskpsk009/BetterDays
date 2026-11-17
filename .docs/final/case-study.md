@@ -12,7 +12,7 @@ private data that stays on the phone unless the user chooses backup.
   showcase uses this same build.
 - **Repository:** https://github.com/pskpsk009/BetterDays (branch `main`)
 - **Team:** Thura Min Tun (Project Owner and Frontend), Paing Soe Khant
-  (QA / Tester), Myint Myat Pyae Sone (Backend), Min Myat Hein (Designer)
+  (QA / Tester), Myint Myat Pyae Sone (Backend), Min Myat Hein (Documentation and Research)
 
 
 

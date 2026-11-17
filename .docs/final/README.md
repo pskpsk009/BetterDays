@@ -56,7 +56,7 @@ is invented.
 | Case study (Problem, Process, Outcome, live URL) | [case-study.md](case-study.md) |
 | AI logic (Where, How, Prove, Measure) | [ai-logic.md](ai-logic.md) |
 | Comparison table (Before, After, Change, Measured with, Evidence) | [comparison-table.md](comparison-table.md) |
-| Role statements (one per member) | `role-statements/`: to be added |
+| Role statements (one per member) | [Paing Soe Khant](role-statements/6631503082-PaingSoeKhant.md), [Thura Min Tun](role-statements/6631503095-ThuraMinTun.md), [Min Myat Hein](role-statements/6631503068-MinMyatHein.md), [Myint Myat Pyae Sone](role-statements/6631503073-MyintMyatPyaeSone.md) |
 
 ## 5. Other supporting documents
 
