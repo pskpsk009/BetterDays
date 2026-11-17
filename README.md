@@ -1,7 +1,7 @@
 # BetterDays
 BetterDyas (project name: **Better Days Wellbeing Companion**) is a mobile-first Expo app for students and young adults. It helps people reflect on everyday routines, notice patterns, and try small, practical actions that support their wellbeing.
 
-> **Prototype.** MyGrowth is a habit-support tool. It does not diagnose mental-health conditions, replace therapy, provide medical treatment, or decide whether someone is safe. Activities keep their state on the device and nothing is saved, except trail images that a user chooses to upload.
+> **Prototype.** MyGrowth is a habit-support tool. It does not diagnose mental-health conditions, replace therapy, provide medical treatment, or decide whether someone is safe. Activity data stays on the device. Nothing is sent to a server unless the user signs in and turns on backup, or chooses to share a trail image.
 
 ## At a glance
 
@@ -20,10 +20,10 @@ BetterDyas (project name: **Better Days Wellbeing Companion**) is a mobile-first
 - **Content separate from UI.** Activities are defined as data (`branches.ts`) and rendered by reusable templates, so most new activities need no new screen code.
 - **One shared navigator** (`BranchExplorer`) handles branch → activity flow and Android back for every section.
 - **Platform-aware code.** Native and web versions of the tab bar and map (`.native.tsx` / `.web.tsx`), so the app also runs in a browser.
-- **Privacy by design.** No accounts and no stored wellbeing data. The only network use is anonymous Supabase sign-in for trail images the user chooses to upload.
+- **Privacy by design.** Accounts are optional and data stays on the phone by default. Account backup is off until the user consents, and the database itself enforces that consent. Users can export their data, delete it, or delete their account.
 - **Pure, testable logic.** Progress maths, sleep timing, and game rules live in plain TypeScript files, separate from components.
 
-**What I'd build next:** a real data layer (Supabase with row-level security, export, and delete), daily check-ins feeding the Growth Tree, and automated tests for the pure logic files.
+**What I'd build next:** daily check-ins feeding the Growth Tree, moderation and reporting for the public trail gallery, a dedicated safety-support screen, and automated integration tests for the Supabase access rules.
 
 ## Features
 
@@ -66,40 +66,64 @@ Every branch has three activities.
 
 ### Requirements
 
-- Node.js 20 or later
+- Node.js 20 or later (22 LTS recommended)
+- A free [Supabase](https://supabase.com) project
 - The [Expo Go](https://expo.dev/go) app on a phone, or an Android emulator or iOS simulator
 
-### 1. Install dependencies
+### 1. Get the code and install dependencies
 
 ```bash
+git clone https://github.com/pskpsk009/BetterDays.git
+cd BetterDays
 npm install
 ```
 
 ### 2. Add Supabase keys
 
-The app creates a Supabase client at startup, so it needs these two values even if you never save a trail. Create a file called `.env.local` in the project root:
+The app creates a Supabase client at startup, so it won't start without these two values, even if you never sign in or save a trail. Copy the example file and fill in your project's URL and publishable key (Supabase: **Project Settings → API**):
+
+```bash
+cp .env.example .env.local
+```
 
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
 ```
 
-`.env.local` is gitignored. Never commit real keys.
+`.env.local` is gitignored. Never commit real keys, and never use the `service_role` key in the app.
 
-Saving and browsing trails requires the following in your Supabase project:
+### 3. Set up Supabase (once per project)
 
-- **Anonymous sign-ins** enabled.
-- A storage bucket named **`public-trails`**.
+1. In the Supabase **SQL editor**, run [backend/supabase/schema.sql](backend/supabase/schema.sql), then [backend/supabase/backup.sql](backend/supabase/backup.sql). Both are safe to run again. Together they create:
+   - the public trail gallery table and the `public-trails` storage bucket
+   - account backup, consent, and audit tables, plus the delete-account function
+   - row-level security on every table
+2. Under **Authentication → Sign In / Providers**, turn on **Email** and **Anonymous sign-ins**. Trail sharing uses an anonymous sign-in when nobody is logged in.
+3. Under **Authentication → Emails → Reset password**, make sure the template shows the code `{{ .Token }}`. The app asks for a code, not a link.
+4. Optional: turn off **Confirm email** while testing, so new accounts can sign in straight away.
+5. Optional: to purge audit rows weekly, enable `pg_cron` and run the `cron.schedule` line at the end of `backup.sql`.
 
-### 3. Start the app
+### 4. Start the app
 
 ```bash
 npx expo start --lan
 ```
 
-Scan the QR code with Expo Go, or press `a` (Android) or `i` (iOS) to open an emulator.
+Scan the QR code with Expo Go, or press `a` (Android) or `i` (iOS) to open an emulator. If your phone can't reach your computer on the network, use `npx expo start --tunnel`.
 
-Live GPS, the indoor motion sensors, and the map only work on a real phone. The web build shows a placeholder for the map.
+Live GPS, the indoor motion sensors, and the map only work on a real phone. The web build (`npx expo start --web`) shows a placeholder for the map.
+
+### Test account
+
+You don't need an account to use the app. Accounts are only needed to test sign-in, backup, export, and account deletion.
+
+**Create your own:** open the app, tap the profile button on Home, choose **Sign in or create an account**, then **Create account**, and use any email you can receive mail at. If **Confirm email** is on, click the link in the email first. You can also add a user in Supabase under **Authentication → Users → Add user** (tick "Auto Confirm User").
+
+**Shared reviewer account:** <!-- TODO(team): add the reviewer account details, or say where reviewers can get them. Don't commit a real password to this public repo. -->
+Ask the team for the reviewer login. It isn't stored in this repository.
+
+Use made-up text only. Never type real feelings or personal history into a test account. When you're done, use **Profile → Delete all data** (or **Delete account**) to clean up.
 
 ## Checks
 
@@ -108,9 +132,12 @@ Run these before you commit:
 ```bash
 npx tsc --noEmit   # type check
 npx expo lint      # lint
+npm test           # unit tests (tests/unit/, node:test + tsx)
 ```
 
 Then test the screens you changed in Expo Go.
+
+If `tsc` reports that a route such as `"/progress"` is not assignable, run `npx expo start` once. That regenerates the route types in `.expo/types`.
 
 ## Project structure
 
@@ -128,7 +155,9 @@ frontend/
     trail/                   GPS and motion trackers, map, trail drawing, upload
     progress/                Growth Tree, charts, demo data, pure calculations
 backend/
-  supabase/schema.sql        Draft schema for future grounding-session storage (not used yet)
+  supabase/schema.sql        Trail gallery table, storage bucket, row-level security
+  supabase/backup.sql        Account backup, consent, audit log, delete-account function
+tests/unit/                  Unit tests for the pure logic modules (npm test)
 .docs/                       Requirements, design documents, work logs
 ```
 
@@ -140,7 +169,7 @@ backend/
 
 ### Progress page data
 
-`frontend/components/progress/useProgressData.ts` is the only data seam. Today it returns demo data from `mockData.ts`. To show real data, replace it with Supabase queries that return the same `ProgressDataset` shape (see `types.ts`). The calculations in `progressMath.ts` and `progressSummary.ts` are pure functions that work on either.
+`frontend/components/progress/useProgressData.ts` is the only data seam. It builds the page from the activity log and sleep logs saved on the device, or from the labelled demo data in `mockData.ts`. Both return the same `ProgressDataset` shape (see `types.ts`). The calculations in `progressMath.ts` and `progressSummary.ts` are pure functions that work on either.
 
 ## Product and privacy rules
 
@@ -159,4 +188,4 @@ In short:
 
 ## Built with
 
-[Expo](https://expo.dev) SDK 57, Expo Router, React Native, TypeScript, react-native-svg, Reanimated, expo-location, expo-sensors, react-native-maps, and Supabase (storage and anonymous auth for trails).
+[Expo](https://expo.dev) SDK 58, Expo Router, React Native, TypeScript, react-native-svg, Reanimated, expo-location, expo-sensors, react-native-maps, and Supabase (auth, Postgres with row-level security, storage).
