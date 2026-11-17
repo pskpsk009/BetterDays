@@ -28,20 +28,34 @@ export function useOutdoorGpsTracker(
   const latestFix = useRef<TrailCoordinate | null>(null);
   // After a resume, the next accurate fix starts a fresh segment.
   const segmentPending = useRef(false);
+  // Bumped by every start, stop and unmount, so a start that is still waiting
+  // on the permission prompt or the GPS watch can tell it has been replaced
+  // and never leaves a second watcher running.
+  const startId = useRef(0);
 
   useEffect(() => {
     return () => {
+      startId.current += 1;
       subscription.current?.remove();
       subscription.current = null;
     };
   }, []);
 
   const start = async () => {
+    const id = ++startId.current;
     const permission = await Location.requestForegroundPermissionsAsync();
-    if (!permission.granted) return false;
+    if (!permission.granted || id !== startId.current) return false;
 
     subscription.current?.remove();
-    subscription.current = await Location.watchPositionAsync(
+    subscription.current = null;
+    // Each session starts a fresh line. Keeping the previous session's last
+    // point would bridge the gap, and any fix more than 35 m from it would be
+    // rejected, so nothing new would ever be drawn.
+    setCoordinates([]);
+    latestFix.current = null;
+    segmentPending.current = false;
+
+    const watch = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
         distanceInterval: 2,
@@ -86,10 +100,16 @@ export function useOutdoorGpsTracker(
         });
       },
     );
+    if (id !== startId.current) {
+      watch.remove();
+      return false;
+    }
+    subscription.current = watch;
     return true;
   };
 
   const stop = () => {
+    startId.current += 1;
     subscription.current?.remove();
     subscription.current = null;
   };

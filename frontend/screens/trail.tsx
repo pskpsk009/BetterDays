@@ -120,6 +120,7 @@ export default function TrailScreen() {
   const startTracking = async () => {
     gpsDrawingRef.current = mode === "outdoor";
     if (mode === "outdoor" && !(await outdoorTracker.start())) return;
+    setSeconds(0);
     setIndoorPath([{ x: 0, y: 0 }]);
     setIndoorLivePosition({ x: 0, y: 0 });
     setIndoorBreaks([]);

@@ -188,10 +188,13 @@ export function IndoorMotionTracker({
     const sessionStart = new Date();
     const start = async () => {
       setPedometerStatus("CHECKING");
-      if (!(await Pedometer.isAvailableAsync()))
-        return setPedometerStatus("UNAVAILABLE");
+      const available = await Pedometer.isAvailableAsync();
+      // Tracking may have stopped while waiting; the cleanup already reset the status.
+      if (!active) return;
+      if (!available) return setPedometerStatus("UNAVAILABLE");
       const permission = await Pedometer.requestPermissionsAsync();
-      if (!active || !permission.granted) return setPedometerStatus("DENIED");
+      if (!active) return;
+      if (!permission.granted) return setPedometerStatus("DENIED");
       setPedometerStatus("READY");
       const update = (value: number) => {
         setSteps(value);
@@ -202,17 +205,23 @@ export function IndoorMotionTracker({
       });
       if (Platform.OS === "ios") {
         const refresh = async () => {
-          const result = await Pedometer.getStepCountAsync(
-            sessionStart,
-            new Date(),
-          );
-          if (active) update(result.steps);
+          try {
+            const result = await Pedometer.getStepCountAsync(
+              sessionStart,
+              new Date(),
+            );
+            if (active) update(result.steps);
+          } catch {
+            // A missed poll is fine; the next one (or watchStepCount) catches up.
+          }
         };
         void refresh();
         pollingTimer = setInterval(() => void refresh(), 2000);
       }
     };
-    void start().catch(() => setPedometerStatus("ERROR"));
+    void start().catch(() => {
+      if (active) setPedometerStatus("ERROR");
+    });
     return () => {
       active = false;
       subscription?.remove();
