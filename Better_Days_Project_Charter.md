@@ -102,6 +102,81 @@ Profiles must use multiple focus areas, not only one total score. Safety concern
 - At least three real target users complete testing and provide feedback.
 - A qualified advisor reviews questionnaire, scoring, recommendations, and safety wording before release.
 
+## 10. Team Rules
+
+> **Draft:** all four members must check and agree to these rules. Change
+> anything that does not match how the team actually works.
+
+### Meetings
+
+- Weekly team meeting every [Monday, 9pm], about 30-60 minutes, in person or
+  online.
+- Each member says what they finished, what they will do next, and what is
+  blocking them.
+- The Project Owner writes short notes (decisions and action items) and shares
+  them within 24 hours.
+- Tell the team before the meeting if you cannot attend, and read the notes
+  afterwards.
+
+### Communication
+
+- Main channel: Messenger Group. Project decisions are made there or
+  in meetings, not in private chats.
+- Reply within **24 hours** on weekdays. Mark urgent messages with "URGENT".
+- Be respectful. Criticise the work, not the person.
+
+### Decisions
+
+| Decision | Who decides |
+|---|---|
+| Product scope, priorities, timeline | Project Owner, after team discussion |
+| Architecture, repository, security | Tech Lead |
+| UX and visual design | Designer |
+| Testing, acceptance, release readiness | QA / Tester |
+| Anything affecting privacy or safety | Whole team; `rule.md` always wins |
+
+- Try for agreement first. If the team cannot agree, the owner above decides.
+  Ties go to a majority vote.
+- Record important decisions in the requirement log (`.docs/requirement/log/`).
+
+### Work and deadlines
+
+- Work is tracked in the backlog (`.docs/requirement/backlog.md`). Each task has
+  one owner and a due date.
+- Tell the team **at least 48 hours before** a deadline if you might miss it, so
+  the work can be shared or re-planned.
+- Missing a deadline without warning twice: the team talks about it at the next
+  meeting. After that, the issue goes to the course instructor.
+- Everyone contributes to each phase deliverable (Discover, Build, Test,
+  Deliver).
+
+### Git and code
+
+- `main` must always run. Pull before you start work and before you push.
+- Write clear commit messages that say what changed (for example, "Fix Trail
+  timer reset").
+- Run the required checks before pushing: `npx tsc --noEmit` and
+  `npx expo lint`.
+- Larger changes go on a branch and are reviewed by at least one other member
+  before merging.
+- Never commit passwords, API keys, or real user data.
+
+### Privacy and AI
+
+- Follow `rule.md` and the PDPA for all user and interview data.
+- AI tools may help with code and documents, but a member reviews and tests
+  everything before it is committed. AI must never invent research, quotes, or
+  results (see `CLAUDE.md`).
+
+### Agreement
+
+| Member | Agreed (date) |
+|---|---|
+| Paing Soe Khant | 5/10/2026 |
+| Thura Min Tun | 5/10/2026 |
+| Min Myat Hein | 5/10/2026 |
+| Myint Myat Pyae Sone | 5/10/2026 |
+
 ## Product Decision
 
 Better Days should be developed as a wellbeing habit and reflection platform, not as a mental-health diagnosis or treatment application.

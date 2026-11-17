@@ -103,6 +103,50 @@ src/app/
 - Preserve the one source of truth per layer: charter for vision and scope, `rule.md` for compliance, requirements for acceptance criteria, design docs for UX, and code for implementation.
 - Commit and push changes under `.claude/`, `.docs/`, `CLAUDE.md`, or `rule.md` after validation.
 
+## How our team uses AI
+
+### Tools
+
+- **Claude Code** (`.claude/`) and **Codex** (`.codex/`), with shared skills in
+  `.agents/`. This file and `AGENTS.md` give both tools the same project rules.
+- Project agents and skills:
+  - `requirement-writer`, with the `capture-requirement` skill: turns verified
+    user research into requirements and backlog items.
+  - `design-writer`: drafts design documents and diagrams in `.docs/design/`.
+  - `backlog-auditor`, with the `audit-backlog` and `audit-design` skills:
+    read-only checks of traceability, scope, privacy, and safety.
+
+### What we use AI for
+
+- Writing and fixing app code, and explaining errors.
+- Drafting requirements, backlog items, design documents, test plans, and
+  compliance text from information the team provides.
+- Checking documents against each other, for example backlog against
+  requirements, and requirements against `rule.md`.
+- Reviewing code for bugs before it is committed.
+
+### What AI must not do
+
+- Invent user research, interview quotes, participants, test results, advisor
+  approval, legal claims, or clinical evidence.
+- Make product scope, privacy, or safety decisions. AI may suggest options; the
+  team decides (see Team Rules in the charter).
+- See real user data or identifiable interview data. Give it anonymised notes
+  only (participant codes, no names).
+- Write in-app recommendations or diagnose users. AI features in the app are
+  future work only (`rule.md`, Recommendations).
+
+### Human review
+
+- The member who asks the AI for something owns the result and must read and
+  understand it before committing.
+- Code from AI must pass the checks in Required validation and be tried in
+  Expo Go.
+- Compliance text (`rule.md`, privacy wording) is checked by the Project Owner,
+  and safety or scoring content by the QA / Tester.
+- If AI output conflicts with the charter or `rule.md`, the charter and
+  `rule.md` win.
+
 ## Required validation
 
 Before declaring a change complete:

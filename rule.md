@@ -9,6 +9,53 @@ crisis assessor, or replacement for professional care.
 These rules are project requirements and do not replace review by a qualified
 legal or wellbeing professional.
 
+## Legal basis: Thailand's Personal Data Protection Act
+
+Better Days is built in Thailand for Thai students and young adults, so the main
+law is the **Personal Data Protection Act B.E. 2562 (2019) (PDPA)**, fully in
+force since 1 June 2022. Two related Thai laws also apply:
+
+- **Computer Crime Act B.E. 2550 (2007)**: service providers keep computer
+  traffic data for at least 90 days.
+- **Electronic Transactions Act B.E. 2544 (2001)**: electronic consent and
+  records are valid when they are kept retrievable and unchanged.
+
+Better Days is the **data controller** for user data. Supabase, the hosting
+provider, acts as a **data processor**.
+
+### Which PDPA section each rule follows
+
+| PDPA section | What it requires | Better Days rule (this file) | LR |
+|---|---|---|---|
+| s.19 Consent | Clear consent, separate from other terms, in plain language; withdrawal as easy as giving it | Electronic consent and records; store version, timestamp, and withdrawal | LR1, LR7 |
+| s.20 Minors | Users under 20 are minors in Thailand; some processing needs a parent's or guardian's consent | **Gap:** decide the minimum age or add a guardian-consent step before launch (the target group includes 18-19 year olds) | LR1 |
+| s.21 Purpose limitation | Use data only for the purpose given at collection | Use wellbeing data only for the approved purpose; no advertising, resale, or profiling | LR2 |
+| s.22 Data minimisation | Collect only what is needed | Collect only information needed for reflection, habit support, safety, moderation, account, or data rights | LR2 |
+| s.23 Privacy notice | Tell users what is collected, why, how long it is kept, who receives it, and their rights, before or at collection | Explain collection, purpose, use, and retention before processing; first-open welcome and Profile privacy rules | LR1 |
+| s.26 Sensitive data | Health data, including mental-health information, needs **explicit** consent | Wellbeing responses, mood, stress, and journals are treated as sensitive; explicit consent before storing | LR1 |
+| s.28 Cross-border transfer | Data sent outside Thailand must go to a country with adequate protection, or meet an exception such as consent | **Gap:** confirm the Supabase region and tell users if data is stored outside Thailand | LR1 |
+| s.30 Right of access | Users can get a copy of their data | Controlled access and export (Download my data) | LR3 |
+| s.31 Data portability | Users can get their data in a common machine-readable format | Export as JSON | LR3 |
+| s.32 Right to object | Users can object to processing | Optional backup that is off by default; consent withdrawal | LR3 |
+| s.33 Right to erasure | Users can ask for deletion | Permanent deletion workflows (Delete all data, Delete account); journals included | LR3 |
+| s.35-36 Accuracy and correction | Keep data accurate; users can correct it | Correction workflow | LR3 |
+| s.37(1) Security | Use suitable security measures | Access control between users; protect data in transit and at rest | LR4 |
+| s.37(3) Retention | Delete data when it is no longer needed or the retention period ends | Documented deletion window; logs trimmed at a set period | LR3, LR6 |
+| s.37(4) Breach notification | Report a data breach to the PDPC within 72 hours, and tell users when the risk is high | **Gap:** write a breach response plan (who decides, who reports, the 72-hour deadline) | LR6 |
+| s.39 Records of processing | Keep a record of processing activities | Audit and access logs | LR6 |
+
+### PDPA rules for the team
+
+- **New features:** check new data collection against this table before
+  building. If no row covers it, add one first.
+- **Wording:** user-facing privacy text must match how the app actually behaves
+  (`frontend/components/profile/privacyRules.ts`).
+- **Research data:** interview notes and test data also fall under the PDPA. Ask
+  for consent, use participant codes instead of names, and delete raw notes when
+  they are no longer needed (`.docs/requirement/interviews.md`).
+- **Legal review:** have the three gaps (s.20, s.28, s.37(4)) checked by a
+  qualified advisor before public release.
+
 ## Product boundary
 
 - The product may help users reflect on routines and choose small practical
