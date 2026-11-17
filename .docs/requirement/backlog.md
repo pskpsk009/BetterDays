@@ -4,7 +4,7 @@ Prioritized by MoSCoW. Every row traces to a requirement ID, a charter goal,
 a research pain, or a privacy and safety rule. Source of truth:
 `Better_Days_Project_Charter.md`, `CLAUDE.md`, and `rule.md`.
 
-Pains, updated from six real user interviews on 13/11/2026
+Pains, updated from six real user interviews on 2/11/2026
 (`.docs/requirement/interviews.md`). A pain is confirmed when at least 3 of 6
 participants mention it.
 

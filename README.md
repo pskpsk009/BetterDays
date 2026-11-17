@@ -116,12 +116,11 @@ Live GPS, the indoor motion sensors, and the map only work on a real phone. The 
 
 ### Test account
 
-You don't need an account to use the app. Accounts are only needed to test sign-in, backup, export, and account deletion.
+**No account is needed.** Everything in the app works without signing in: Home, Mind, Body, Trail, Progress, **Download my data**, and **Delete all data**. Data stays on the phone.
 
-**Create your own:** open the app, tap the profile button on Home, choose **Sign in or create an account**, then **Create account**, and use any email you can receive mail at. If **Confirm email** is on, click the link in the email first. You can also add a user in Supabase under **Authentication → Users → Add user** (tick "Auto Confirm User").
+An account is optional and only adds: **Back up to my account**, change password, sign out, and **Delete account**. There is no shared reviewer account, because a password must never be stored in this public repository.
 
-**Shared reviewer account:** <!-- TODO(team): add the reviewer account details, or say where reviewers can get them. Don't commit a real password to this public repo. -->
-Ask the team for the reviewer login. It isn't stored in this repository.
+**To test the optional account features, create your own:** open the app, tap the profile button on Home, choose **Sign in or create an account**, then **Create account**, and use any email you can receive mail at. If **Confirm email** is on, click the link in the email first. You can also add a user in Supabase under **Authentication → Users → Add user** (tick "Auto Confirm User").
 
 Use made-up text only. Never type real feelings or personal history into a test account. When you're done, use **Profile → Delete all data** (or **Delete account**) to clean up.
 

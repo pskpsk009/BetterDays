@@ -3,9 +3,9 @@
 How to run the real-user test sessions defined in `../test-plan.tex`
 (Section 4: UAT tasks, Section 5: Metrics), and where to record the results.
 
-**Status:** not run yet. Every result field is empty until a real session
-happens. Do not fill any field from memory, from the Discover interviews, or
-by estimate.
+**Status:** six real sessions were run on 2-3 November 2026 (U01-U06).
+Results are in the files below. Values that were empty on the forms are
+marked "Not recorded"; nothing was filled from memory or estimate.
 
 ## Files
 

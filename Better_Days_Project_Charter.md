@@ -34,9 +34,9 @@ As a result, users may feel overwhelmed, lose motivation, or fail to recognize g
 
 | Role | Name | Responsibility |
 |---|---|---|
-| Project Owner | Paing Soe Khant | Product vision, requirements, scope, priorities, and timeline |
-| QA / Tester | Thura Min Tun | Scoring, safety, requirements, and acceptance testing |
-| Tech Lead | Myint Myat Pyae Sone | Repository, architecture, security, and technical decisions |
+| Project Owner and Frontend Developer | Thura Min Tun | Product vision, requirements, scope, priorities, and timeline; mobile app screens and navigation (Expo, React Native) |
+| QA / Tester | Paing Soe Khant | Scoring, safety, requirements, test plan, and acceptance testing |
+| Backend Developer | Myint Myat Pyae Sone | Supabase database, accounts, backup, security, and data deletion |
 | Designer | Min Myat Hein | Accessible, calm, understandable user experience |
 | Target Users | Students and young adults | Complete check-ins, review recommendations, track habits, and read stories |
 
@@ -109,7 +109,7 @@ Profiles must use multiple focus areas, not only one total score. Safety concern
 
 ### Meetings
 
-- Weekly team meeting every [Monday, 9pm], about 30-60 minutes, in person or
+- Weekly team meeting every Monday, 9pm, about 30-60 minutes, in person or
   online.
 - Each member says what they finished, what they will do next, and what is
   blocking them.
@@ -130,7 +130,8 @@ Profiles must use multiple focus areas, not only one total score. Safety concern
 | Decision | Who decides |
 |---|---|
 | Product scope, priorities, timeline | Project Owner, after team discussion |
-| Architecture, repository, security | Tech Lead |
+| App screens and frontend code | Frontend Developer |
+| Database, accounts, security | Backend Developer |
 | UX and visual design | Designer |
 | Testing, acceptance, release readiness | QA / Tester |
 | Anything affecting privacy or safety | Whole team; `rule.md` always wins |

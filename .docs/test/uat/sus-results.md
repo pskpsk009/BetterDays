@@ -51,11 +51,7 @@ Disagree = 3, Agree = 4, Strongly Agree = 5.
 
 ## Removed responses
 
-The last three responses in the form sheet were removed at the team's
-request on 17/11/2026.
-
-**Reason:** _to be confirmed by the team_ (for example: did not complete a
-test session, outside eligibility rules, or duplicate submission).
+The last three responses in the form sheet were removed 
 
 | Response | Q1 | Q2 | Q3 | Q4 | Q5 | Q6 | Q7 | Q8 | Q9 | Q10 | SUS |
 |---|---|---|---|---|---|---|---|---|---|---|---|

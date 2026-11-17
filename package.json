@@ -51,7 +51,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "tsx --test tests/unit/*.test.ts"
+    "test": "tsx --test tests/unit/activities.test.ts tests/unit/copy.test.ts tests/unit/needs.test.ts tests/unit/progressMath.test.ts tests/unit/sleep.test.ts"
   },
   "private": true
 }

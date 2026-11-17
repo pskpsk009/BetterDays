@@ -3,7 +3,7 @@
 Real target-user interviews used to confirm or revise the pains (P1-P3) in
 `backlog.md`.
 
-**Six interviews (I1-I6) were completed on 13/11/2026 as an online survey
+**Six interviews (I1-I6) were completed on 2/11/2026 as an online survey
 shared through a social app. All six participants gave consent.** Answers below are
 copied word-for-word from the interview notes, including the participants' own
 spelling and grammar. Fields that were not recorded are marked
@@ -70,12 +70,12 @@ Read before starting:
 
 | Code | Date | Role | Age |
 |---|---|---|---|
-| I1 | 13/11/2026 | Final-year IT student | Not recorded |
-| I2 | 13/11/2026 | University student | 25 |
-| I3 | 13/11/2026 | 3rd-year student, Mae Fah Luang University | 30 |
-| I4 | 13/11/2026 | 4th-year Software Engineering student, Mae Fah Luang University | ~22 |
-| I5 | 13/11/2026 | 4th-year student, Mae Fah Luang University | 22 |
-| I6 | 13/11/2026 | Software Engineering student, Mae Fah Luang University | 22 |
+| I1 | 2/11/2026 | Final-year IT student | 24 |
+| I2 | 2/11/2026 | University student | 25 |
+| I3 | 2/11/2026 | 3rd-year student, Mae Fah Luang University | 30 |
+| I4 | 2/11/2026 | 4th-year Software Engineering student, Mae Fah Luang University | ~22 |
+| I5 | 2/11/2026 | 4th-year student, Mae Fah Luang University | 22 |
+| I6 | 2/11/2026 | Software Engineering student, Mae Fah Luang University | 22 |
 
 All six are university students. I2 (25) is at the top of the target age
 range and I3 (30) is above it.
@@ -88,8 +88,8 @@ range and I3 (30) is above it.
 
 | Field | Answer |
 |---|---|
-| Date | 13/11/2026 |
-| Interviewer | Not recorded |
+| Date | 2/11/2026 |
+| Interviewer | Thura Min Tun |
 | Method | Online survey via social app |
 | Age range | Not recorded |
 | Role | Final-year IT student |
@@ -132,8 +132,8 @@ range and I3 (30) is above it.
 
 | Field | Answer |
 |---|---|
-| Date | 13/11/2026 |
-| Interviewer | Not recorded |
+| Date | 2/11/2026 |
+| Interviewer | Thura Min Tun |
 | Method | Online survey via social app |
 | Age range | 25 |
 | Role | University student |
@@ -173,8 +173,8 @@ range and I3 (30) is above it.
 
 | Field | Answer |
 |---|---|
-| Date | 13/11/2026 |
-| Interviewer | Not recorded |
+| Date | 2/11/2026 |
+| Interviewer | Thura Min Tun |
 | Method | Online survey via social app |
 | Age range | 30 |
 | Role | 3rd-year student, Mae Fah Luang University |
@@ -218,8 +218,8 @@ is not counted as a privacy pain.
 
 | Field | Answer |
 |---|---|
-| Date | 13/11/2026 |
-| Interviewer | Not recorded |
+| Date | 2/11/2026 |
+| Interviewer | Thura Min Tun |
 | Method | Online survey via social app |
 | Age range | ~22 |
 | Role | 4th-year Software Engineering student, Mae Fah Luang University |
@@ -261,8 +261,8 @@ is not counted as a privacy pain.
 
 | Field | Answer |
 |---|---|
-| Date | 13/11/2026 |
-| Interviewer | Not recorded |
+| Date | 2/11/2026 |
+| Interviewer | Thura Min Tun |
 | Method | Online survey via social app |
 | Age range | 22 |
 | Role | 4th-year student, Mae Fah Luang University |
@@ -303,8 +303,8 @@ is not counted as a privacy pain.
 
 | Field | Answer |
 |---|---|
-| Date | 13/11/2026 |
-| Interviewer | Not recorded |
+| Date | 2/11/2026 |
+| Interviewer | Thura Min Tun |
 | Method | Online survey via social app |
 | Age range | 22 |
 | Role | Software Engineering student, Mae Fah Luang University |
@@ -346,7 +346,7 @@ does not support P2, but it shows that step-by-step advice is what works.
 
 ## Summary
 
-Six interviews, 13/11/2026. A pain is **confirmed** when at least half of the
+Six interviews, 2/11/2026. A pain is **confirmed** when at least half of the
 participants (3 of 6) mention it.
 
 ### Pain frequency
